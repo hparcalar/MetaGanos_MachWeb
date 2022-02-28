@@ -155,13 +155,19 @@ onMounted(async () => {
               <p>Personel Tanımları</p>
             </div>
             <div class="buttons">
-              <button class="button v-button is-outlined is-primary">
+              <button
+                class="button v-button is-outlined is-primary"
+                @click="goToRoute('employee')"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>Liste</span>
               </button>
-              <button class="button v-button is-raised is-primary">
+              <button
+                class="button v-button is-raised is-primary"
+                @click="goToRoute('employee-slug', { slug: '0' })"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -185,13 +191,19 @@ onMounted(async () => {
               <p>Kart Tanımları</p>
             </div>
             <div class="buttons">
-              <button class="button v-button is-outlined is-primary">
+              <button
+                class="button v-button is-outlined is-primary"
+                @click="goToRoute('card')"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>Liste</span>
               </button>
-              <button class="button v-button is-raised is-primary">
+              <button
+                class="button v-button is-raised is-primary"
+                @click="goToRoute('card-slug', { slug: '0' })"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>

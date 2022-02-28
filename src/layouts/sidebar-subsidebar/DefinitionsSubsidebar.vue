@@ -29,10 +29,10 @@ const openSubsidebarLinks = ref('')
           <RouterLink :to="{ name: 'department' }"> Departman </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'app' }"> Personel </RouterLink>
+          <RouterLink :to="{ name: 'employee' }"> Personel </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'app' }"> Kart </RouterLink>
+          <RouterLink :to="{ name: 'card' }"> Kart </RouterLink>
         </li>
 
         <VCollapseLinks v-model:open="openSubsidebarLinks" collapse-id="personal">

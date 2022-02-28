@@ -86,7 +86,7 @@ watch(
       <template #links>
         <li>
           <RouterLink :to="{ name: 'app' }">
-            <i aria-hidden="true" class="iconify" data-icon="feather:home"></i>
+            <i aria-hidden="true" class="iconify" data-icon="feather:box"></i>
           </RouterLink>
         </li>
       </template>
@@ -118,10 +118,36 @@ watch(
             @keydown.space.prevent="switchSidebar('dashboard')"
             @click="switchSidebar('dashboard')"
           >
+            <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:box"></i>
+          </a>
+        </li>
+        <li>
+          <a
+            :class="[activeMobileSubsidebar === 'movements' && 'is-active']"
+            data-content="Hareketler"
+            tabindex="0"
+            @keydown.space.prevent="switchSidebar('movements')"
+            @click="switchSidebar('movements')"
+          >
             <i
               aria-hidden="true"
               class="iconify sidebar-svg"
-              data-icon="feather:home"
+              data-icon="feather:sliders"
+            ></i>
+          </a>
+        </li>
+        <li>
+          <a
+            :class="[activeMobileSubsidebar === 'warehouse' && 'is-active']"
+            data-content="Depo Yönetimi"
+            tabindex="0"
+            @keydown.space.prevent="switchSidebar('warehouse')"
+            @click="switchSidebar('warehouse')"
+          >
+            <i
+              aria-hidden="true"
+              class="iconify sidebar-svg"
+              data-icon="feather:archive"
             ></i>
           </a>
         </li>
@@ -131,6 +157,20 @@ watch(
     <Transition name="slide-x">
       <DefinitionsSubsidebar
         v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'dashboard'"
+        @close="isDesktopSidebarOpen = false"
+      />
+    </Transition>
+
+    <Transition name="slide-x">
+      <MovementsSubsidebar
+        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'movements'"
+        @close="isDesktopSidebarOpen = false"
+      />
+    </Transition>
+
+    <Transition name="slide-x">
+      <WarehouseSubsidebar
+        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'warehouse'"
         @close="isDesktopSidebarOpen = false"
       />
     </Transition>

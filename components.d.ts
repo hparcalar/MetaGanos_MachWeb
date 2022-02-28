@@ -7,6 +7,8 @@ declare module 'vue' {
     AnimatedLogo: typeof import('./src/components/svg/AnimatedLogo.vue')['default']
     AppLayout: typeof import('./src/layouts/AppLayout.vue')['default']
     AuthLayout: typeof import('./src/layouts/AuthLayout.vue')['default']
+    CardForm: typeof import('./src/components/pages/card/CardForm.vue')['default']
+    CardList: typeof import('./src/components/pages/card/CardList.vue')['default']
     DashboardsMobileSubsidebar: typeof import('./src/layouts/mobile-subsidebars/DashboardsMobileSubsidebar.vue')['default']
     DefinitionsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DefinitionsSubsidebar.vue')['default']
     DepartmentForm: typeof import('./src/components/pages/department/DepartmentForm.vue')['default']
@@ -30,6 +32,7 @@ declare module 'vue' {
     MarketingSideFeatures: typeof import('./src/components/partials/marketing/MarketingSideFeatures.vue')['default']
     MobileNavbar: typeof import('./src/components/navigation/mobile/MobileNavbar.vue')['default']
     MobileSidebar: typeof import('./src/components/navigation/mobile/MobileSidebar.vue')['default']
+    MovementsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/MovementsSubsidebar.vue')['default']
     NotificationsMobileDropdown: typeof import('./src/components/partials/dropdowns/NotificationsMobileDropdown.vue')['default']
     Sidebar: typeof import('./src/components/navigation/desktop/Sidebar.vue')['default']
     StackPopoverContent: typeof import('./src/components/partials/popover/StackPopoverContent.vue')['default']
@@ -103,6 +106,7 @@ declare module 'vue' {
     VTextEllipsis: typeof import('./src/components/base/typography/VTextEllipsis.vue')['default']
     VViewWrapper: typeof import('./src/components/base/layouts/VViewWrapper.vue')['default']
     VVivus: typeof import('./src/components/base/plugins/VVivus.vue')['default']
+    WarehouseSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/WarehouseSubsidebar.vue')['default']
   }
 }
 

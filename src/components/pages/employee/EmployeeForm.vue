@@ -30,6 +30,7 @@ const modelObject = ref({
 const plants = ref([])
 const departments = ref([])
 const cards = ref([])
+const itemCategories = ref([])
 
 onMounted(async () => {
   await bindModel()
@@ -40,8 +41,44 @@ const bindModel = async () => {
     const data = await api.get('Employee/' + props.id)
     if (data.status === 200) modelObject.value = data.data
 
+    credits.value = modelObject.value.credits
     plants.value = (await api.get('Plant')).data
+    itemCategories.value = (await api.get('ItemCategory')).data
+    await updateDepartmentList(modelObject.value.plantId)
+    await updateCardList(modelObject.value.plantId)
   } catch (error) {}
+}
+
+const onChangePlant = async (plantId: any) => {
+  modelObject.value.departmentId = null
+  await updateDepartmentList(plantId)
+  await updateCardList(plantId)
+}
+
+const updateDepartmentList = async (plantId: any) => {
+  if (plantId && plantId > 0) {
+    try {
+      const relatedDepartments = await api.get('Plant/' + plantId + '/Departments')
+      departments.value = relatedDepartments.data
+    } catch (error) {}
+  } else departments.value = []
+}
+
+const updateCardList = async (plantId: any) => {
+  if (plantId && plantId > 0) {
+    try {
+      const availableCards = await api.get('Card/Available/' + plantId)
+      cards.value = availableCards.data
+      if (
+        modelObject.value.employeeCardId > 0 &&
+        !cards.value.some((m) => m.id == modelObject.value.employeeCardId)
+      )
+        cards.value.push({
+          id: modelObject.value.employeeCardId,
+          cardCode: modelObject.value.employeeCardCode,
+        })
+    } catch (error) {}
+  } else cards.value = []
 }
 
 const saveModel = async () => {
@@ -56,6 +93,50 @@ const saveModel = async () => {
   }
 }
 
+// #region CREDIT FUNCTIONS
+const creditLoadModel = ref({
+  id: 0,
+  itemCategoryId: null,
+  activeCredit: null,
+  employeeId: null,
+})
+
+const isLoadDialogOpen = ref(false)
+const openLoadDialog = () => {
+  creditLoadModel.value = {
+    id: 0,
+    itemCategoryId: null,
+    activeCredit: null,
+    employeeId: modelObject.value.id,
+  }
+  isLoadDialogOpen.value = true
+}
+
+const filters = ref('')
+const credits = ref([])
+
+const filteredData = computed(() => {
+  if (!filters.value) {
+    return credits.value
+  } else {
+    const filterRe = new RegExp(filters.value, 'i')
+
+    return credits.value.filter((item) => {
+      return item.activeCredit.match(filterRe) || item.itemCategoryName.match(filterRe)
+    })
+  }
+})
+
+const columns = {
+  itemCategoryName: 'Stok Kategorisi',
+  activeCredit: 'Kredi',
+  actions: {
+    label: '#',
+    align: 'center',
+  },
+} as const
+// #endregion
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -69,13 +150,13 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Departman Tanımı</h3>
+            <h3>Personel Tanımı</h3>
           </div>
           <div class="right">
             <div class="buttons">
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'department' }"
+                :to="{ name: 'employee' }"
                 light
                 dark-outlined
               >
@@ -89,57 +170,265 @@ const isStuck = computed(() => {
         </div>
       </div>
       <div class="form-body">
-        <!--Fieldset-->
-        <div class="form-fieldset">
-          <div class="fieldset-heading">
-            <h4>Departman bilgileri</h4>
-            <p></p>
+        <div class="columns is-multiline">
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>Personel bilgileri</h4>
+                <p></p>
+              </div>
+
+              <div class="columns is-multiline">
+                <div class="column is-6">
+                  <VField>
+                    <label>Personel Kodu</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.employeeCode"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>Personel Adı</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.employeeName"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Fabrika</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.plantId"
+                        :value-prop="'id'"
+                        :label="'plantName'"
+                        placeholder="Bir fabrika seçiniz"
+                        :searchable="true"
+                        :options="plants"
+                        @change="onChangePlant"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Departman</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.departmentId"
+                        :value-prop="'id'"
+                        :label="'departmentName'"
+                        placeholder="Bir departman seçiniz"
+                        :searchable="true"
+                        :options="departments"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Kart</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.employeeCardId"
+                        :value-prop="'id'"
+                        :label="'cardCode'"
+                        placeholder="Bir kart seçiniz"
+                        :searchable="true"
+                        :options="cards"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>Gsm</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.gsm"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>E-Mail</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.email"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="columns is-multiline">
-            <div class="column is-6">
-              <VField>
-                <label>Departman Kodu</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.departmentCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-6">
-              <VField>
-                <label>Departman Adı</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.departmentName"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-12">
-              <VField>
-                <label>Fabrika</label>
-                <VControl>
-                  <Multiselect
-                    v-model="modelObject.plantId"
-                    :value-prop="'id'"
-                    :label="'plantName'"
-                    placeholder="Bir fabrika seçiniz"
-                    :searchable="true"
-                    :options="plants"
-                  />
-                </VControl>
-              </VField>
-            </div>
+          <div class="column is-6">
+            <Transition name="slide-up">
+              <!--Fieldset-->
+              <div v-if="!isLoadDialogOpen" class="form-fieldset">
+                <div class="fieldset-heading">
+                  <h4>Kredi durumu</h4>
+                  <p></p>
+                </div>
+                <div class="columns is-multiline">
+                  <div class="column is-12">
+                    <div class="list-flex-toolbar is-reversed">
+                      <VControl icon="feather:search">
+                        <input
+                          v-model="filters"
+                          class="input custom-text-filter"
+                          placeholder="Arama..."
+                        />
+                      </VControl>
+
+                      <VButton
+                        :color="'info'"
+                        :raised="true"
+                        icon="feather:plus"
+                        @click="openLoadDialog()"
+                        >Yükleme Yap</VButton
+                      >
+                    </div>
+                    <div class="flex-list-wrapper flex-list-v3">
+                      <!--List Empty Search Placeholder -->
+                      <VPlaceholderPage
+                        v-if="!filteredData.length"
+                        title="Henüz bir kredi mevcut değil."
+                        subtitle="Yeni bir kredi tanımlayın."
+                        larger
+                      >
+                      </VPlaceholderPage>
+
+                      <!--Active Tab-->
+                      <div v-else-if="filteredData.length" class="tab-content is-active">
+                        <VFlexTable :data="filteredData" :columns="columns" rounded>
+                          <template #body>
+                            <TransitionGroup
+                              name="list"
+                              tag="div"
+                              class="flex-list-inner"
+                            >
+                              <!--Table item-->
+                              <div
+                                v-for="item in filteredData"
+                                :key="item.id"
+                                class="flex-table-item"
+                              >
+                                <VFlexTableCell>
+                                  <span class="">{{ item.itemCategoryName }}</span>
+                                </VFlexTableCell>
+                                <VFlexTableCell>
+                                  <span class="">{{ item.activeCredit }}</span>
+                                </VFlexTableCell>
+                                <VFlexTableCell :columns="{ align: 'end' }">
+                                  <button
+                                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
+                                  >
+                                    <i
+                                      aria-hidden="true"
+                                      class="fas fa-edit dot mr-2"
+                                    ></i>
+                                  </button>
+                                </VFlexTableCell>
+                              </div>
+                            </TransitionGroup>
+                          </template>
+                        </VFlexTable>
+
+                        <!--Table Pagination-->
+                        <VFlexPagination
+                          v-if="filteredData.length > 5"
+                          :item-per-page="10"
+                          :total-items="filteredData.length"
+                          :current-page="1"
+                          :max-links-displayed="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="isLoadDialogOpen" class="form-fieldset">
+                <div class="fieldset-heading">
+                  <h4>Kredi yükleme</h4>
+                  <p></p>
+                </div>
+                <div class="columns is-multiline">
+                  <div class="column is-12">
+                    <VField>
+                      <label>Stok Kategorisi</label>
+                      <VControl>
+                        <Multiselect
+                          v-model="creditLoadModel.itemCategoryId"
+                          :value-prop="'id'"
+                          :label="'itemCategoryName'"
+                          placeholder="Bir kategori seçiniz"
+                          :searchable="true"
+                          :options="itemCategories"
+                          @change="onChangePlant"
+                        />
+                      </VControl>
+                    </VField>
+                  </div>
+                  <div class="column is-12">
+                    <VField>
+                      <label>Kredi</label>
+                      <VControl icon="feather:terminal">
+                        <input
+                          v-model="creditLoadModel.activeCredit"
+                          type="number"
+                          class="input"
+                          placeholder=""
+                          autocomplete=""
+                        />
+                      </VControl>
+                    </VField>
+                  </div>
+                  <div class="column is-12">
+                    <div class="right">
+                      <div class="buttons">
+                        <VButton
+                          icon="lnir lnir-arrow-left rem-100"
+                          light
+                          dark-outlined
+                          @click="isLoadDialogOpen = false"
+                        >
+                          Vazgeç
+                        </VButton>
+                        <VButton color="primary" icon="feather:save" raised>
+                          Yüklemeyi Tamamla
+                        </VButton>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -149,6 +438,24 @@ const isStuck = computed(() => {
 
 <style lang="scss">
 @import '../../../scss/abstracts/mixins';
+
+.slide-up-enter-active {
+  transition: all 0.25s ease-out;
+}
+
+.slide-up-leave-active {
+  transition: all 0s ease-out;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
 
 .is-navbar {
   .form-layout {
