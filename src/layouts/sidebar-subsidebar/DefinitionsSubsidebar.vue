@@ -41,17 +41,17 @@ const openSubsidebarLinks = ref('')
             <i aria-hidden="true" class="iconify" data-icon="feather:chevron-right" />
           </template>
 
-          <RouterLink :to="{ name: 'app' }" class="is-submenu">
-            <i aria-hidden="true" class="lnil lnil-analytics-alt-1"></i>
-            <span>Stok Tanım</span>
+          <RouterLink :to="{ name: 'item-definition' }" class="is-submenu">
+            <span>Stoklar</span>
           </RouterLink>
-          <RouterLink :to="{ name: 'app' }" class="is-submenu">
-            <i aria-hidden="true" class="lnil lnil-pie-chart"></i>
+          <RouterLink :to="{ name: 'item-category' }" class="is-submenu">
             <span>Stok Kategorileri</span>
           </RouterLink>
-          <RouterLink :to="{ name: 'app' }" class="is-submenu">
-            <i aria-hidden="true" class="lnil lnil-stats-up"></i>
+          <RouterLink :to="{ name: 'item-group' }" class="is-submenu">
             <span>Stok Grupları</span>
+          </RouterLink>
+          <RouterLink :to="{ name: 'unit' }" class="is-submenu">
+            <span>Birimler</span>
           </RouterLink>
         </VCollapseLinks>
       </ul>

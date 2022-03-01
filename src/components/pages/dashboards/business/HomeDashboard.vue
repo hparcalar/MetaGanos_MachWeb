@@ -227,13 +227,19 @@ onMounted(async () => {
               <p>Stok Tanımları</p>
             </div>
             <div class="buttons">
-              <button class="button v-button is-outlined is-primary">
+              <button
+                class="button v-button is-outlined is-primary"
+                @click="goToRoute('item-definition')"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>Liste</span>
               </button>
-              <button class="button v-button is-raised is-primary">
+              <button
+                class="button v-button is-raised is-primary"
+                @click="goToRoute('item-definition-slug', { slug: '0' })"
+              >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>

@@ -122,7 +122,7 @@ const filteredData = computed(() => {
     const filterRe = new RegExp(filters.value, 'i')
 
     return credits.value.filter((item) => {
-      return item.activeCredit.match(filterRe) || item.itemCategoryName.match(filterRe)
+      return item.itemCategoryName.match(filterRe)
     })
   }
 })
@@ -135,6 +135,24 @@ const columns = {
     align: 'center',
   },
 } as const
+
+const loadCredit = async () => {
+  try {
+    const postResult = await api.post('Employee/LoadCredit', creditLoadModel.value)
+    if (postResult.data.result) {
+      notif.success('Yükleme başarılı.')
+      await bindModel()
+
+      creditLoadModel.value.itemCategoryId = null
+      creditLoadModel.value.activeCredit = null
+      creditLoadModel.value.id = 0
+
+      isLoadDialogOpen.value = false
+    } else notif.error(postResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
+  }
+}
 // #endregion
 
 const { y } = useWindowScroll()
@@ -286,10 +304,13 @@ const isStuck = computed(() => {
             </div>
           </div>
 
-          <div class="column is-6">
-            <Transition name="slide-up">
+          <div
+            class="column is-6"
+            style="display: flex; align-items: stretch; min-height: 400px"
+          >
+            <Transition name="slide-up" mode="out-in">
               <!--Fieldset-->
-              <div v-if="!isLoadDialogOpen" class="form-fieldset">
+              <div v-if="!isLoadDialogOpen" class="form-fieldset hk-slide-content">
                 <div class="fieldset-heading">
                   <h4>Kredi durumu</h4>
                   <p></p>
@@ -306,6 +327,7 @@ const isStuck = computed(() => {
                       </VControl>
 
                       <VButton
+                        v-if="modelObject && modelObject.id > 0"
                         :color="'info'"
                         :raised="true"
                         icon="feather:plus"
@@ -316,7 +338,7 @@ const isStuck = computed(() => {
                     <div class="flex-list-wrapper flex-list-v3">
                       <!--List Empty Search Placeholder -->
                       <VPlaceholderPage
-                        v-if="!filteredData.length"
+                        v-if="!filteredData || !filteredData.length"
                         title="Henüz bir kredi mevcut değil."
                         subtitle="Yeni bir kredi tanımlayın."
                         larger
@@ -348,10 +370,7 @@ const isStuck = computed(() => {
                                   <button
                                     class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
                                   >
-                                    <i
-                                      aria-hidden="true"
-                                      class="fas fa-edit dot mr-2"
-                                    ></i>
+                                    <i aria-hidden="true" class="fas fa-edit dot"></i>
                                   </button>
                                 </VFlexTableCell>
                               </div>
@@ -373,7 +392,7 @@ const isStuck = computed(() => {
                 </div>
               </div>
 
-              <div v-else-if="isLoadDialogOpen" class="form-fieldset">
+              <div v-else-if="isLoadDialogOpen" class="form-fieldset hk-slide-content">
                 <div class="fieldset-heading">
                   <h4>Kredi yükleme</h4>
                   <p></p>
@@ -420,7 +439,12 @@ const isStuck = computed(() => {
                         >
                           Vazgeç
                         </VButton>
-                        <VButton color="primary" icon="feather:save" raised>
+                        <VButton
+                          color="primary"
+                          icon="feather:save"
+                          raised
+                          @click="loadCredit()"
+                        >
                           Yüklemeyi Tamamla
                         </VButton>
                       </div>
@@ -438,24 +462,6 @@ const isStuck = computed(() => {
 
 <style lang="scss">
 @import '../../../scss/abstracts/mixins';
-
-.slide-up-enter-active {
-  transition: all 0.25s ease-out;
-}
-
-.slide-up-leave-active {
-  transition: all 0s ease-out;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
-}
 
 .is-navbar {
   .form-layout {

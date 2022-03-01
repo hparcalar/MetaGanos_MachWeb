@@ -16,13 +16,13 @@ const notif = useNotyf()
 
 const modelObject = ref({
   id: 0,
-  cardCode: '',
-  hexKey: '',
-  plantId: null,
+  itemCategoryCode: '',
+  itemCategoryName: '',
+  viewOrder: null,
   isActive: true,
 })
 
-const plants = ref([])
+const categories = ref([])
 
 onMounted(async () => {
   await bindModel()
@@ -30,16 +30,14 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('Card/' + props.id)
+    const data = await api.get('ItemCategory/' + props.id)
     if (data.status === 200) modelObject.value = data.data
-
-    plants.value = (await api.get('Plant')).data
   } catch (error) {}
 }
 
 const saveModel = async () => {
   try {
-    const postResult = await api.post('Card', modelObject.value)
+    const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
       await bindModel()
@@ -62,13 +60,13 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Kart Tanımı</h3>
+            <h3>Stok Kategori Tanımı</h3>
           </div>
           <div class="right">
             <div class="buttons">
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'card' }"
+                :to="{ name: 'item-category' }"
                 light
                 dark-outlined
               >
@@ -85,31 +83,17 @@ const isStuck = computed(() => {
         <!--Fieldset-->
         <div class="form-fieldset">
           <div class="fieldset-heading">
-            <h4>Kart bilgileri</h4>
+            <h4>Kategori bilgileri</h4>
             <p></p>
           </div>
 
           <div class="columns is-multiline">
-            <div class="column is-6">
+            <div class="column is-12">
               <VField>
-                <label>Kart No</label>
+                <label>Kategori Kodu</label>
                 <VControl icon="feather:terminal">
                   <input
-                    v-model="modelObject.cardCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-6">
-              <VField>
-                <label>Hex No</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.hexKey"
+                    v-model="modelObject.itemCategoryCode"
                     type="text"
                     class="input"
                     placeholder=""
@@ -120,15 +104,28 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-12">
               <VField>
-                <label>Fabrika</label>
-                <VControl>
-                  <Multiselect
-                    v-model="modelObject.plantId"
-                    :value-prop="'id'"
-                    :label="'plantName'"
-                    placeholder="Bir fabrika seçiniz"
-                    :searchable="true"
-                    :options="plants"
+                <label>Kategori Adı</label>
+                <VControl icon="feather:terminal">
+                  <input
+                    v-model="modelObject.itemCategoryName"
+                    type="text"
+                    class="input"
+                    placeholder=""
+                    autocomplete=""
+                  />
+                </VControl>
+              </VField>
+            </div>
+            <div class="column is-12">
+              <VField>
+                <label>Görünüm Sırası</label>
+                <VControl icon="feather:terminal">
+                  <input
+                    v-model="modelObject.viewOrder"
+                    type="number"
+                    class="input"
+                    placeholder=""
+                    autocomplete=""
                   />
                 </VControl>
               </VField>

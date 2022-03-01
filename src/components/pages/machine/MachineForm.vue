@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
@@ -35,8 +35,19 @@ const modelObject = ref({
   isActive: true,
   createDate: null,
 })
+const spiralModel = ref({
+  id: 0,
+  itemCategoryId: null,
+  posOrders: null,
+  itemId: null,
+  itemName: '',
+  activeQuantity: 0,
+})
 
 const plants = ref([])
+const itemCategories = ref([])
+const isSpiralDetailVisible = ref(false)
+const selectedSpiralNo = ref(-1)
 
 onMounted(async () => {
   await bindModel()
@@ -48,6 +59,7 @@ const bindModel = async () => {
     if (data.status === 200) modelObject.value = data.data
 
     plants.value = (await api.get('Plant')).data
+    itemCategories.value = (await api.get('ItemCategory')).data
   } catch (error) {}
 }
 
@@ -63,9 +75,62 @@ const saveModel = async () => {
   }
 }
 
-const editSpiral = (spiralNo: number) => {
-  console.log(spiralNo)
+const showSpiralDetail = (spiralNo: number) => {
+  selectedSpiralNo.value = spiralNo
+  isSpiralDetailVisible.value = true
+
+  spiralModel.value = modelObject.value.spirals.find((d) => d.posOrders == spiralNo) || {
+    id: 0,
+    itemCategoryId: null,
+    posOrders: null,
+    itemId: null,
+    itemName: '',
+    activeQuantity: 0,
+  }
 }
+
+const onSpiralSizeChanged = () => {
+  if (modelObject.value.rows > 0 && modelObject.value.cols > 0) {
+    const newSpiralList = []
+    for (let r = 1; r <= modelObject.value.rows; r++) {
+      for (let c = 1; c < modelObject.value.cols + 1; c++) {
+        const spiralNo: number = (r - 1) * modelObject.value.cols + c
+        const existingSpiral = modelObject.value.spirals.find(
+          (d) => d.posOrders == spiralNo
+        )
+
+        const newSpiral = {
+          posOrders: spiralNo,
+        }
+        if (existingSpiral) {
+          newSpiral.itemCategoryId = existingSpiral.itemCategoryId
+          newSpiral.itemId = existingSpiral.itemId
+          newSpiral.activeQuantity = existingSpiral.activeQuantity
+        }
+
+        newSpiralList.push(newSpiral)
+      }
+    }
+
+    modelObject.value.spirals = newSpiralList
+  }
+}
+
+watch(
+  () => modelObject.value.rows,
+  () => {
+    onSpiralSizeChanged()
+  },
+  { deep: true }
+)
+
+watch(
+  () => modelObject.value.cols,
+  () => {
+    onSpiralSizeChanged()
+  },
+  { deep: true }
+)
 
 const { y } = useWindowScroll()
 
@@ -259,96 +324,142 @@ const isStuck = computed(() => {
             </div>
           </div>
           <div class="column is-6">
-            <!--Fieldset-->
-            <div class="form-fieldset">
-              <div class="fieldset-heading">
-                <h4>Lokasyon bilgileri</h4>
-                <p></p>
+            <div class="columns is-multiline">
+              <div class="column is-12">
+                <!--Fieldset-->
+                <div class="form-fieldset">
+                  <div class="fieldset-heading">
+                    <h4>Lokasyon bilgileri</h4>
+                    <p></p>
+                  </div>
+
+                  <div class="columns is-multiline">
+                    <div class="column is-6">
+                      <VField>
+                        <label>Bölge</label>
+                        <VControl icon="feather:terminal">
+                          <input
+                            v-model="modelObject.district"
+                            type="text"
+                            class="input"
+                            placeholder=""
+                            autocomplete=""
+                          />
+                        </VControl>
+                      </VField>
+                    </div>
+                    <div class="column is-6">
+                      <VField>
+                        <label>Şehir</label>
+                        <VControl icon="feather:terminal">
+                          <input
+                            v-model="modelObject.city"
+                            type="text"
+                            class="input"
+                            placeholder=""
+                            autocomplete=""
+                          />
+                        </VControl>
+                      </VField>
+                    </div>
+                    <div class="column is-12">
+                      <VField>
+                        <label>Fabrika</label>
+                        <VControl>
+                          <Multiselect
+                            v-model="modelObject.plantId"
+                            :value-prop="'id'"
+                            :label="'plantName'"
+                            placeholder="Bir fabrika seçiniz"
+                            :searchable="true"
+                            :options="plants"
+                          />
+                        </VControl>
+                      </VField>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div class="columns is-multiline">
-                <div class="column is-6">
-                  <VField>
-                    <label>Bölge</label>
-                    <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.district"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-                <div class="column is-6">
-                  <VField>
-                    <label>Şehir</label>
-                    <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.city"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-                <div class="column is-12">
-                  <VField>
-                    <label>Fabrika</label>
-                    <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder="Bir fabrika seçiniz"
-                        :searchable="true"
-                        :options="plants"
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-              </div>
-            </div>
+              <div
+                class="column is-12"
+                style="
+                  display: flex;
+                  align-items: stretch;
+                  min-height: 200px;
+                  margin-left: 15px;
+                "
+              >
+                <Transition name="slide-up" mode="out-in">
+                  <div
+                    v-if="!isSpiralDetailVisible"
+                    class="form-fieldset hk-slide-content"
+                  >
+                    <div class="fieldset-heading">
+                      <h4>Spiral bilgileri</h4>
+                      <p></p>
+                    </div>
 
-            <!--Fieldset-->
-            <div class="form-fieldset">
-              <div class="fieldset-heading">
-                <h4>Spiral bilgileri</h4>
-                <p></p>
-              </div>
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <VField>
+                          <label>Satır</label>
+                          <VControl icon="feather:terminal">
+                            <input
+                              v-model="modelObject.rows"
+                              type="number"
+                              class="input"
+                              placeholder=""
+                              autocomplete=""
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-6">
+                        <VField>
+                          <label>Sütun</label>
+                          <VControl icon="feather:terminal">
+                            <input
+                              v-model="modelObject.cols"
+                              type="number"
+                              class="input"
+                              placeholder=""
+                              autocomplete=""
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                    </div>
+                  </div>
 
-              <div class="columns is-multiline">
-                <div class="column is-6">
-                  <VField>
-                    <label>Satır</label>
-                    <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.rows"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-                <div class="column is-6">
-                  <VField>
-                    <label>Sütun</label>
-                    <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.cols"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
-                    </VControl>
-                  </VField>
-                </div>
+                  <div
+                    v-else-if="isSpiralDetailVisible"
+                    class="form-fieldset hk-slide-content"
+                  >
+                    <div class="fieldset-heading">
+                      <h4>Spiral: {{ selectedSpiralNo }}</h4>
+                      <p></p>
+                    </div>
+
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <VField>
+                          <label>Stok Kategorisi</label>
+                          <VControl>
+                            <Multiselect
+                              v-model="spiralModel.itemCategoryId"
+                              :value-prop="'id'"
+                              :label="'itemCategoryName'"
+                              placeholder="Bir kategori seçiniz"
+                              :searchable="true"
+                              :options="itemCategories"
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
               </div>
             </div>
           </div>
@@ -368,7 +479,7 @@ const isStuck = computed(() => {
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="editSpiral((r - 1) * modelObject.cols + c)"
+                @click="showSpiralDetail((r - 1) * modelObject.cols + c)"
               >
                 {{ (r - 1) * modelObject.cols + c }}
               </VButton>

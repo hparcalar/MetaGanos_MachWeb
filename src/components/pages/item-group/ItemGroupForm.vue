@@ -16,13 +16,13 @@ const notif = useNotyf()
 
 const modelObject = ref({
   id: 0,
-  cardCode: '',
-  hexKey: '',
-  plantId: null,
+  itemGroupCode: '',
+  itemGroupName: '',
+  itemCategoryId: null,
   isActive: true,
 })
 
-const plants = ref([])
+const categories = ref([])
 
 onMounted(async () => {
   await bindModel()
@@ -30,16 +30,16 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('Card/' + props.id)
+    const data = await api.get('ItemGroup/' + props.id)
     if (data.status === 200) modelObject.value = data.data
 
-    plants.value = (await api.get('Plant')).data
+    categories.value = (await api.get('ItemCategory')).data
   } catch (error) {}
 }
 
 const saveModel = async () => {
   try {
-    const postResult = await api.post('Card', modelObject.value)
+    const postResult = await api.post('ItemGroup', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
       await bindModel()
@@ -62,13 +62,13 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Kart Tanımı</h3>
+            <h3>Stok Grup Tanımı</h3>
           </div>
           <div class="right">
             <div class="buttons">
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'card' }"
+                :to="{ name: 'item-group' }"
                 light
                 dark-outlined
               >
@@ -85,17 +85,17 @@ const isStuck = computed(() => {
         <!--Fieldset-->
         <div class="form-fieldset">
           <div class="fieldset-heading">
-            <h4>Kart bilgileri</h4>
+            <h4>Grup bilgileri</h4>
             <p></p>
           </div>
 
           <div class="columns is-multiline">
             <div class="column is-6">
               <VField>
-                <label>Kart No</label>
+                <label>Grup Kodu</label>
                 <VControl icon="feather:terminal">
                   <input
-                    v-model="modelObject.cardCode"
+                    v-model="modelObject.itemGroupCode"
                     type="text"
                     class="input"
                     placeholder=""
@@ -106,10 +106,10 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-6">
               <VField>
-                <label>Hex No</label>
+                <label>Grup Adı</label>
                 <VControl icon="feather:terminal">
                   <input
-                    v-model="modelObject.hexKey"
+                    v-model="modelObject.itemGroupName"
                     type="text"
                     class="input"
                     placeholder=""
@@ -120,15 +120,15 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-12">
               <VField>
-                <label>Fabrika</label>
+                <label>Stok Kategorisi</label>
                 <VControl>
                   <Multiselect
-                    v-model="modelObject.plantId"
+                    v-model="modelObject.itemCategoryId"
                     :value-prop="'id'"
-                    :label="'plantName'"
-                    placeholder="Bir fabrika seçiniz"
+                    :label="'itemCategoryName'"
+                    placeholder="Bir kategori seçiniz"
                     :searchable="true"
-                    :options="plants"
+                    :options="categories"
                   />
                 </VControl>
               </VField>
