@@ -23,6 +23,9 @@ const SOURCE_MAP = Boolean(process.env.SOURCE_MAP) ?? false
  */
 export default defineConfig({
   // Project root directory (where index.html is located).
+  server: {
+    host: true,
+  },
   root: process.cwd(),
   // Base public path when served in development or production.
   // You also need to add this base like `history: createWebHistory('my-subdirectory')`

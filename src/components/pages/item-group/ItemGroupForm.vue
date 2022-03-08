@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { useHelpers } from '/@src/utils/helpers'
 
 const props = defineProps({
   id: {
@@ -11,6 +12,7 @@ const props = defineProps({
   },
 })
 
+const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 
@@ -46,6 +48,15 @@ const saveModel = async () => {
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
     notif.error(error)
+  }
+}
+
+const onIconSelected = async (event: any) => {
+  if (event.target.files && event.target.files.length > 0) {
+    const base64Str: string = await helpers.blobToBase64(event.target.files[0])
+    modelObject.value.groupImage = base64Str
+  } else {
+    modelObject.value.groupImage = ''
   }
 }
 
@@ -130,6 +141,24 @@ const isStuck = computed(() => {
                     :searchable="true"
                     :options="categories"
                   />
+                </VControl>
+              </VField>
+            </div>
+            <div class="column is-12">
+              <VField>
+                <label>İkon</label>
+                <VControl icon="feather:terminal">
+                  <input
+                    type="file"
+                    class="input"
+                    placeholder=""
+                    autocomplete=""
+                    accept="image/*"
+                    @change="onIconSelected"
+                  />
+                  <p v-if="modelObject.groupImage && modelObject.groupImage.length > 0">
+                    <img alt="" :src="modelObject.groupImage" width="150" />
+                  </p>
                 </VControl>
               </VField>
             </div>

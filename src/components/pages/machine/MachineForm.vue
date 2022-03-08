@@ -47,6 +47,7 @@ const spiralModel = ref({
 const plants = ref([])
 const itemCategories = ref([])
 const isSpiralDetailVisible = ref(false)
+const isSpiralLoadVisible = ref(false)
 const selectedSpiralNo = ref(-1)
 
 onMounted(async () => {
@@ -104,6 +105,7 @@ const onSpiralSizeChanged = () => {
         }
         if (existingSpiral) {
           newSpiral.itemCategoryId = existingSpiral.itemCategoryId
+          newSpiral.itemName = existingSpiral.itemName
           newSpiral.itemId = existingSpiral.itemId
           newSpiral.activeQuantity = existingSpiral.activeQuantity
         }
@@ -115,6 +117,62 @@ const onSpiralSizeChanged = () => {
     modelObject.value.spirals = newSpiralList
   }
 }
+
+// #region SPIRAL LOADING FUNCTIONS
+const showSpiralLoadDialog = () => {
+  if (!spiralModel.value || !spiralModel.value.itemCategoryId) {
+    notif.warning('Yükleme yapabilmek için bir stok kategorisi seçmelisiniz.')
+    return
+  }
+  if (selectedSpiralNo.value > 0) {
+    isSpiralLoadVisible.value = true
+  }
+}
+
+const onLoadSpiral = async (result: any) => {
+  try {
+    result.spiralNo = selectedSpiralNo.value
+    result.itemCategoryId = spiralModel.value.itemCategoryId
+
+    if (spiralModel.value.itemId != null && result.itemId != spiralModel.value.itemId) {
+      notif.error('Bir spirale farklı stoklar yükleyemezsiniz.')
+      return
+    }
+
+    const postResult = await api.post(
+      'Machine/' + modelObject.value.id + '/LoadSpiral',
+      result
+    )
+    if (postResult.data.result) {
+      notif.success('Yükleme işlemi başarılı.')
+      const newSpiralValue = (
+        await api.get(
+          'Machine/' + modelObject.value.id + '/Spirals/' + selectedSpiralNo.value
+        )
+      ).data
+      spiralModel.value.activeQuantity = newSpiralValue.activeQuantity
+      spiralModel.value.itemId = newSpiralValue.itemId
+      spiralModel.value.itemName = newSpiralValue.itemName
+      spiralModel.value.itemCategoryId = newSpiralValue.itemCategoryId
+    } else notif.error('Hata: ' + postResult.data.errorMessage)
+  } catch (error: any) {
+    notif.error('Yükleme başarısız: ' + error)
+  }
+
+  isSpiralLoadVisible.value = false
+  isSpiralDetailVisible.value = false
+  selectedSpiralNo.value = -1
+}
+const onCloseLoadSpiral = () => {
+  isSpiralLoadVisible.value = false
+  isSpiralDetailVisible.value = false
+  selectedSpiralNo.value = -1
+}
+// #endregion
+
+// #region SPIRAL CONSUMING REPORT FUNCTIONS
+const showSpiralConsumeDialog = () => {}
+// #endregion
 
 watch(
   () => modelObject.value.rows,
@@ -437,7 +495,16 @@ const isStuck = computed(() => {
                     class="form-fieldset hk-slide-content"
                   >
                     <div class="fieldset-heading">
-                      <h4>Spiral: {{ selectedSpiralNo }}</h4>
+                      <h4 class="spiral-header">Spiral: {{ selectedSpiralNo }}</h4>
+                      <h4
+                        v-if="
+                          spiralModel.activeQuantity && spiralModel.activeQuantity > 0
+                        "
+                        class="spiral-header mt-2 mb-2"
+                        style="background-color: var(--placeholder); color: var(--dark)"
+                      >
+                        {{ spiralModel.itemName }}: {{ spiralModel.activeQuantity }} adet
+                      </h4>
                       <p></p>
                     </div>
 
@@ -456,6 +523,34 @@ const isStuck = computed(() => {
                             />
                           </VControl>
                         </VField>
+                      </div>
+                      <div class="column is-12">
+                        <div class="buttons">
+                          <VButton
+                            icon="lnir lnir-arrow-left rem-100"
+                            light
+                            dark-outlined
+                            @click="isSpiralDetailVisible = false"
+                          >
+                            Geri
+                          </VButton>
+                          <VButton
+                            color="primary"
+                            icon="feather:upload"
+                            raised
+                            @click="showSpiralLoadDialog()"
+                          >
+                            Yükleme Yap
+                          </VButton>
+                          <VButton
+                            color="dark"
+                            icon="feather:list"
+                            raised
+                            @click="showSpiralConsumeDialog()"
+                          >
+                            Tüketimler
+                          </VButton>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -489,6 +584,18 @@ const isStuck = computed(() => {
       </div>
     </div>
   </form>
+
+  <LoadMachineSpiral
+    :item-category="{
+      itemCategoryId: spiralModel.itemCategoryId,
+      itemName: spiralModel.itemName,
+      spiralNo: selectedSpiralNo,
+      activeQuantity: spiralModel.activeQuantity,
+    }"
+    :visible="isSpiralLoadVisible"
+    @load-spiral="onLoadSpiral"
+    @close="onCloseLoadSpiral"
+  />
 </template>
 
 <style lang="scss">
@@ -498,6 +605,17 @@ const isStuck = computed(() => {
   .form-layout {
     margin-top: 30px;
   }
+}
+
+.spiral-header {
+  background-color: var(--blue);
+  padding: 5px;
+  border-radius: 5px;
+  color: var(--smoke-white);
+}
+
+.hk-slide-content {
+  padding-top: 0px !important;
 }
 
 .form-layout {

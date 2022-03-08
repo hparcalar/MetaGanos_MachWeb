@@ -31,6 +31,7 @@ const plants = ref([])
 const departments = ref([])
 const cards = ref([])
 const itemCategories = ref([])
+const isEditCreditDialogVisible = ref(false)
 
 onMounted(async () => {
   await bindModel()
@@ -93,7 +94,54 @@ const saveModel = async () => {
   }
 }
 
-// #region CREDIT FUNCTIONS
+// #region EDIT TOTAL CREDIT FUNCTIONS
+const selectedItemCategoryObject = ref(null)
+const selectedItemCategoryQuantity = ref(null)
+
+const showEditCredit = (itemCategoryId: number, quantity: number) => {
+  selectedItemCategoryObject.value = itemCategories.value.find(
+    (d) => d.id == itemCategoryId
+  )
+  selectedItemCategoryQuantity.value = quantity
+
+  if (selectedItemCategoryObject.value) {
+    isEditCreditDialogVisible.value = true
+  }
+}
+
+const onEditCredit = async (result: any) => {
+  if (result && result.approved) {
+    try {
+      const postResult = await api.post('Employee/EditCredit', {
+        employeeId: modelObject.value.id,
+        itemCategoryId: selectedItemCategoryObject.value.id,
+        activeCredit: result.quantity,
+      })
+      if (postResult.data.result) {
+        notif.success('Kredi başarıyla güncellendi.')
+        await bindModel()
+      } else notif.error(postResult.data.errorMessage)
+    } catch (error) {
+      notif.error(error)
+    } finally {
+      isEditCreditDialogVisible.value = false
+      selectedItemCategoryObject.value = null
+      selectedItemCategoryQuantity.value = null
+    }
+  }
+}
+
+const onCloseLoadCredit = () => {
+  isEditCreditDialogVisible.value = false
+  selectedItemCategoryObject.value = null
+}
+
+const deleteCredit = (itemCategoryId: number) => {
+  console.log(itemCategoryId)
+}
+// #endregion
+
+// #region LOAD CREDIT FUNCTIONS
 const creditLoadModel = ref({
   id: 0,
   itemCategoryId: null,
@@ -369,8 +417,20 @@ const isStuck = computed(() => {
                                 <VFlexTableCell :columns="{ align: 'end' }">
                                   <button
                                     class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
+                                    @click="
+                                      showEditCredit(
+                                        item.itemCategoryId,
+                                        item.activeCredit
+                                      )
+                                    "
                                   >
                                     <i aria-hidden="true" class="fas fa-edit dot"></i>
+                                  </button>
+                                  <button
+                                    class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile"
+                                    @click="deleteCredit(item.itemCategoryId)"
+                                  >
+                                    <i aria-hidden="true" class="fas fa-trash dot"></i>
                                   </button>
                                 </VFlexTableCell>
                               </div>
@@ -409,7 +469,6 @@ const isStuck = computed(() => {
                           placeholder="Bir kategori seçiniz"
                           :searchable="true"
                           :options="itemCategories"
-                          @change="onChangePlant"
                         />
                       </VControl>
                     </VField>
@@ -458,6 +517,16 @@ const isStuck = computed(() => {
       </div>
     </div>
   </form>
+
+  <EditEmployeeCredit
+    :credit-params="{
+      itemCategoryName: selectedItemCategoryObject?.itemCategoryName,
+      quantity: selectedItemCategoryQuantity,
+    }"
+    :visible="isEditCreditDialogVisible"
+    @laod-credit="onEditCredit"
+    @close="onCloseLoadCredit"
+  />
 </template>
 
 <style lang="scss">
