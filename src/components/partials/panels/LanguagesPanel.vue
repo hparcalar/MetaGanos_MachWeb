@@ -2,7 +2,7 @@
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStorage } from '@vueuse/core'
-
+import { useUserSession } from '/@src/stores/userSession'
 import { usePanels } from '/@src/stores/panels'
 
 const panels = usePanels()
@@ -12,13 +12,16 @@ const { locale, t } = useI18n()
  * We use the same storage key as we use in the /src/i18n.ts file
  * so if user reload the page, the selected language will be the same
  */
-const defaultLocale = useStorage('locale', navigator?.language || 'en')
+const defaultLocale = useStorage('locale', navigator?.language || 'tr')
 
 /**
  * Each time we change the locale, we persit it in the storage
  */
 watch(locale, () => {
   defaultLocale.value = locale.value
+
+  const { setLanguage } = useUserSession()
+  setLanguage(defaultLocale.value)
 })
 </script>
 
@@ -55,8 +58,26 @@ watch(locale, () => {
                 v-model="locale"
                 type="radio"
                 name="language_selection"
+                value="tr"
+                :checked="locale == 'tr'"
+              />
+              <div class="language-option-inner">
+                <img src="/images/icons/flags/turkey.svg" alt="" />
+                <div class="indicator">
+                  <i aria-hidden="true" class="iconify" data-icon="feather:check"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="language-box">
+            <div class="language-option">
+              <input
+                v-model="locale"
+                type="radio"
+                name="language_selection"
                 value="en"
-                checked
+                :checked="locale == 'en'"
               />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/united-states-of-america.svg" alt="" />
@@ -69,7 +90,13 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input v-model="locale" type="radio" name="language_selection" value="fr" />
+              <input
+                v-model="locale"
+                type="radio"
+                name="language_selection"
+                value="fr"
+                :checked="locale == 'fr'"
+              />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/france.svg" alt="" />
                 <div class="indicator">
@@ -81,7 +108,13 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input v-model="locale" type="radio" name="language_selection" value="es" />
+              <input
+                v-model="locale"
+                type="radio"
+                name="language_selection"
+                value="es"
+                :checked="locale == 'es'"
+              />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/spain.svg" alt="" />
                 <div class="indicator">
@@ -93,7 +126,13 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input v-model="locale" type="radio" name="language_selection" value="de" />
+              <input
+                v-model="locale"
+                type="radio"
+                name="language_selection"
+                value="de"
+                :checked="locale == 'de'"
+              />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/germany.svg" alt="" />
                 <div class="indicator">
@@ -109,24 +148,8 @@ watch(locale, () => {
                 v-model="locale"
                 type="radio"
                 name="language_selection"
-                value="es-MX"
-              />
-              <div class="language-option-inner">
-                <img src="/images/icons/flags/mexico.svg" alt="" />
-                <div class="indicator">
-                  <i aria-hidden="true" class="iconify" data-icon="feather:check"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="language-box">
-            <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
                 value="zh-CN"
+                :checked="locale == 'zh-CN'"
               />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/china.svg" alt="" />

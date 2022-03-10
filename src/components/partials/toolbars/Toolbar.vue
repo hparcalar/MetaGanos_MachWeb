@@ -11,12 +11,12 @@ const panels = usePanels()
 
 const localFlagSrc = computed(() => {
   switch (locale.value) {
+    case 'tr':
+      return '/images/icons/flags/turkey.svg'
     case 'fr':
       return '/images/icons/flags/france.svg'
     case 'es':
       return '/images/icons/flags/spain.svg'
-    case 'es-MX':
-      return '/images/icons/flags/mexico.svg'
     case 'de':
       return '/images/icons/flags/germany.svg'
     case 'zh-CN':
@@ -41,14 +41,14 @@ const localFlagSrc = computed(() => {
       </label>
     </div>
 
-    <!-- <a
+    <a
       tabindex="0"
       class="toolbar-link right-panel-trigger"
       @keydown.space.prevent="panels.setActive('languages')"
       @click="panels.setActive('languages')"
     >
       <img :src="localFlagSrc" alt="" />
-    </a> -->
+    </a>
 
     <slot></slot>
   </div>

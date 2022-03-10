@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useUserSession } from '/@src/stores/userSession'
 const emit = defineEmits(['close'])
 const openSubsidebarLinks = ref('')
+const userSession = useUserSession()
 </script>
 
 <template>
@@ -20,40 +22,56 @@ const openSubsidebarLinks = ref('')
     <div class="inner" data-simplebar>
       <ul>
         <li>
-          <RouterLink :to="{ name: 'plant' }"> Fabrika </RouterLink>
+          <RouterLink :to="{ name: 'plant' }">
+            {{ userSession.getExpression('Factories') }}
+          </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'machine' }"> Makine </RouterLink>
+          <RouterLink :to="{ name: 'machine' }">
+            {{ userSession.getExpression('Machines') }}
+          </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'department' }"> Departman </RouterLink>
+          <RouterLink :to="{ name: 'department' }">
+            {{ userSession.getExpression('Departments') }}
+          </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'employee' }"> Personel </RouterLink>
+          <RouterLink :to="{ name: 'employee' }">
+            {{ userSession.getExpression('Employees') }}
+          </RouterLink>
         </li>
         <li>
-          <RouterLink :to="{ name: 'card' }"> Kart </RouterLink>
+          <RouterLink :to="{ name: 'card' }">
+            {{ userSession.getExpression('Cards') }}
+          </RouterLink>
         </li>
 
         <VCollapseLinks v-model:open="openSubsidebarLinks" collapse-id="personal">
           <template #header>
-            Stok
+            {{ userSession.getExpression('Item') }}
             <i aria-hidden="true" class="iconify" data-icon="feather:chevron-right" />
           </template>
 
           <RouterLink :to="{ name: 'item-definition' }" class="is-submenu">
-            <span>Stoklar</span>
+            <span>{{ userSession.getExpression('Items') }}</span>
           </RouterLink>
           <RouterLink :to="{ name: 'item-category' }" class="is-submenu">
-            <span>Stok Kategorileri</span>
+            <span>{{ userSession.getExpression('ItemCategories') }}</span>
           </RouterLink>
           <RouterLink :to="{ name: 'item-group' }" class="is-submenu">
-            <span>Stok Grupları</span>
+            <span>{{ userSession.getExpression('ItemGroups') }}</span>
           </RouterLink>
           <RouterLink :to="{ name: 'unit' }" class="is-submenu">
-            <span>Birimler</span>
+            <span>{{ userSession.getExpression('Units') }}</span>
           </RouterLink>
         </VCollapseLinks>
+
+        <li>
+          <RouterLink :to="{ name: 'language' }">
+            {{ userSession.getExpression('LanguageSettings') }}
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

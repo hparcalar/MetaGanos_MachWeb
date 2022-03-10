@@ -8,9 +8,17 @@ import { createI18n as createClientI18n } from 'vue-i18n'
 import messages from '@intlify/vite-plugin-vue-i18n/messages'
 
 export function createI18n() {
-  const defaultLocale = useStorage('locale', navigator?.language || 'en')
+  const defaultLocale = useStorage('locale', navigator?.language || 'tr')
+
+  let memoryLocale: string = ''
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    const userDataObj = JSON.parse(userData)
+    if (userDataObj && userDataObj.languageCode) memoryLocale = userDataObj.languageCode
+  }
+
   const i18n = createClientI18n({
-    locale: defaultLocale.value,
+    locale: memoryLocale.length > 0 ? memoryLocale : defaultLocale.value,
     messages,
   })
 

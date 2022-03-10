@@ -2,9 +2,11 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
 const router = useRouter()
 const api = useApi()
+const userSession = useUserSession()
 
 const totals = ref({ plantCount: 0 })
 
@@ -41,10 +43,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/factory.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Fabrikalar</h3>
-            <p>{{ totals.plantCount }} adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Factories') }}</h3>
+            <p>{{ totals.plantCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Fabrika Tanımları</p>
+              <p>{{ userSession.getExpression('FactoryDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -54,7 +56,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -63,7 +65,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>
@@ -77,10 +79,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/automat.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Makineler</h3>
-            <p>5 adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Machines') }}</h3>
+            <p>5 {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Makine Tanımları</p>
+              <p>{{ userSession.getExpression('MachineDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -90,7 +92,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -99,7 +101,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>
@@ -113,10 +115,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/department.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Departmanlar</h3>
-            <p>3 adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Departments') }}</h3>
+            <p>3 {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Departman Tanımları</p>
+              <p>{{ userSession.getExpression('DepartmentDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -126,7 +128,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -135,7 +137,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>
@@ -149,10 +151,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/employee.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Personeller</h3>
-            <p>21 adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Employees') }}</h3>
+            <p>21 {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Personel Tanımları</p>
+              <p>{{ userSession.getExpression('EmployeeDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -162,7 +164,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -171,7 +173,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>
@@ -185,10 +187,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/card.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Kartlar</h3>
-            <p>21 adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Cards') }}</h3>
+            <p>21 {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Kart Tanımları</p>
+              <p>{{ userSession.getExpression('CardDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -198,7 +200,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -207,7 +209,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>
@@ -221,10 +223,10 @@ onMounted(async () => {
               :picture="'/@src/assets/illustrations/dashboards/home/item.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">Stoklar</h3>
-            <p>105 adet</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Items') }}</h3>
+            <p>105 {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>Stok Tanımları</p>
+              <p>{{ userSession.getExpression('ItemDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
@@ -234,7 +236,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
-                <span>Liste</span>
+                <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
                 class="button v-button is-raised is-primary"
@@ -243,7 +245,7 @@ onMounted(async () => {
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
-                <span>Yeni</span>
+                <span>{{ userSession.getExpression('New') }}</span>
               </button>
             </div>
           </div>

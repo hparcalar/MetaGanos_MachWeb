@@ -28,6 +28,10 @@ export function createApi() {
   return api
 }
 
+export function getApiBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL
+}
+
 export function useApi() {
   if (!api) {
     createApi()

@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useApi } from '/@src/composable/useApi'
 
 export type UserData = Record<string, any> | null
 
@@ -8,6 +9,7 @@ export const useUserSession = defineStore('userSession', () => {
   // token, user is synced with local storage
   const strToken = localStorage.getItem('token')
   const strUser = localStorage.getItem('user')
+  const strDict = localStorage.getItem('dict')
 
   // @see https://vueuse.org/core/usestorage/
   const token = ref(strToken)
@@ -19,6 +21,30 @@ export const useUserSession = defineStore('userSession', () => {
     () => token.value !== undefined && token.value != null && token.value !== ''
   )
 
+  const getLocale = computed(() => {
+    if (user.value && user.value.languageCode) return user.value.languageCode
+    return ''
+  })
+
+  let memoryDict: any[] = []
+  const getDict = computed(() => {
+    if (memoryDict.length == 0) {
+      if (strDict && strDict.length > 0) memoryDict = JSON.parse(strDict)
+      else memoryDict = []
+    }
+
+    return memoryDict
+  })
+
+  const getExpression = (expression: string) => {
+    if (getDict.value && getDict.value.length > 0) {
+      const dictItem = getDict.value.find((d) => d.expression == expression)
+      if (dictItem && dictItem.equalResponse) return dictItem.equalResponse
+    }
+
+    return expression
+  }
+
   function setUser(newUser: Partial<UserData>) {
     user.value = newUser
     localStorage.setItem('user', JSON.stringify(newUser))
@@ -29,6 +55,29 @@ export const useUserSession = defineStore('userSession', () => {
     localStorage.setItem('token', newToken)
   }
 
+  async function setLanguage(languageCode: string) {
+    if (user.value) {
+      let needsRefresh: boolean = false
+      try {
+        if (languageCode != user.value.languageCode) needsRefresh = true
+
+        user.value.languageCode = languageCode
+        const api = useApi()
+        const langData = (await api.get('Language/Find/' + languageCode)).data
+        if (langData && langData.id) {
+          const dictData = (await api.get('Language/' + langData.id + '/Dict')).data
+          if (dictData && dictData.length > 0) {
+            memoryDict = dictData
+            localStorage.setItem('dict', JSON.stringify(memoryDict))
+          }
+        }
+      } catch (error) {}
+
+      localStorage.setItem('user', JSON.stringify(user.value))
+      if (needsRefresh) window.location.reload()
+    }
+  }
+
   function setLoading(newLoading: boolean) {
     loading.value = newLoading
   }
@@ -36,9 +85,29 @@ export const useUserSession = defineStore('userSession', () => {
   async function logoutUser() {
     localStorage.removeItem('user')
     localStorage.removeItem('token')
+    localStorage.removeItem('dict')
     token.value = ''
     user.value = null
   }
+
+  async function checkToken() {
+    // check token is alive
+    if (strToken !== undefined && strToken != null && strToken !== '') {
+      const api = useApi()
+
+      try {
+        const tokenResp = await api.get('User/CheckToken')
+        if (tokenResp.status == 401) {
+          logoutUser()
+        }
+      } catch (error) {
+        logoutUser()
+      }
+    }
+  }
+
+  if (user.value && user.value.languageCode && user.value.languageCode.length > 0)
+    setLanguage(user.value.languageCode)
 
   return {
     user,
@@ -49,6 +118,10 @@ export const useUserSession = defineStore('userSession', () => {
     setUser,
     setToken,
     setLoading,
+    checkToken,
+    getExpression,
+    setLanguage,
+    getLocale,
   } as const
 })
 

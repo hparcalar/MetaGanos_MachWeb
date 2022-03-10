@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { boolean } from 'yup'
 
 export type VCheckboxColor = 'primary' | 'info' | 'success' | 'warning' | 'danger'
 export interface VCheckboxEmits {
-  (e: 'update:modelValue', value: (string | number)[]): void
+  (e: 'update:modelValue', value: boolean): void
 }
 export interface VCheckboxProps {
-  value?: string | number
+  value?: boolean
   label?: string
   color?: VCheckboxColor
-  modelValue?: (string | number)[]
+  modelValue?: boolean
   circle?: boolean
   solid?: boolean
   paddingless?: boolean
@@ -20,23 +21,17 @@ const props = withDefaults(defineProps<VCheckboxProps>(), {
   value: undefined,
   label: undefined,
   color: undefined,
-  modelValue: () => [],
+  modelValue: () => true,
   circle: false,
   solid: false,
   paddingless: false,
 })
 
-const checked = computed(() => props.modelValue.includes(props.value))
+const checked = computed(() => props.modelValue == true)
 
-function change() {
-  const values = [...props.modelValue]
-
-  if (checked.value) {
-    values.splice(values.indexOf(props.value), 1)
-  } else {
-    values.push(props.value)
-  }
-  emit('update:modelValue', values)
+function change(event: any) {
+  const newValue = event.returnValue
+  emit('update:modelValue', newValue)
 }
 </script>
 
@@ -53,7 +48,7 @@ function change() {
     <input
       type="checkbox"
       :checked="checked"
-      :value="props.value"
+      :value="props.modelValue"
       v-bind="$attrs"
       @change="change"
     />

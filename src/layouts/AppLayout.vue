@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watchPostEffect, watch } from 'vue'
+import { ref, watchPostEffect, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-
+import { useUserSession } from '/@src/stores/userSession'
 import type { SidebarTheme } from '/@src/components/navigation/desktop/Sidebar.vue'
 import { useViewWrapper } from '/@src/stores/viewWrapper'
 
@@ -18,6 +18,11 @@ const props = withDefaults(
     theme: 'default',
   }
 )
+
+const { checkToken } = useUserSession()
+onMounted(async () => {
+  await checkToken()
+})
 
 const viewWrapper = useViewWrapper()
 const route = useRoute()

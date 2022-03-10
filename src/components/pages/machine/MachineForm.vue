@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
-import { useApi } from '/@src/composable/useApi'
+import { useApi, getApiBaseUrl } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 
 const props = defineProps({
@@ -32,6 +32,8 @@ const modelObject = ref({
   district: '',
   rows: 0,
   cols: 0,
+  startVideoPath: '',
+  startVideoData: null,
   isActive: true,
   createDate: null,
 })
@@ -43,6 +45,7 @@ const spiralModel = ref({
   itemName: '',
   activeQuantity: 0,
 })
+const liveVideoStream = ref(null)
 
 const plants = ref([])
 const itemCategories = ref([])
@@ -61,6 +64,10 @@ const bindModel = async () => {
 
     plants.value = (await api.get('Plant')).data
     itemCategories.value = (await api.get('ItemCategory')).data
+
+    if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
+      liveVideoStream.value = await api.get('Machine/' + props.id + '/Video')
+    }
   } catch (error) {}
 }
 
@@ -69,6 +76,29 @@ const saveModel = async () => {
     const postResult = await api.post('Machine', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
+
+      // upload video if any files are selected
+      if (modelObject.value.startVideoData != null && postResult.data.recordId > 0) {
+        let formData = new FormData()
+        formData.append('videoData', modelObject.value.startVideoData)
+
+        notif.info('Video yükleniyor...')
+
+        const postVideoResult = await api.post(
+          'Machine/' + postResult.data.recordId + '/UploadVideo',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        )
+
+        if (postVideoResult.data.result) {
+          notif.success('Video başarıyla yüklendi.')
+        } else
+          notif.error('Video yükleme işlemi başarısız oldu, lütfen tekrar deneyiniz.')
+      }
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -173,6 +203,15 @@ const onCloseLoadSpiral = () => {
 // #region SPIRAL CONSUMING REPORT FUNCTIONS
 const showSpiralConsumeDialog = () => {}
 // #endregion
+
+const onVideoSelected = async (event: any) => {
+  if (event.target.files && event.target.files.length > 0) {
+    const fileData: any = event.target.files[0]
+    modelObject.value.startVideoData = fileData
+  } else {
+    modelObject.value.startVideoData = null
+  }
+}
 
 watch(
   () => modelObject.value.rows,
@@ -375,6 +414,30 @@ const isStuck = computed(() => {
                         placeholder=""
                         autocomplete=""
                       />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Açılış Videosu</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        type="file"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                        accept="video/*"
+                        @change="onVideoSelected"
+                      />
+                      <p v-if="liveVideoStream != null">
+                        <video controls>
+                          <source
+                            :src="
+                              getApiBaseUrl() + '/Machine/' + modelObject.id + '/Video'
+                            "
+                          />
+                        </video>
+                      </p>
                     </VControl>
                   </VField>
                 </div>

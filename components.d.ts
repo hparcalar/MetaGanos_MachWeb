@@ -29,6 +29,8 @@ declare module 'vue' {
     LandingEmptyNavigation: typeof import('./src/components/partials/landing/LandingEmptyNavigation.vue')['default']
     LandingFooter: typeof import('./src/components/partials/landing/LandingFooter.vue')['default']
     LandingLayout: typeof import('./src/layouts/LandingLayout.vue')['default']
+    LanguageForm: typeof import('./src/components/pages/language/LanguageForm.vue')['default']
+    LanguageList: typeof import('./src/components/pages/language/LanguageList.vue')['default']
     LanguagesPanel: typeof import('./src/components/partials/panels/LanguagesPanel.vue')['default']
     LoadMachineSpiral: typeof import('./src/components/partials/dialogs/LoadMachineSpiral.vue')['default']
     MachineForm: typeof import('./src/components/pages/machine/MachineForm.vue')['default']
