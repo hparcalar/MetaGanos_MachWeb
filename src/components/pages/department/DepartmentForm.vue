@@ -20,8 +20,10 @@ const modelObject = ref({
   departmentName: '',
   plantId: null,
   isActive: true,
+  plantPrintFileId: null,
 })
 const plants = ref([])
+const plantFiles = ref([])
 
 onMounted(async () => {
   await bindModel()
@@ -33,7 +35,22 @@ const bindModel = async () => {
     if (data.status === 200) modelObject.value = data.data
 
     plants.value = (await api.get('Plant')).data
+    await updatePlantFiles(modelObject.value.plantId)
   } catch (error) {}
+}
+
+const onChangePlant = async (plantId: any) => {
+  modelObject.value.plantPrintFileId = null
+  await updatePlantFiles(plantId)
+}
+
+const updatePlantFiles = async (plantId: number | null) => {
+  if (plantId && plantId > 0) {
+    try {
+      const relatedFiles = await api.get('Plant/' + plantId + '/PrintFiles')
+      plantFiles.value = relatedFiles.data
+    } catch (error) {}
+  } else plantFiles.value = []
 }
 
 const saveModel = async () => {
@@ -128,6 +145,22 @@ const isStuck = computed(() => {
                     placeholder="Bir fabrika seçiniz"
                     :searchable="true"
                     :options="plants"
+                    @change="onChangePlant"
+                  />
+                </VControl>
+              </VField>
+            </div>
+            <div class="column is-12">
+              <VField>
+                <label>Zimmet belgesi</label>
+                <VControl>
+                  <Multiselect
+                    v-model="modelObject.plantPrintFileId"
+                    :value-prop="'id'"
+                    :label="'printFileName'"
+                    placeholder="Bir belge seçiniz"
+                    :searchable="true"
+                    :options="plantFiles"
                   />
                 </VControl>
               </VField>
