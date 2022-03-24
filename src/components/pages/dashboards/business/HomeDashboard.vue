@@ -40,7 +40,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/factory.png?format=webp'"
+              :picture="'/assets/factory.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Factories') }}</h3>
@@ -76,7 +76,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/automat.png?format=webp'"
+              :picture="'/assets/automat.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Machines') }}</h3>
@@ -112,7 +112,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/department.png?format=webp'"
+              :picture="'/assets/department.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Departments') }}</h3>
@@ -148,7 +148,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/employee.png?format=webp'"
+              :picture="'/assets/employee.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Employees') }}</h3>
@@ -184,7 +184,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/card.png?format=webp'"
+              :picture="'/assets/card.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Cards') }}</h3>
@@ -220,7 +220,7 @@ onMounted(async () => {
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/@src/assets/illustrations/dashboards/home/item.png?format=webp'"
+              :picture="'/assets/item.png?format=webp'"
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Items') }}</h3>

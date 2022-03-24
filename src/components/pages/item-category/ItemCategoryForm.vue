@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import type { Ref } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useHelpers } from '/@src/utils/helpers'
+import { creditRangeOption, controlTimeOption } from '/@src/shared-types'
+import type { CreditRangeType, ControlTimeType } from '/@src/shared-types'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -15,6 +19,7 @@ const props = defineProps({
 const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
+const userSession = useUserSession()
 
 const modelObject = ref({
   id: 0,
@@ -23,11 +28,23 @@ const modelObject = ref({
   categoryImage: '',
   viewOrder: null,
   isActive: true,
+  creditRangeType: 4,
+  creditByRange: 0,
+  itemChangeTime: null,
+  controlTimeType: null,
 })
 
-const categories = ref([])
+const creditTypes: Ref<CreditRangeType[]> = ref(creditRangeOption)
+const controlTypes: Ref<ControlTimeType[]> = ref(controlTimeOption)
 
 onMounted(async () => {
+  creditTypes.value.forEach((c: CreditRangeType) => {
+    c.value = userSession.getExpression(c.value)
+  })
+  controlTypes.value.forEach((c: ControlTimeType) => {
+    c.value = userSession.getExpression(c.value)
+  })
+
   await bindModel()
 })
 
@@ -46,7 +63,7 @@ const saveModel = async () => {
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
-    notif.error(error)
+    notif.error(error.message)
   }
 }
 
@@ -92,77 +109,152 @@ const isStuck = computed(() => {
         </div>
       </div>
       <div class="form-body">
-        <!--Fieldset-->
-        <div class="form-fieldset">
-          <div class="fieldset-heading">
-            <h4>Kategori bilgileri</h4>
-            <p></p>
-          </div>
+        <div class="columns is-multiline">
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>Kategori bilgileri</h4>
+                <p></p>
+              </div>
 
-          <div class="columns is-multiline">
-            <div class="column is-12">
-              <VField>
-                <label>Kategori Kodu</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemCategoryCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <VField>
+                    <label>Kategori Kodu</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.itemCategoryCode"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Kategori Adı</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.itemCategoryName"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Görünüm Sırası</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.viewOrder"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>İstihkak Periyodu</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.creditRangeType"
+                        :value-prop="'key'"
+                        :label="'value'"
+                        placeholder="Bir istihkak periyodu seçiniz"
+                        :searchable="true"
+                        :options="creditTypes"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>İsihkak</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.creditByRange"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>İkon</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        type="file"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                        accept="image/*"
+                        @change="onIconSelected"
+                      />
+                      <p
+                        v-if="
+                          modelObject.categoryImage &&
+                          modelObject.categoryImage.length > 0
+                        "
+                      >
+                        <img alt="" :src="modelObject.categoryImage" width="150" />
+                      </p>
+                    </VControl>
+                  </VField>
+                </div>
+              </div>
             </div>
-            <div class="column is-12">
-              <VField>
-                <label>Kategori Adı</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemCategoryName"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-12">
-              <VField>
-                <label>Görünüm Sırası</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.viewOrder"
-                    type="number"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-12">
-              <VField>
-                <label>İkon</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    type="file"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                    accept="image/*"
-                    @change="onIconSelected"
-                  />
-                  <p
-                    v-if="
-                      modelObject.categoryImage && modelObject.categoryImage.length > 0
-                    "
-                  >
-                    <img alt="" :src="modelObject.categoryImage" width="150" />
-                  </p>
-                </VControl>
-              </VField>
+          </div>
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>Değişim ve kontrol bilgileri</h4>
+                <p></p>
+              </div>
+
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <VField>
+                    <label>Ürün Değişim Süresi (Gün)</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.itemChangeTime"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Kontrol Süresi Tipi</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.controlTimeType"
+                        :value-prop="'key'"
+                        :label="'value'"
+                        placeholder="Bir kontrol periyodu seçiniz"
+                        :searchable="true"
+                        :options="controlTypes"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+              </div>
             </div>
           </div>
         </div>

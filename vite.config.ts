@@ -25,6 +25,7 @@ export default defineConfig({
   // Project root directory (where index.html is located).
   server: {
     host: true,
+    port: 3059,
   },
   root: process.cwd(),
   // Base public path when served in development or production.

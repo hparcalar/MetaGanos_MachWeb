@@ -45,11 +45,8 @@ const themeClasses = computed(() => {
     <div class="sidebar-brand">
       <RouterLink :to="{ name: 'app' }">
         <!-- <AnimatedLogo width="36px" /> -->
-        <img
-          class="light-image"
-          src="/@src/assets/illustrations/apps/appicon.png?format=webp"
-          alt=""
-        />
+        <img class="light-image" src="/@src/assets/appicon.png?format=webp" alt="" />
+        <img class="dark-image" src="/@src/assets/appicon-dark.png?format=webp" alt="" />
       </RouterLink>
     </div>
     <div class="sidebar-inner">

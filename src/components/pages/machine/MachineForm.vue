@@ -33,6 +33,7 @@ const modelObject = ref({
   rows: 0,
   cols: 0,
   startVideoPath: '',
+  spiralStartIndex: 1,
   startVideoData: null,
   isActive: true,
   createDate: null,
@@ -44,6 +45,7 @@ const spiralModel = ref({
   itemId: null,
   itemName: '',
   activeQuantity: 0,
+  isEnabled: true,
 })
 const liveVideoStream = ref(null)
 
@@ -117,6 +119,7 @@ const showSpiralDetail = (spiralNo: number) => {
     itemId: null,
     itemName: '',
     activeQuantity: 0,
+    isEnabled: true,
   }
 }
 
@@ -125,19 +128,22 @@ const onSpiralSizeChanged = () => {
     const newSpiralList = []
     for (let r = 1; r <= modelObject.value.rows; r++) {
       for (let c = 1; c < modelObject.value.cols + 1; c++) {
-        const spiralNo: number = (r - 1) * modelObject.value.cols + c
+        const spiralNo: number =
+          modelObject.value.spiralStartIndex - 1 + ((r - 1) * modelObject.value.cols + c)
         const existingSpiral = modelObject.value.spirals.find(
           (d) => d.posOrders == spiralNo
         )
 
         const newSpiral = {
           posOrders: spiralNo,
+          isEnabled: true,
         }
         if (existingSpiral) {
           newSpiral.itemCategoryId = existingSpiral.itemCategoryId
           newSpiral.itemName = existingSpiral.itemName
           newSpiral.itemId = existingSpiral.itemId
           newSpiral.activeQuantity = existingSpiral.activeQuantity
+          newSpiral.isEnabled = existingSpiral.isEnabled
         }
 
         newSpiralList.push(newSpiral)
@@ -223,6 +229,14 @@ watch(
 
 watch(
   () => modelObject.value.cols,
+  () => {
+    onSpiralSizeChanged()
+  },
+  { deep: true }
+)
+
+watch(
+  () => modelObject.value.spiralStartIndex,
   () => {
     onSpiralSizeChanged()
   },
@@ -550,6 +564,20 @@ const isStuck = computed(() => {
                           </VControl>
                         </VField>
                       </div>
+                      <div class="column is-12">
+                        <VField>
+                          <label>Başlangıç No</label>
+                          <VControl icon="feather:terminal">
+                            <input
+                              v-model="modelObject.spiralStartIndex"
+                              type="number"
+                              class="input"
+                              placeholder=""
+                              autocomplete=""
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
                     </div>
                   </div>
 
@@ -613,6 +641,11 @@ const isStuck = computed(() => {
                           >
                             Tüketimler
                           </VButton>
+                          <VSwitchBlock
+                            v-model="spiralModel.isEnabled"
+                            label="Aktif"
+                            color="success"
+                          />
                         </div>
                       </div>
                     </div>
@@ -637,9 +670,13 @@ const isStuck = computed(() => {
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="showSpiralDetail((r - 1) * modelObject.cols + c)"
+                @click="
+                  showSpiralDetail(
+                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
+                  )
+                "
               >
-                {{ (r - 1) * modelObject.cols + c }}
+                {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }}
               </VButton>
             </div>
           </div>

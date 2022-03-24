@@ -45,7 +45,7 @@ const saveModel = async () => {
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
-    notif.error(error)
+    notif.error(error.message)
   }
 }
 
@@ -90,7 +90,7 @@ const isStuck = computed(() => {
           </div>
 
           <div class="columns is-multiline">
-            <div class="column is-6">
+            <div class="column is-12">
               <VField>
                 <label>Kart No</label>
                 <VControl icon="feather:terminal">
@@ -104,7 +104,7 @@ const isStuck = computed(() => {
                 </VControl>
               </VField>
             </div>
-            <div class="column is-6">
+            <!-- <div class="column is-6">
               <VField>
                 <label>Hex No</label>
                 <VControl icon="feather:terminal">
@@ -117,7 +117,7 @@ const isStuck = computed(() => {
                   />
                 </VControl>
               </VField>
-            </div>
+            </div> -->
             <div class="column is-12">
               <VField>
                 <label>Fabrika</label>
