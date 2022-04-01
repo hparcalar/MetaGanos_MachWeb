@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export type VTabsType = 'boxed' | 'toggle' | 'rounded'
 export type VTabsAlign = 'centered' | 'right'
@@ -21,6 +21,10 @@ const props = withDefaults(defineProps<VTabsProps>(), {
   selected: undefined,
   type: undefined,
   align: undefined,
+})
+
+const emit = defineEmits({
+  activeValueChanged: (value: string) => true,
 })
 
 const activeValue = ref(props.selected)
@@ -54,7 +58,15 @@ const sliderClass = computed(() => {
 
 function toggle(value: string) {
   activeValue.value = value
+  emit('activeValueChanged', activeValue.value)
 }
+
+watch(
+  () => props.selected,
+  () => {
+    activeValue.value = props.selected
+  }
+)
 </script>
 
 <template>

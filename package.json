@@ -88,6 +88,7 @@
     "imask": "6.2.2",
     "mapbox-gl": "2.6.1",
     "markdown-it-emoji": "2.0.0",
+    "moment": "^2.29.1",
     "notyf": "3.10.0",
     "nprogress": "0.2.0",
     "photoswipe": "4.1.3",

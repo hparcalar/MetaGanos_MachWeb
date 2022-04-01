@@ -3,6 +3,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { dateToStr } from '/@src/composable/useHelpers'
+import { creditRangeOption } from '/@src/shared-types'
+import type { CreditRangeType } from '/@src/shared-types'
+import { useUserSession } from '/@src/stores/userSession'
+import LoadCredit from '../../partials/employee/LoadCredit.vue'
 
 const props = defineProps({
   id: {
@@ -13,6 +18,7 @@ const props = defineProps({
 
 const api = useApi()
 const notif = useNotyf()
+const userSession = useUserSession()
 
 const modelObject = ref({
   id: 0,
@@ -27,6 +33,7 @@ const modelObject = ref({
   isActive: true,
 })
 
+const rangeTypes = ref(creditRangeOption)
 const plants = ref([])
 const departments = ref([])
 const cards = ref([])
@@ -34,12 +41,16 @@ const itemCategories = ref([])
 const isEditCreditDialogVisible = ref(false)
 
 onMounted(async () => {
+  rangeTypes.value.forEach((c: CreditRangeType) => {
+    c.value = userSession.getExpression(c.value)
+  })
   await bindModel()
 })
 
 const bindModel = async () => {
   try {
     const data = await api.get('Employee/' + props.id)
+    console.log(data.data)
     if (data.status === 200) modelObject.value = data.data
 
     credits.value = modelObject.value.credits
@@ -90,7 +101,7 @@ const saveModel = async () => {
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
-    notif.error(error)
+    notif.error(error.message)
   }
 }
 
@@ -143,20 +154,25 @@ const deleteCredit = (itemCategoryId: number) => {
 
 // #region LOAD CREDIT FUNCTIONS
 const creditLoadModel = ref({
-  id: 0,
-  itemCategoryId: null,
-  activeCredit: null,
-  employeeId: null,
+  creditId: 0,
+  itemCategoryId: 0,
+  employeeId: 0,
 })
 
 const isLoadDialogOpen = ref(false)
-const openLoadDialog = () => {
-  creditLoadModel.value = {
-    id: 0,
-    itemCategoryId: null,
-    activeCredit: null,
-    employeeId: modelObject.value.id,
-  }
+const openLoadDialog = (loadItem: any) => {
+  if (!loadItem)
+    creditLoadModel.value = {
+      creditId: 0,
+      itemCategoryId: 0,
+      employeeId: modelObject.value.id,
+    }
+  else
+    creditLoadModel.value = {
+      creditId: loadItem.id,
+      itemCategoryId: loadItem.itemCategoryId,
+      employeeId: modelObject.value.id,
+    }
   isLoadDialogOpen.value = true
 }
 
@@ -170,19 +186,39 @@ const filteredData = computed(() => {
     const filterRe = new RegExp(filters.value, 'i')
 
     return credits.value.filter((item) => {
-      return item.itemCategoryName.match(filterRe)
+      return (
+        item.itemCategoryName.match(filterRe) ||
+        (item.itemGroupName && item.itemGroupName.match(filterRe))
+      )
     })
   }
 })
 
 const columns = {
-  itemCategoryName: 'Stok Kategorisi',
-  activeCredit: 'Kredi',
+  itemCategoryName: 'Kategori',
+  itemGroupName: 'Grup',
+  creditLoadDate: 'Yükleme',
+  rangeType: 'Periyot',
+  creditByRange: 'Toplam',
+  rangeCredit: 'Kalan',
   actions: {
     label: '#',
     align: 'center',
   },
 } as const
+
+const getRangeStr = (item: any) => {
+  try {
+    var rgType = rangeTypes.value.find((d) => d.key === item.rangeType)
+    if (rgType) {
+      if (item.rangeLength && item.rangeLength > 1)
+        return item.rangeLength + ' ' + rgType.value
+      return rgType.value
+    }
+  } catch (error) {}
+
+  return item.rangeType
+}
 
 const loadCredit = async () => {
   try {
@@ -200,6 +236,24 @@ const loadCredit = async () => {
   } catch (error) {
     notif.error(error)
   }
+}
+
+const onLoadSubmit = async () => {
+  isLoadDialogOpen.value = false
+  await bindModel()
+}
+// #endregion
+
+// #region FILE PROCESS FUNCTIONS
+const isFileProcessDialogOpen = ref(false)
+const showFileProcessDialog = () => {
+  isFileProcessDialogOpen.value = true
+}
+const onCloseFileProcessDialog = () => {
+  isFileProcessDialogOpen.value = false
+}
+const onApproveFileProcess = (data: any) => {
+  isFileProcessDialogOpen.value = false
 }
 // #endregion
 
@@ -220,6 +274,14 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
+              <VButton
+                icon="feather:file"
+                color="info"
+                dark-outlined
+                @click="showFileProcessDialog"
+              >
+                Zimmet Bilgileri
+              </VButton>
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
                 :to="{ name: 'employee' }"
@@ -379,7 +441,7 @@ const isStuck = computed(() => {
                         :color="'info'"
                         :raised="true"
                         icon="feather:plus"
-                        @click="openLoadDialog()"
+                        @click="openLoadDialog(null)"
                         >Yükleme Yap</VButton
                       >
                     </div>
@@ -409,25 +471,38 @@ const isStuck = computed(() => {
                                 class="flex-table-item"
                               >
                                 <VFlexTableCell>
-                                  <span class="">{{ item.itemCategoryName }}</span>
+                                  <span class=""
+                                    ><b>{{ item.itemCategoryName }}</b></span
+                                  >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
-                                  <span class="">{{ item.activeCredit }}</span>
+                                  <span class=""
+                                    ><small>{{ item.itemGroupName }}</small></span
+                                  >
+                                </VFlexTableCell>
+                                <VFlexTableCell>
+                                  <span class="">{{
+                                    dateToStr(item.creditLoadDate)
+                                  }}</span>
+                                </VFlexTableCell>
+                                <VFlexTableCell>
+                                  <span class="">{{ getRangeStr(item) }}</span>
+                                </VFlexTableCell>
+                                <VFlexTableCell>
+                                  <span class="">{{ item.creditByRange }}</span>
+                                </VFlexTableCell>
+                                <VFlexTableCell>
+                                  <span class="">{{ item.rangeCredit }}</span>
                                 </VFlexTableCell>
                                 <VFlexTableCell :columns="{ align: 'end' }">
                                   <button
-                                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
-                                    @click="
-                                      showEditCredit(
-                                        item.itemCategoryId,
-                                        item.activeCredit
-                                      )
-                                    "
+                                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
+                                    @click="openLoadDialog(item)"
                                   >
                                     <i aria-hidden="true" class="fas fa-edit dot"></i>
                                   </button>
                                   <button
-                                    class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile"
+                                    class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
                                     @click="deleteCredit(item.itemCategoryId)"
                                   >
                                     <i aria-hidden="true" class="fas fa-trash dot"></i>
@@ -526,6 +601,31 @@ const isStuck = computed(() => {
     :visible="isEditCreditDialogVisible"
     @laod-credit="onEditCredit"
     @close="onCloseLoadCredit"
+  />
+
+  <VModal
+    :open="isLoadDialogOpen"
+    title="Personel Kredi Yükleme"
+    size="big"
+    actions="right"
+    :cancel-label="'Vazgeç'"
+    @close="isLoadDialogOpen = false"
+  >
+    <template #content>
+      <LoadCredit :params="creditLoadModel" @submit="onLoadSubmit" />
+    </template>
+    <template #action>
+      <span />
+    </template>
+  </VModal>
+
+  <PlantFileProcess
+    :params="{
+      employeeId: modelObject?.id,
+    }"
+    :visible="isFileProcessDialogOpen"
+    @close="onCloseFileProcessDialog"
+    @processed="onApproveFileProcess"
   />
 </template>
 

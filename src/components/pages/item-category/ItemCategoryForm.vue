@@ -30,6 +30,7 @@ const modelObject = ref({
   isActive: true,
   creditRangeType: 4,
   creditByRange: 0,
+  creditRangeLength: 1,
   itemChangeTime: null,
   controlTimeType: null,
 })
@@ -177,6 +178,20 @@ const isStuck = computed(() => {
                   </VField>
                 </div>
                 <div class="column is-6">
+                  <VField>
+                    <label>Periyot Süresi</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.creditRangeLength"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
                   <VField>
                     <label>İsihkak</label>
                     <VControl icon="feather:terminal">
