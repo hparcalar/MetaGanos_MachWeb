@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@vueuse/head'
 
@@ -15,23 +15,36 @@ const route = useRoute()
 const notif = useNotyf()
 const userSession = useUserSession()
 const redirect = route.query.redirect as string
+const dealersCount = ref(0)
 
-const loginModel = ref({ Login: '', Password: '' })
+const loginModel = ref({ Login: '', Password: '', DealerCode: '' })
 const api = useApi()
+
+onMounted(async () => {
+  try {
+    dealersCount.value = (await api.get('Dealer/Count')).data
+  } catch (error) {}
+})
 
 const handleLogin = async () => {
   if (!isLoading.value) {
     isLoading.value = true
 
     try {
-      const loginResult = await api.post('User/LoginDealer', {
+      let loginResult: any = null
+
+      loginResult = await api.post('User/LoginPanelUser', {
+        DealerCode: loginModel.value.DealerCode,
         Login: loginModel.value.Login,
         Password: loginModel.value.Password,
       })
 
       if (loginResult.status === 200) {
-        userSession.setToken(loginResult.data)
-        userSession.setUser({ name: loginModel.value.Login })
+        const postResult = loginResult.data
+        if (postResult.DefaultLanguage == null) postResult.DefaultLanguage = 'tr'
+
+        userSession.setToken(postResult.Token)
+        userSession.setUser({ name: postResult.Username, ...postResult })
 
         notif.dismissAll()
         router.push({
@@ -120,14 +133,27 @@ useHead({
                   <!-- Login Form -->
                   <form @submit.prevent="handleLogin">
                     <div class="login-form">
-                      <!-- Username -->
+                      <!-- Dealer code -->
+                      <VField v-show="dealersCount > 1">
+                        <VControl icon="feather:user">
+                          <input
+                            v-model="loginModel.DealerCode"
+                            class="input"
+                            type="text"
+                            placeholder="Bayi Kodu"
+                            autocomplete="username"
+                          />
+                        </VControl>
+                      </VField>
+
+                      <!-- Officer code -->
                       <VField>
                         <VControl icon="feather:user">
                           <input
                             v-model="loginModel.Login"
                             class="input"
                             type="text"
-                            placeholder="Username"
+                            placeholder="Kullanıcı"
                             autocomplete="username"
                           />
                         </VControl>
@@ -140,7 +166,7 @@ useHead({
                             v-model="loginModel.Password"
                             class="input"
                             type="password"
-                            placeholder="Password"
+                            placeholder="Parola"
                             autocomplete="current-password"
                           />
                         </VControl>

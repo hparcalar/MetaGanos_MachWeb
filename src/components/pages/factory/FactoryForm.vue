@@ -275,8 +275,9 @@ const isStuck = computed(() => {
                 </div>
               </div>
             </div>
+
             <!--Fieldset-->
-            <div class="form-fieldset">
+            <!-- <div class="form-fieldset">
               <div class="fieldset-heading">
                 <h4>Zimmet belgeleri</h4>
                 <p></p>
@@ -303,7 +304,6 @@ const isStuck = computed(() => {
                     >
                   </div>
                   <div class="flex-list-wrapper flex-list-v3">
-                    <!--List Empty Search Placeholder -->
                     <VPlaceholderPage
                       v-if="!filteredData || !filteredData.length"
                       title="Henüz bir şablon mevcut değil."
@@ -312,12 +312,10 @@ const isStuck = computed(() => {
                     >
                     </VPlaceholderPage>
 
-                    <!--Active Tab-->
                     <div v-else-if="filteredData.length" class="tab-content is-active">
                       <VFlexTable :data="filteredData" :columns="columns" rounded>
                         <template #body>
                           <TransitionGroup name="list" tag="div" class="flex-list-inner">
-                            <!--Table item-->
                             <div
                               v-for="item in filteredData"
                               :key="item.id"
@@ -356,7 +354,6 @@ const isStuck = computed(() => {
                         </template>
                       </VFlexTable>
 
-                      <!--Table Pagination-->
                       <VFlexPagination
                         v-if="filteredData.length > 5"
                         :item-per-page="10"
@@ -368,7 +365,7 @@ const isStuck = computed(() => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

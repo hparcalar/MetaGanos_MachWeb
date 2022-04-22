@@ -6,6 +6,7 @@ import { creditRangeOption } from '/@src/shared-types'
 import type { CreditRangeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
+import moment from 'moment'
 
 export type LoadCreditParams = {
   creditId: number
@@ -47,7 +48,7 @@ const modelObject: Ref<any> = ref({
   rangeLength: 1,
   rangeType: 4,
   creditByRange: 0,
-  creditLoadDate: null,
+  creditLoadDate: moment().toDate(),
   creditStartDate: null,
   creditEndDate: null,
 })
@@ -80,7 +81,7 @@ const bindCreditModel = async () => {
       rangeLength: 1,
       rangeType: 4,
       creditByRange: 0,
-      creditLoadDate: null,
+      creditLoadDate: moment().toDate(),
       creditStartDate: null,
       creditEndDate: null,
     }

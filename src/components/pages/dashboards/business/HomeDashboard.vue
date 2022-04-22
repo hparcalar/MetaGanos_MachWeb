@@ -7,8 +7,16 @@ import { useUserSession } from '/@src/stores/userSession'
 const router = useRouter()
 const api = useApi()
 const userSession = useUserSession()
+const { isDealer, isOfficer } = userSession
 
-const totals = ref({ plantCount: 0 })
+const totals = ref({
+  plantCount: 0,
+  machineCount: 0,
+  departmentCount: 0,
+  employeeCount: 0,
+  officerCount: 0,
+  itemCount: 0,
+})
 
 const goToRoute = (target: string, params?: Object) => {
   router.push({
@@ -19,9 +27,12 @@ const goToRoute = (target: string, params?: Object) => {
 
 onMounted(async () => {
   try {
-    const plantsCount = (await api.get('Plant/Count')).data
-
-    totals.value.plantCount = plantsCount
+    totals.value.plantCount = (await api.get('Plant/Count')).data
+    totals.value.machineCount = (await api.get('Machine/Count')).data
+    totals.value.departmentCount = (await api.get('Department/Count')).data
+    totals.value.employeeCount = (await api.get('Employee/Count')).data
+    totals.value.officerCount = (await api.get('Officer/Count')).data
+    totals.value.itemCount = (await api.get('Item/Count')).data
   } catch (error) {}
 })
 </script>
@@ -36,7 +47,7 @@ onMounted(async () => {
         class="columns is-multiline is-flex-tablet-p is-half-tablet-p"
       >
         <!-- Factories Card -->
-        <div class="column is-4">
+        <div v-if="isDealer" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
@@ -80,7 +91,7 @@ onMounted(async () => {
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Machines') }}</h3>
-            <p>5 {{ userSession.getExpression('Count') }}</p>
+            <p>{{ totals.machineCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('MachineDefinitions') }}</p>
             </div>
@@ -116,7 +127,7 @@ onMounted(async () => {
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Departments') }}</h3>
-            <p>3 {{ userSession.getExpression('Count') }}</p>
+            <p>{{ totals.departmentCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('DepartmentDefinitions') }}</p>
             </div>
@@ -152,7 +163,7 @@ onMounted(async () => {
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Employees') }}</h3>
-            <p>21 {{ userSession.getExpression('Count') }}</p>
+            <p>{{ totals.employeeCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('EmployeeDefinitions') }}</p>
             </div>
@@ -179,23 +190,23 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Cards Card -->
-        <div class="column is-4">
+        <!-- Officers Card -->
+        <div v-if="isDealer" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
-              :picture="'/assets/card.png?format=webp'"
+              :picture="'/assets/officer.png?format=webp'"
               squared
             ></VAvatar>
-            <h3 class="dark-inverted">{{ userSession.getExpression('Cards') }}</h3>
-            <p>21 {{ userSession.getExpression('Count') }}</p>
+            <h3 class="dark-inverted">{{ userSession.getExpression('Officers') }}</h3>
+            <p>{{ totals.officerCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
-              <p>{{ userSession.getExpression('CardDefinitions') }}</p>
+              <p>{{ userSession.getExpression('OfficerDefinitions') }}</p>
             </div>
             <div class="buttons">
               <button
                 class="button v-button is-outlined is-primary"
-                @click="goToRoute('card')"
+                @click="goToRoute('officer')"
               >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
@@ -224,7 +235,7 @@ onMounted(async () => {
               squared
             ></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Items') }}</h3>
-            <p>105 {{ userSession.getExpression('Count') }}</p>
+            <p>{{ totals.itemCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('ItemDefinitions') }}</p>
             </div>

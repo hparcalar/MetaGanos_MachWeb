@@ -28,6 +28,9 @@ const openSubsidebarLinks = ref('')
         <li>
           <RouterLink :to="{ name: 'department' }"> Satış </RouterLink>
         </li>
+        <li>
+          <RouterLink :to="{ name: 'consume-report' }"> Tüketim Raporu </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

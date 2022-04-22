@@ -2,9 +2,12 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
 const api = useApi()
 const router = useRouter()
+const userSession = useUserSession()
+const { user } = userSession
 
 const filters = ref('')
 const cards = ref([])
@@ -17,7 +20,9 @@ const filteredData = computed(() => {
 
     return cards.value.filter((item) => {
       return (
-        item.itemCategoryCode.match(filterRe) || item.itemCategoryName.match(filterRe)
+        item.officerCode.match(filterRe) ||
+        item.officerName.match(filterRe) ||
+        item.plantName.match(filterRe)
       )
     })
   }
@@ -25,7 +30,7 @@ const filteredData = computed(() => {
 
 const openDetail = (id: number) => {
   router.push({
-    name: 'item-category-slug',
+    name: 'officer-slug',
     params: {
       slug: id,
     },
@@ -34,13 +39,13 @@ const openDetail = (id: number) => {
 
 onMounted(async () => {
   try {
-    cards.value = (await api.get('ItemCategory')).data
+    cards.value = (await api.get('Dealer/' + user?.UserId + '/Officers')).data
   } catch (error) {}
 })
 
 const columns = {
-  itemCategoryCode: 'Kategori Kodu',
-  itemCategoryName: 'Kategori Adı',
+  officerCode: 'Kullanıcı Kodu',
+  officerName: 'Kullanıcı Adı',
   plantName: 'Fabrika',
   actions: {
     label: '#',
@@ -61,7 +66,7 @@ const columns = {
       </VControl>
 
       <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Kategori</VButton
+        >Yeni Kullanıcı</VButton
       >
     </div>
 
@@ -69,8 +74,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir stok kategori tanımı mevcut değil."
-        subtitle="Yeni bir stok kategorisi tanımlayın."
+        title="Henüz bir kullanıcı tanımı mevcut değil."
+        subtitle="Yeni bir kullanıcı tanımlayın."
         larger
       >
       </VPlaceholderPage>
@@ -83,10 +88,10 @@ const columns = {
               <!--Table item-->
               <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="">{{ item.itemCategoryCode }}</span>
+                  <span class="">{{ item.officerCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.itemCategoryName }}</span>
+                  <span class="">{{ item.officerName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.plantName }}</span>

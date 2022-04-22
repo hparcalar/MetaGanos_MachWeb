@@ -43,7 +43,8 @@ onMounted(async () => {
 const columns = {
   itemGroupCode: 'Grup Kodu',
   itemGroupName: 'Grup Adı',
-  itemCategoryName: 'Stok Kategorisi',
+  itemCategoryName: 'Kategori',
+  plantName: 'Fabrika',
   actions: {
     label: '#',
     align: 'center',
@@ -92,6 +93,9 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.itemCategoryName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.plantName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">
                   <button

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import type { Ref } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
@@ -19,6 +20,7 @@ const props = defineProps({
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
+const { isDealer } = userSession
 
 const modelObject = ref({
   id: 0,
@@ -34,7 +36,7 @@ const modelObject = ref({
 })
 
 const rangeTypes = ref(creditRangeOption)
-const plants = ref([])
+const plants: Ref<any[]> = ref([])
 const departments = ref([])
 const cards = ref([])
 const itemCategories = ref([])
@@ -49,13 +51,30 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('Employee/' + props.id)
-    console.log(data.data)
+    if (modelObject.value.id === 0 && props.id > 0) modelObject.value.id = props.id
+    const data = await api.get('Employee/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
+    if (!modelObject.value)
+      modelObject.value = {
+        id: 0,
+        employeeCode: '',
+        employeeName: '',
+        gsm: '',
+        email: '',
+        employeePassword: '',
+        employeeCardId: null,
+        plantId: null,
+        departmentId: null,
+        isActive: true,
+      }
 
     credits.value = modelObject.value.credits
     plants.value = (await api.get('Plant')).data
     itemCategories.value = (await api.get('ItemCategory')).data
+
+    if (!modelObject.value.plantId && plants.value.length == 1)
+      modelObject.value.plantId = plants.value[0].id
+
     await updateDepartmentList(modelObject.value.plantId)
     await updateCardList(modelObject.value.plantId)
   } catch (error) {}
@@ -257,6 +276,21 @@ const onApproveFileProcess = (data: any) => {
 }
 // #endregion
 
+// #region QUICK CARD DEFINITION
+const isQuickCardDialogOpen: Ref<boolean> = ref(false)
+const showQuickCardForm = () => {
+  if (!modelObject.value.plantId) {
+    notif.error('Önce bir fabrika seçmelisiniz.')
+    return
+  }
+  isQuickCardDialogOpen.value = true
+}
+const onQuickCardSaved = async () => {
+  isQuickCardDialogOpen.value = false
+  await updateCardList(modelObject.value.plantId)
+}
+// #endregion
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -274,14 +308,14 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
+              <!-- <VButton
                 icon="feather:file"
                 color="info"
                 dark-outlined
                 @click="showFileProcessDialog"
               >
                 Zimmet Bilgileri
-              </VButton>
+              </VButton> -->
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
                 :to="{ name: 'employee' }"
@@ -336,7 +370,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-12">
+                <div v-if="isDealer" class="column is-12">
                   <VField>
                     <label>Fabrika</label>
                     <VControl>
@@ -368,17 +402,25 @@ const isStuck = computed(() => {
                   </VField>
                 </div>
                 <div class="column is-12">
-                  <VField>
-                    <label>Kart</label>
+                  <label class="expanded-label">Kart</label>
+                  <VField addons>
+                    <Multiselect
+                      v-model="modelObject.employeeCardId"
+                      expanded
+                      :value-prop="'id'"
+                      :label="'cardCode'"
+                      placeholder="Bir kart seçiniz"
+                      :searchable="true"
+                      :options="cards"
+                    />
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.employeeCardId"
-                        :value-prop="'id'"
-                        :label="'cardCode'"
-                        placeholder="Bir kart seçiniz"
-                        :searchable="true"
-                        :options="cards"
-                      />
+                      <VButton
+                        :color="'info'"
+                        :raised="true"
+                        icon="feather:plus"
+                        @click="showQuickCardForm"
+                        >Yeni Kart</VButton
+                      >
                     </VControl>
                   </VField>
                 </div>
@@ -613,6 +655,22 @@ const isStuck = computed(() => {
   >
     <template #content>
       <LoadCredit :params="creditLoadModel" @submit="onLoadSubmit" />
+    </template>
+    <template #action>
+      <span />
+    </template>
+  </VModal>
+
+  <VModal
+    :open="isQuickCardDialogOpen"
+    title="Yeni Kart Oluştur"
+    size="big"
+    actions="right"
+    :cancel-label="'Vazgeç'"
+    @close="isQuickCardDialogOpen = false"
+  >
+    <template #content>
+      <QuickNewCard :plant-id="modelObject.plantId ?? 0" @card-saved="onQuickCardSaved" />
     </template>
     <template #action>
       <span />

@@ -290,3 +290,9 @@
   max-width: 480px;
   margin: 0 auto;
 }
+
+.expanded-label {
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: var(--light-text) !important;
+}

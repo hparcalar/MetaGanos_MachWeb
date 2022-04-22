@@ -7,17 +7,21 @@ const api = useApi()
 const router = useRouter()
 
 const filters = ref('')
-const cards = ref([])
+const employees = ref([])
 
 const filteredData = computed(() => {
   if (!filters.value) {
-    return cards.value
+    return employees.value
   } else {
     const filterRe = new RegExp(filters.value, 'i')
 
-    return cards.value.filter((item) => {
+    return employees.value.filter((item) => {
       return (
-        item.itemCategoryCode.match(filterRe) || item.itemCategoryName.match(filterRe)
+        item.employeeCode.match(filterRe) ||
+        item.employeeName.match(filterRe) ||
+        item.plantName.match(filterRe) ||
+        item.departmentName.match(filterRe) ||
+        item.employeeCardCode.match(filterRe)
       )
     })
   }
@@ -25,7 +29,7 @@ const filteredData = computed(() => {
 
 const openDetail = (id: number) => {
   router.push({
-    name: 'item-category-slug',
+    name: 'employee-slug',
     params: {
       slug: id,
     },
@@ -34,14 +38,16 @@ const openDetail = (id: number) => {
 
 onMounted(async () => {
   try {
-    cards.value = (await api.get('ItemCategory')).data
+    employees.value = (await api.get('Employee')).data
   } catch (error) {}
 })
 
 const columns = {
-  itemCategoryCode: 'Kategori Kodu',
-  itemCategoryName: 'Kategori Adı',
+  employeeCode: 'Personel Kodu',
+  employeeName: 'Personel Adı',
   plantName: 'Fabrika',
+  departmentName: 'Departman',
+  employeeCardCode: 'Kart No',
   actions: {
     label: '#',
     align: 'center',
@@ -61,7 +67,7 @@ const columns = {
       </VControl>
 
       <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Kategori</VButton
+        >Yeni Personel</VButton
       >
     </div>
 
@@ -69,8 +75,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir stok kategori tanımı mevcut değil."
-        subtitle="Yeni bir stok kategorisi tanımlayın."
+        title="Henüz bir personel tanımı mevcut değil."
+        subtitle="Yeni bir personel tanımlayın."
         larger
       >
       </VPlaceholderPage>
@@ -83,13 +89,19 @@ const columns = {
               <!--Table item-->
               <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="">{{ item.itemCategoryCode }}</span>
+                  <span class="">{{ item.employeeCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.itemCategoryName }}</span>
+                  <span class="">{{ item.employeeName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.plantName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.departmentName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.employeeCardCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">
                   <button

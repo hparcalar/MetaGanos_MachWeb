@@ -33,10 +33,11 @@ const modelObject = ref({
   rows: 0,
   cols: 0,
   startVideoPath: '',
-  spiralStartIndex: 1,
+  spiralStartIndex: 10,
   startVideoData: null,
   isActive: true,
   createDate: null,
+  spirals: [],
 })
 const spiralModel = ref({
   id: 0,
@@ -44,6 +45,7 @@ const spiralModel = ref({
   posOrders: null,
   itemId: null,
   itemName: '',
+  capacity: null,
   activeQuantity: 0,
   isEnabled: true,
 })
@@ -61,8 +63,37 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('Machine/' + props.id)
+    if (modelObject.value.id == 0) modelObject.value.id = props.id
+
+    const data = await api.get('Machine/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
+
+    if (!modelObject.value)
+      modelObject.value = {
+        id: 0,
+        machineCode: '',
+        machineName: '',
+        specialCustomer: '',
+        inventoryCode: '',
+        plantId: null,
+        barcode: '',
+        productionDate: null,
+        inventoryEntryDate: null,
+        locationData: '',
+        brand: '',
+        brandModel: '',
+        country: '',
+        city: '',
+        district: '',
+        rows: 0,
+        cols: 0,
+        startVideoPath: '',
+        spiralStartIndex: 10,
+        startVideoData: null,
+        isActive: true,
+        createDate: null,
+        spirals: [],
+      }
 
     plants.value = (await api.get('Plant')).data
     itemCategories.value = (await api.get('ItemCategory')).data
@@ -118,9 +149,33 @@ const showSpiralDetail = (spiralNo: number) => {
     posOrders: null,
     itemId: null,
     itemName: '',
+    capacity: null,
     activeQuantity: 0,
     isEnabled: true,
   }
+}
+
+const isSpiralEnabled = (spiralNo: number) => {
+  const currentSpiral = modelObject.value.spirals.find(
+    (d: any) => d.posOrders == spiralNo
+  )
+  return currentSpiral != null ? currentSpiral.isEnabled : false
+}
+
+const getSpiralQuantityInfo = (spiralNo: number) => {
+  const currentSpiral = modelObject.value.spirals.find(
+    (d: any) => d.posOrders == spiralNo
+  )
+
+  if (currentSpiral) {
+    return (
+      (currentSpiral.activeQuantity ?? 0).toString() +
+      ' / ' +
+      (currentSpiral.capacity > 0 ? currentSpiral.capacity.toString() : '∞')
+    )
+  }
+
+  return ''
 }
 
 const onSpiralSizeChanged = () => {
@@ -143,6 +198,7 @@ const onSpiralSizeChanged = () => {
           newSpiral.itemName = existingSpiral.itemName
           newSpiral.itemId = existingSpiral.itemId
           newSpiral.activeQuantity = existingSpiral.activeQuantity
+          newSpiral.capacity = existingSpiral.capacity
           newSpiral.isEnabled = existingSpiral.isEnabled
         }
 
@@ -564,20 +620,6 @@ const isStuck = computed(() => {
                           </VControl>
                         </VField>
                       </div>
-                      <div class="column is-12">
-                        <VField>
-                          <label>Başlangıç No</label>
-                          <VControl icon="feather:terminal">
-                            <input
-                              v-model="modelObject.spiralStartIndex"
-                              type="number"
-                              class="input"
-                              placeholder=""
-                              autocomplete=""
-                            />
-                          </VControl>
-                        </VField>
-                      </div>
                     </div>
                   </div>
 
@@ -616,6 +658,20 @@ const isStuck = computed(() => {
                         </VField>
                       </div>
                       <div class="column is-12">
+                        <VField>
+                          <label>Kapasite</label>
+                          <VControl icon="feather:terminal">
+                            <input
+                              v-model="spiralModel.capacity"
+                              type="number"
+                              class="input"
+                              placeholder=""
+                              autocomplete=""
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-12">
                         <div class="buttons">
                           <VButton
                             icon="lnir lnir-arrow-left rem-100"
@@ -633,14 +689,14 @@ const isStuck = computed(() => {
                           >
                             Yükleme Yap
                           </VButton>
-                          <VButton
+                          <!-- <VButton
                             color="dark"
                             icon="feather:list"
                             raised
                             @click="showSpiralConsumeDialog()"
                           >
                             Tüketimler
-                          </VButton>
+                          </VButton> -->
                           <VSwitchBlock
                             v-model="spiralModel.isEnabled"
                             label="Aktif"
@@ -664,9 +720,19 @@ const isStuck = computed(() => {
               :style="{ width: 100 / modelObject.cols + '%', 'text-align': 'center' }"
             >
               <VButton
-                color="info"
+                :color="
+                  isSpiralEnabled(
+                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
+                  )
+                    ? 'info'
+                    : 'danger'
+                "
                 :rounded="true"
-                :outlined="true"
+                :outlined="
+                  isSpiralEnabled(
+                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
+                  )
+                "
                 :bold="true"
                 :fullwidth="true"
                 raised
@@ -677,6 +743,13 @@ const isStuck = computed(() => {
                 "
               >
                 {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }}
+                <p class="spiral-quantity-info">
+                  {{
+                    getSpiralQuantityInfo(
+                      modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
+                    )
+                  }}
+                </p>
               </VButton>
             </div>
           </div>
@@ -712,6 +785,11 @@ const isStuck = computed(() => {
   padding: 5px;
   border-radius: 5px;
   color: var(--smoke-white);
+}
+
+.spiral-quantity-info {
+  color: var(--purple);
+  font-weight: bold;
 }
 
 .hk-slide-content {

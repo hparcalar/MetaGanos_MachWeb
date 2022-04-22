@@ -36,6 +36,13 @@ export const useUserSession = defineStore('userSession', () => {
     return memoryDict
   })
 
+  const isDealer = computed(
+    () => user.value && user.value.AuthType && user.value.AuthType == 'Dealer'
+  )
+  const isOfficer = computed(
+    () => user.value && user.value.AuthType && user.value.AuthType == 'FactoryOfficer'
+  )
+
   const getExpression = (expression: string) => {
     if (getDict.value && getDict.value.length > 0) {
       const dictItem = getDict.value.find((d) => d.expression == expression)
@@ -48,6 +55,8 @@ export const useUserSession = defineStore('userSession', () => {
   function setUser(newUser: Partial<UserData>) {
     user.value = newUser
     localStorage.setItem('user', JSON.stringify(newUser))
+    if (user.value && user.value.DefaultLanguage && user.value.DefaultLanguage.length > 0)
+      setLanguage(user.value.DefaultLanguage)
   }
 
   function setToken(newToken: string) {
@@ -55,7 +64,7 @@ export const useUserSession = defineStore('userSession', () => {
     localStorage.setItem('token', newToken)
   }
 
-  async function setLanguage(languageCode: string) {
+  async function setLanguage(languageCode: string, autoRefresh: boolean = true) {
     if (user.value) {
       let needsRefresh: boolean = false
       try {
@@ -70,11 +79,17 @@ export const useUserSession = defineStore('userSession', () => {
             memoryDict = dictData
             localStorage.setItem('dict', JSON.stringify(memoryDict))
           }
+
+          await api.post('User/SetLanguage', {
+            authType: user.value.AuthType,
+            userId: user.value.UserId,
+            languageCode: languageCode,
+          })
         }
       } catch (error) {}
 
       localStorage.setItem('user', JSON.stringify(user.value))
-      if (needsRefresh) window.location.reload()
+      if (needsRefresh && autoRefresh) window.location.reload()
     }
   }
 
@@ -122,6 +137,8 @@ export const useUserSession = defineStore('userSession', () => {
     getExpression,
     setLanguage,
     getLocale,
+    isDealer,
+    isOfficer,
   } as const
 })
 

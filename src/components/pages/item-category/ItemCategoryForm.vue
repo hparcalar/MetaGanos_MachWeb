@@ -20,6 +20,7 @@ const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
+const { isDealer } = userSession
 
 const modelObject = ref({
   id: 0,
@@ -33,10 +34,12 @@ const modelObject = ref({
   creditRangeLength: 1,
   itemChangeTime: null,
   controlTimeType: null,
+  plantId: 0,
 })
 
 const creditTypes: Ref<CreditRangeType[]> = ref(creditRangeOption)
 const controlTypes: Ref<ControlTimeType[]> = ref(controlTimeOption)
+const plants: Ref<any[]> = ref([])
 
 onMounted(async () => {
   creditTypes.value.forEach((c: CreditRangeType) => {
@@ -51,8 +54,34 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('ItemCategory/' + props.id)
+    plants.value = (await api.get('Plant')).data
+
+    if (modelObject.value.id == 0 && props.id > 0) modelObject.value.id = props.id
+
+    const data = await api.get('ItemCategory/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
+
+    if (!modelObject.value)
+      modelObject.value = {
+        id: 0,
+        itemCategoryCode: '',
+        itemCategoryName: '',
+        categoryImage: '',
+        viewOrder: null,
+        isActive: true,
+        creditRangeType: 4,
+        creditByRange: 0,
+        creditRangeLength: 1,
+        itemChangeTime: null,
+        controlTimeType: null,
+        plantId: 0,
+      }
+
+    if (
+      !(modelObject.value.plantId || modelObject.value.plantId == 0) &&
+      plants.value.length == 1
+    )
+      modelObject.value.plantId = plants.value[0].id
   } catch (error) {}
 }
 
@@ -61,10 +90,11 @@ const saveModel = async () => {
     const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
+      modelObject.value.id = postResult.data.recordId
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
-  } catch (error) {
-    notif.error(error.message)
+  } catch (error: any) {
+    notif.error(error?.message)
   }
 }
 
@@ -148,6 +178,21 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
+                <div v-if="isDealer" class="column is-12">
+                  <VField>
+                    <label>Fabrika</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.plantId"
+                        :value-prop="'id'"
+                        :label="'plantName'"
+                        placeholder="Bir fabrika seçiniz"
+                        :searchable="true"
+                        :options="plants"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
                 <div class="column is-12">
                   <VField>
                     <label>Görünüm Sırası</label>
@@ -162,7 +207,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
+                <!-- <div class="column is-6">
                   <VField>
                     <label>İstihkak Periyodu</label>
                     <VControl>
@@ -204,7 +249,7 @@ const isStuck = computed(() => {
                       />
                     </VControl>
                   </VField>
-                </div>
+                </div> -->
                 <div class="column is-12">
                   <VField>
                     <label>İkon</label>
@@ -231,8 +276,7 @@ const isStuck = computed(() => {
               </div>
             </div>
           </div>
-          <div class="column is-6">
-            <!--Fieldset-->
+          <!-- <div class="column is-6">
             <div class="form-fieldset">
               <div class="fieldset-heading">
                 <h4>Değişim ve kontrol bilgileri</h4>
@@ -271,7 +315,7 @@ const isStuck = computed(() => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

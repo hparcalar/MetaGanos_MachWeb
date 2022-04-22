@@ -40,17 +40,17 @@ const doLogout = () => {
         @keydown.space.prevent="toggle"
         @click="toggle"
       >
-        <VAvatar picture="/images/avatars/svg/vuero-1.svg" />
+        <VAvatar picture="/images/avatars/placeholder.jpg" />
       </a>
     </template>
 
     <template #content>
       <div class="dropdown-head">
-        <VAvatar size="large" picture="/images/avatars/svg/vuero-1.svg" />
+        <VAvatar size="large" picture="/images/avatars/placeholder.jpg" />
 
         <div class="meta">
           <span>{{ userData?.name }}</span>
-          <span>Yönetici</span>
+          <span>{{ userData?.AuthType == 'Dealer' ? 'Bayi' : 'Fabrika Yetkilisi' }}</span>
         </div>
       </div>
 
