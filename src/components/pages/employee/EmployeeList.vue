@@ -40,10 +40,20 @@ const isFileDialogVisible = ref(false)
 const openFileDialog = () => {
   isFileDialogVisible.value = true
 }
+const onUploadSucceed = async (result: Boolean) => {
+  if (result) {
+    isFileDialogVisible.value = false
+    await bindList()
+  }
+}
+
+const bindList = async () => {
+  employees.value = (await api.get('Employee')).data
+}
 
 onMounted(async () => {
   try {
-    employees.value = (await api.get('Employee')).data
+    await bindList()
   } catch (error) {}
 })
 
@@ -145,7 +155,7 @@ const columns = {
 
   <UploadEmployeeData
     :visible="isFileDialogVisible"
-    @file-saved="isFileDialogVisible = false"
+    @file-saved="onUploadSucceed"
     @close="isFileDialogVisible = false"
   />
 </template>

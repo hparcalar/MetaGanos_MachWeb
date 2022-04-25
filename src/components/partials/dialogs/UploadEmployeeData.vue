@@ -15,7 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits({
   close: () => true,
-  fileSaved: (result: Boolean) => true,
+  fileSaved: (result: Boolean) => result,
 })
 
 const api = useApi()
@@ -26,6 +26,7 @@ const modelObject = ref({
   imageData: '',
   explanation: '',
   plantId: null,
+  selectedFile: null,
 })
 const notif = useNotyf()
 const plants = ref([])
@@ -36,28 +37,26 @@ const bindModel = async () => {
   } catch (error) {}
 }
 
-const onIconSelected = async (event: any) => {
-  //   if (event.target.files && event.target.files.length > 0) {
-  //     const base64Str: string = await helpers.blobToBase64(event.target.files[0])
-  //     modelObject.value.imageData = base64Str
-  //   } else {
-  //     modelObject.value.imageData = ''
-  //   }
+const onFileSelected = async (event: any) => {
+  if (event.target.files && event.target.files.length > 0) {
+    modelObject.value.selectedFile = event.target.files[0]
+  }
 }
 
-const saveModel = async () => {
-  //   try {
-  //     const postResult = await api.post(
-  //       'Plant/' + props.params.plantId + '/PrintFile',
-  //       modelObject.value
-  //     )
-  //     if (postResult && postResult.data.result) {
-  //       notif.success('Kayıt başarılı')
-  //       emit('fileSaved', true)
-  //     } else notif.error(postResult.data.errorMessage)
-  //   } catch (error) {
-  //     notif.error(error)
-  //   }
+const makeUpload = async () => {
+  try {
+    const formData = new FormData()
+    formData.append('plantId', modelObject.value.plantId.toString())
+    formData.append('file', modelObject.value.selectedFile)
+
+    const postResult = await api.post('Employee/Upload', formData)
+    if (postResult && postResult.data.result) {
+      notif.success('Transfer başarıyla gerçekleştirildi: ' + postResult.data.infoMessage)
+      emit('fileSaved', true)
+    } else notif.error(postResult.data.errorMessage)
+  } catch (error: any) {
+    notif.error(error?.message)
+  }
 }
 
 watch(
@@ -83,54 +82,28 @@ watch(
       <form class="modal-form py-0">
         <div class="columns is-multiline">
           <div class="column is-12">
-            <h2>Şablon Yapısı</h2>
+            <VMessage color="info">
+              <i class="iconify" data-icon="feather:info" aria-hidden="true"></i>
+              <span class="ml-2"
+                >Transfer formatı aşağıdaki sütun sıralamaları ile olmalıdır.</span
+              >
+            </VMessage>
             <div class="tab-content is-active mt-5">
               <div class="flex-table is-rounded">
                 <div
-                  class="flex-table-header"
+                  class="flex-table-header is-rounded"
                   style="
                     background-color: var(--green);
                     color: #fff !important;
                     padding: 3px;
                   "
                 >
-                  <span
-                    class="cell-center"
-                    style="
-                      color: #000;
-                      border: 1px solid #555;
-                      padding-top: 10px;
-                      margin: 2px;
-                    "
-                    >Kodu</span
-                  ><span
-                    class="cell-center"
-                    style="
-                      color: #000;
-                      border: 1px solid #555;
-                      padding-top: 10px;
-                      margin: 2px;
-                    "
-                    >Adı</span
-                  ><span
-                    class="cell-center"
-                    style="
-                      color: #000;
-                      border: 1px solid #555;
-                      padding-top: 10px;
-                      margin: 2px;
-                    "
-                    >Departman</span
-                  ><span
-                    class="cell-center"
-                    style="
-                      color: #000;
-                      border: 1px solid #555;
-                      padding-top: 10px;
-                      margin: 2px;
-                    "
-                    >Kart No</span
-                  >
+                  <span class="cell-center transfer-template-heading">Kodu</span
+                  ><span class="cell-center transfer-template-heading">Adı</span
+                  ><span class="cell-center transfer-template-heading">Departman</span
+                  ><span class="cell-center transfer-template-heading">Kart No</span>
+                  <span class="cell-center transfer-template-heading">Gsm</span>
+                  <span class="cell-center transfer-template-heading">E-Posta</span>
                 </div>
               </div>
               <!--Table Pagination--><!--v-if-->
@@ -160,7 +133,7 @@ watch(
                   class="input"
                   placeholder=""
                   autocomplete=""
-                  @change="onIconSelected"
+                  @change="onFileSelected"
                 />
               </VControl>
             </VField>
@@ -169,7 +142,16 @@ watch(
       </form>
     </template>
     <template #action>
-      <VButton color="primary" raised @click="saveModel()">Yükle</VButton>
+      <VButton color="primary" raised @click="makeUpload()">Yükle</VButton>
     </template>
   </VModal>
 </template>
+<style lang="scss">
+.transfer-template-heading {
+  color: #037003 !important;
+  border: 1px solid green;
+  padding-top: 10px !important;
+  margin: 2px !important;
+  border-radius: 5px;
+}
+</style>
