@@ -48,6 +48,7 @@ const spiralModel = ref({
   capacity: null,
   activeQuantity: 0,
   isEnabled: true,
+  isInFault: false,
 })
 const liveVideoStream = ref(null)
 
@@ -162,6 +163,13 @@ const isSpiralEnabled = (spiralNo: number) => {
   return currentSpiral != null ? currentSpiral.isEnabled : false
 }
 
+const isSpiralInFault = (spiralNo: number) => {
+  const currentSpiral = modelObject.value.spirals.find(
+    (d: any) => d.posOrders == spiralNo
+  )
+  return currentSpiral != null ? currentSpiral.isInFault : false
+}
+
 const getSpiralQuantityInfo = (spiralNo: number) => {
   const currentSpiral = modelObject.value.spirals.find(
     (d: any) => d.posOrders == spiralNo
@@ -192,6 +200,7 @@ const onSpiralSizeChanged = () => {
         const newSpiral = {
           posOrders: spiralNo,
           isEnabled: true,
+          isInFault: false,
         }
         if (existingSpiral) {
           newSpiral.itemCategoryId = existingSpiral.itemCategoryId
@@ -200,6 +209,7 @@ const onSpiralSizeChanged = () => {
           newSpiral.activeQuantity = existingSpiral.activeQuantity
           newSpiral.capacity = existingSpiral.capacity
           newSpiral.isEnabled = existingSpiral.isEnabled
+          newSpiral.isInFault = existingSpiral.isInFault
         }
 
         newSpiralList.push(newSpiral)
@@ -260,6 +270,22 @@ const onCloseLoadSpiral = () => {
   isSpiralDetailVisible.value = false
   selectedSpiralNo.value = -1
 }
+
+const fullAllSpirals = async () => {
+  if (confirm('Tüm spiralleri doldurmak istediğinizden emin misiniz?')) {
+    try {
+      const postResult = (
+        await api.post('Machine/' + modelObject.value.id + '/FullAllSpirals', {})
+      ).data
+      if (postResult.result) {
+        notif.success('Otomatın tüm spiralleri dolduruldu.')
+        await bindModel()
+      } else notif.error(postResult.errorMessage)
+    } catch (error: any) {
+      notif.error(error?.message)
+    }
+  }
+}
 // #endregion
 
 // #region SPIRAL CONSUMING REPORT FUNCTIONS
@@ -316,6 +342,9 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
+              <VButton color="info" icon="feather:upload" raised @click="fullAllSpirals">
+                Otomatı Tam Doldur
+              </VButton>
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
                 :to="{ name: 'machine' }"
@@ -699,8 +728,15 @@ const isStuck = computed(() => {
                           </VButton> -->
                           <VSwitchBlock
                             v-model="spiralModel.isEnabled"
+                            class="ml-2"
                             label="Aktif"
                             color="success"
+                          />
+                          <VSwitchBlock
+                            v-model="spiralModel.isInFault"
+                            class="ml-2"
+                            label="Arızalı"
+                            color="warning"
                           />
                         </div>
                       </div>
@@ -724,12 +760,21 @@ const isStuck = computed(() => {
                   isSpiralEnabled(
                     modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
                   )
-                    ? 'info'
+                    ? isSpiralInFault(
+                        modelObject.spiralStartIndex -
+                          1 +
+                          ((r - 1) * modelObject.cols + c)
+                      )
+                      ? 'warning'
+                      : 'info'
                     : 'danger'
                 "
                 :rounded="true"
                 :outlined="
                   isSpiralEnabled(
+                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
+                  ) &&
+                  !isSpiralInFault(
                     modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
                   )
                 "

@@ -38,6 +38,11 @@ const openDetail = (id: number) => {
   })
 }
 
+const isFileDialogVisible = ref(false)
+const openFileDialog = () => {
+  isFileDialogVisible.value = true
+}
+
 onMounted(async () => {
   try {
     cards.value = (await api.get('Item')).data
@@ -69,6 +74,15 @@ const columns = {
           placeholder="Arama..."
         />
       </VControl>
+
+      <VButton
+        class="ml-5"
+        :color="'success'"
+        :raised="true"
+        icon="feather:upload"
+        @click="openFileDialog"
+        >Dosyadan Yükle</VButton
+      >
 
       <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
         >Yeni Stok</VButton
@@ -138,6 +152,12 @@ const columns = {
       </div>
     </div>
   </div>
+
+  <UploadItemData
+    :visible="isFileDialogVisible"
+    @file-saved="isFileDialogVisible = false"
+    @close="isFileDialogVisible = false"
+  />
 </template>
 
 <style lang="scss">

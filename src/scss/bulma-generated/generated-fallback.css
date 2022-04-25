@@ -5883,6 +5883,10 @@ body.opened {
   background: rgb(255, 255, 255);
 }
 
+.icon-menu li a.is-active p {
+  color: rgb(233, 120, 7);
+}
+
 .right-panel-wrapper .right-panel {
   background: rgb(255, 255, 255);
 }

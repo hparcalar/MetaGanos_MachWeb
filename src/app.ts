@@ -9,6 +9,7 @@ import './styles'
 
 import { initDarkmode } from '/@src/stores/darkmode'
 import { createApi } from '/@src/composable/useApi'
+import vue3JsonExcel from 'vue3-json-excel'
 
 export type VueroAppContext = Awaited<ReturnType<typeof createApp>>
 
@@ -68,6 +69,7 @@ export async function createApp() {
   app.use(vuero.pinia)
   app.use(vuero.head)
   app.use(vuero.i18n)
+  app.use(vue3JsonExcel)
 
   registerRouterNavigationGuards(vuero)
   app.use(vuero.router)

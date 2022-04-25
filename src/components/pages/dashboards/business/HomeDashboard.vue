@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
+import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
 import { useUserSession } from '/@src/stores/userSession'
+import ApexChart from 'vue3-apexcharts'
 
 const router = useRouter()
 const api = useApi()
 const userSession = useUserSession()
+const userData: Ref<any> = ref({})
 const { isDealer, isOfficer } = userSession
 
 const totals = ref({
@@ -17,6 +20,80 @@ const totals = ref({
   officerCount: 0,
   itemCount: 0,
 })
+const overallStats = ref({})
+
+const plants: Ref<any[]> = ref([])
+const selectedPlants: Ref<any[]> = ref(null)
+
+const series = ref([])
+
+const barOptions = ref({
+  chart: {
+    height: 250,
+    type: 'bar',
+    toolbar: {
+      show: false,
+    },
+  },
+  // colors: [themeColors.accent, themeColors.purple, themeColors.green],
+  legend: {
+    position: 'top',
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      endingShape: 'rounded',
+      columnWidth: '55%',
+    },
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  stroke: {
+    show: true,
+    width: 2,
+    colors: ['transparent'],
+  },
+  series: series.value,
+  xaxis: {
+    categories: [
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Agu',
+      'Eyl',
+      'Ekm',
+      'Kas',
+      'Ara',
+    ],
+  },
+  yaxis: {
+    labels: {
+      formatter: function (val: string) {
+        return val
+      },
+    },
+  },
+  fill: {
+    opacity: 1,
+  },
+  tooltip: {
+    y: {
+      formatter: function (val: string) {
+        return val
+      },
+    },
+  },
+})
+
+const onChangePlant = async (plantId: any) => {
+  selectedPlants.value = plantId
+  await getStats()
+}
 
 const goToRoute = (target: string, params?: Object) => {
   router.push({
@@ -25,20 +102,177 @@ const goToRoute = (target: string, params?: Object) => {
   })
 }
 
+const getStats = async () => {
+  let plantsFilter = selectedPlants.value
+  if (!selectedPlants.value || selectedPlants.value.length == 0)
+    plantsFilter = plants.value.map((d: any) => d.id)
+
+  if (plantsFilter) {
+    try {
+      overallStats.value = (await api.post('Plant/OverallStats', plantsFilter)).data
+      if (overallStats.value) {
+        series.value = []
+        series.value = overallStats.value?.categoryStats.map((d: any) => {
+          return {
+            name: d.categoryName,
+            data: d.monthlyStats,
+          }
+        })
+      }
+    } catch (error) {}
+  }
+}
+
 onMounted(async () => {
   try {
+    userData.value = userSession.user
     totals.value.plantCount = (await api.get('Plant/Count')).data
     totals.value.machineCount = (await api.get('Machine/Count')).data
     totals.value.departmentCount = (await api.get('Department/Count')).data
     totals.value.employeeCount = (await api.get('Employee/Count')).data
     totals.value.officerCount = (await api.get('Officer/Count')).data
     totals.value.itemCount = (await api.get('Item/Count')).data
+    plants.value = (await api.get('Plant')).data
+
+    if (userData.value?.AuthType == 'FactoryOfficer')
+      selectedPlants.value = [userData.value.FactoryId]
+
+    await getStats()
   } catch (error) {}
 })
 </script>
 
 <template>
-  <div>
+  <div class="analytics-dashboard">
+    <div v-if="userData?.AuthType == 'Dealer'" class="columns">
+      <div class="column is-4">
+        <VField>
+          <label>Fabrika</label>
+          <VControl>
+            <Multiselect
+              v-model="selectedPlants"
+              mode="tags"
+              class="is-stacked"
+              :value-prop="'id'"
+              :label="'plantName'"
+              placeholder="Tüm fabrikalar"
+              :searchable="true"
+              :options="plants"
+              @change="onChangePlant"
+            />
+          </VControl>
+        </VField>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column is-12">
+        <div class="columns is-multiline">
+          <!--Most Consumed Item-->
+          <div class="column is-3">
+            <div class="dashboard-tile">
+              <div class="tile-head">
+                <h3 class="dark-inverted">En Çok Tüketilen</h3>
+                <VIconBox color="primary" size="small" rounded>
+                  <i aria-hidden="true" class="fas fa-gem"></i>
+                </VIconBox>
+              </div>
+              <div class="tile-body">
+                <span class="dark-inverted">
+                  {{ overallStats?.mostConsumedItemCount }} adet</span
+                >
+              </div>
+              <div class="tile-foot">
+                <span class="text-h-green">
+                  <!-- <i aria-hidden="true" class="iconify" data-icon="feather:trending-up" /> -->
+                </span>
+                <p class="subtitle is-6">{{ overallStats?.mostConsumedItemName }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!--Active Machine Stats-->
+          <div class="column is-3">
+            <div class="dashboard-tile">
+              <div class="tile-head">
+                <h3 class="dark-inverted">Aktif Otomatlar</h3>
+                <VIconBox color="green" size="small" rounded>
+                  <i class="iconify" data-icon="feather:activity"></i>
+                </VIconBox>
+              </div>
+              <div class="tile-body">
+                <span class="dark-inverted">{{
+                  overallStats?.activeMachineCount +
+                  ' / ' +
+                  overallStats?.totalMachineCount
+                }}</span>
+              </div>
+              <div class="tile-foot">
+                <span class="text-h-red">
+                  <!-- <i
+                    aria-hidden="true"
+                    class="iconify"
+                    data-icon="feather:trending-down"
+                  /> -->
+                </span>
+                <p class="subtitle is-6">&nbsp;</p>
+              </div>
+            </div>
+          </div>
+
+          <!--In-Fault Engines-->
+          <div class="column is-3">
+            <div class="dashboard-tile">
+              <div class="tile-head">
+                <h3 class="dark-inverted">Arızalı Motorlar</h3>
+                <VIconBox color="danger" size="small" rounded>
+                  <i class="iconify" data-icon="feather:alert-octagon"></i>
+                </VIconBox>
+              </div>
+              <div class="tile-body">
+                <span class="dark-inverted">{{ overallStats?.inFaultSpiralCount }}</span>
+              </div>
+              <div class="tile-foot">
+                <span class="text-h-green">
+                  <!-- <i aria-hidden="true" class="iconify" data-icon="feather:trending-up" /> -->
+                </span>
+                <p class="subtitle is-6">&nbsp;</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Card -->
+          <div class="column is-3">
+            <!--Widget-->
+            <ContactWidget
+              picture="/images/avatars/placeholder.jpg"
+              :username="userData.name"
+              :company="userData?.AuthType == 'Dealer' ? 'Bayi' : userData?.PlantName"
+              :position="userData?.AuthType == 'Dealer' ? '' : 'Fabrika Yetkilisi'"
+              squared
+              reversed
+              straight
+            />
+          </div>
+
+          <!--Category Stats-->
+          <div class="column is-12">
+            <div class="dashboard-card">
+              <div class="card-head">
+                <h3 class="dark-inverted">Kategori Bazında Tüketimler</h3>
+              </div>
+              <ApexChart
+                id="profit-chart"
+                :height="250"
+                :type="barOptions.chart.type"
+                :series="series"
+                :options="barOptions"
+              >
+              </ApexChart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="card-grid card-grid-v3">
       <!--Card Grid v3-->
       <div
@@ -365,6 +599,207 @@ onMounted(async () => {
 @media only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
   .card-grid-v3 .card-grid-item > h3 {
     font-size: 1rem;
+  }
+}
+
+.analytics-dashboard {
+  .text-h-green {
+    color: var(--green);
+  }
+
+  .text-h-red {
+    color: var(--red);
+  }
+
+  .text-widget {
+    color: var(--widget-grey);
+  }
+
+  .dashboard-tile {
+    @include vuero-s-card;
+
+    font-family: var(--font);
+
+    .tile-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      h3 {
+        font-family: var(--font-alt);
+        color: var(--dark-text);
+        font-weight: 600;
+      }
+    }
+
+    .tile-body {
+      font-size: 2rem;
+      padding: 4px 0 8px;
+
+      span {
+        color: var(--dark-text);
+        font-weight: 600;
+      }
+    }
+
+    .tile-foot {
+      span {
+        &:first-child {
+          font-weight: 500;
+
+          svg {
+            height: 16px;
+            width: 16px;
+            margin-right: 6px;
+            stroke-width: 3px;
+          }
+        }
+
+        &:nth-child(2) {
+          color: var(--light-text);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .dashboard-card {
+    @include vuero-s-card;
+
+    font-family: var(--font);
+    height: 100%;
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+
+      h3 {
+        font-family: var(--font-alt);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dark-text);
+      }
+    }
+
+    .revenue-stats {
+      display: flex;
+
+      .revenue-stat {
+        margin-right: 30px;
+        font-family: var(--font);
+
+        span {
+          display: block;
+
+          &:first-child {
+            color: var(--light-text);
+            font-size: 0.9rem;
+          }
+
+          &:nth-child(2) {
+            color: var(--dark-text);
+            font-size: 1.2rem;
+            font-weight: 600;
+          }
+
+          &.current {
+            color: var(--primary);
+          }
+        }
+      }
+    }
+
+    .radial-wrap {
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 44px);
+
+      .radial-stats {
+        margin-top: auto;
+        display: flex;
+        padding-top: 20px;
+        border-top: 1px solid var(--fade-grey-dark-3);
+
+        .radial-stat {
+          width: 50%;
+          text-align: center;
+
+          &:first-child {
+            border-right: 1px solid var(--fade-grey-dark-3);
+          }
+
+          span {
+            display: block;
+
+            &:first-child {
+              color: var(--light-text);
+              font-size: 0.9rem;
+            }
+
+            &:nth-child(2) {
+              color: var(--dark-text);
+              font-size: 1.3rem;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+    }
+
+    .progress-block {
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 44px);
+      font-family: var(--font);
+
+      .value {
+        font-size: 1.4rem;
+        font-weight: 600;
+
+        span {
+          color: var(--dark-text);
+        }
+      }
+
+      .progress {
+        margin-bottom: 8px;
+      }
+
+      .progress-foot {
+        span {
+          &:first-child {
+            font-weight: 500;
+
+            svg {
+              height: 16px;
+              width: 16px;
+              margin-right: 6px;
+              stroke-width: 3px;
+            }
+          }
+
+          &:nth-child(2) {
+            color: var(--light-text);
+            font-size: 0.9rem;
+          }
+        }
+      }
+
+      .circle-chart-wrapper {
+        margin-top: auto;
+      }
+    }
+  }
+}
+
+.is-dark {
+  .analytics-dashboard {
+    .dashboard-tile,
+    .dashboard-card {
+      @include vuero-card--dark;
+    }
   }
 }
 </style>

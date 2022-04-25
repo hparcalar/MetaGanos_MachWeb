@@ -12,7 +12,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits({
-  cardSaved: () => true,
+  cardSaved: (cardNo: string) => cardNo,
 })
 
 const api = useApi()
@@ -41,7 +41,7 @@ const saveCardModel = async () => {
     const postResult = await api.post('Card', modelCard.value)
     if (postResult.data.result) {
       notif.success('Yeni kart bilgisi oluşturuldu.')
-      emit('cardSaved')
+      emit('cardSaved', modelCard.value.cardCode)
     } else notif.error(postResult.data.errorMessage)
   } catch (error: any) {
     notif.error(error?.message)

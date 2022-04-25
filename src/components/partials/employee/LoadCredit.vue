@@ -51,13 +51,24 @@ const modelObject: Ref<any> = ref({
   creditLoadDate: moment().toDate(),
   creditStartDate: null,
   creditEndDate: null,
+  productIntervalType: null,
+  productIntervalTime: null,
+  specificRangeDates: null,
 })
 
+const modelIsBinding = ref(false)
 const itemCategories: Ref<any[]> = ref([])
+const schedulerDates: Ref<any[]> = ref([])
 const itemGroups: Ref<any[]> = ref([])
 const creditTypes: Ref<CreditRangeType[]> = ref(creditRangeOption)
+const productIntervalTypes = ref([
+  { id: 1, name: 'Saat' },
+  { id: 2, name: 'Gün' },
+])
 
 const bindCreditModel = async () => {
+  modelIsBinding.value = true
+
   itemCategories.value = (await api.get('ItemCategory')).data
 
   if (props.params.creditId > 0) {
@@ -84,12 +95,25 @@ const bindCreditModel = async () => {
       creditLoadDate: moment().toDate(),
       creditStartDate: null,
       creditEndDate: null,
+      productIntervalType: null,
+      productIntervalTime: null,
+      specificRangeDates: null,
     }
 
     if (props.params.itemCategoryId > 0) bindCategoryDefaults(props.params.itemCategoryId)
   }
 
+  if (
+    modelObject.value.specificRangeDates &&
+    modelObject.value.specificRangeDates.length > 0
+  ) {
+    schedulerDates.value = JSON.parse(modelObject.value.specificRangeDates).map(
+      (d: any) => moment(d).toDate()
+    )
+  }
+
   await updateGroupList(modelObject.value.itemCategoryId ?? 0)
+  modelIsBinding.value = false
 }
 
 const updateGroupList = async (categoryId: any) => {
@@ -120,6 +144,8 @@ const onChangeItemCategory = async (categoryId: any) => {
 
 const saveCreditModel = async () => {
   try {
+    modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
+
     let postResult: any = null
     if (modelObject.value.id > 0)
       postResult = (await api.post('Employee/EditCredit', modelObject.value)).data
@@ -132,6 +158,58 @@ const saveCreditModel = async () => {
     } else throw postResult ? postResult.errorMessage : 'İşlem başarısız oldu'
   } catch (error) {
     notif.error(error.message)
+  }
+}
+
+const calculateScheduler = () => {
+  schedulerDates.value = []
+
+  let schedulerEndDate: any = null
+  if (modelObject.value.rangeType == 1)
+    schedulerEndDate = moment(modelObject.value.creditLoadDate).add(
+      modelObject.value.rangeLength ?? 1,
+      'day'
+    )
+  else if (modelObject.value.rangeType == 2)
+    schedulerEndDate = moment(modelObject.value.creditLoadDate).add(
+      modelObject.value.rangeLength ?? 1,
+      'week'
+    )
+  else if (modelObject.value.rangeType == 3)
+    schedulerEndDate = moment(modelObject.value.creditLoadDate).add(
+      modelObject.value.rangeLength ?? 1,
+      'month'
+    )
+  else schedulerEndDate = modelObject.value.creditLoadDate
+
+  if (schedulerEndDate) {
+    let currentSelectionDate = moment(modelObject.value.creditLoadDate)
+    while (currentSelectionDate < schedulerEndDate) {
+      schedulerDates.value.push(currentSelectionDate.toDate())
+      currentSelectionDate = currentSelectionDate.add(1, 'day')
+    }
+  }
+}
+
+const removeTime = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+const onDayClick = (dayInfo: any) => {
+  if (dayInfo && dayInfo.date) {
+    if (
+      schedulerDates.value.some(
+        (d: Date) => removeTime(d).getTime() === removeTime(dayInfo.date).getTime()
+      )
+    ) {
+      const foundDate = schedulerDates.value.find(
+        (d: Date) => removeTime(d).getTime() === removeTime(dayInfo.date).getTime()
+      )
+      const foundIndex = schedulerDates.value.indexOf(foundDate)
+      schedulerDates.value.splice(foundIndex, 1)
+    } else {
+      schedulerDates.value.push(removeTime(dayInfo.date))
+    }
   }
 }
 
@@ -150,6 +228,38 @@ watch(
     await bindCreditModel()
   },
   { deep: true }
+)
+
+watch(
+  () => modelObject.value.creditLoadDate,
+  () => {
+    if (modelIsBinding.value == false) {
+      calculateScheduler()
+    }
+  },
+  {
+    deep: true,
+  }
+)
+
+watch(
+  () => modelObject.value.rangeType,
+  () => {
+    if (modelIsBinding.value == false) calculateScheduler()
+  },
+  {
+    deep: true,
+  }
+)
+
+watch(
+  () => modelObject.value.rangeLength,
+  () => {
+    if (modelIsBinding.value == false) calculateScheduler()
+  },
+  {
+    deep: true,
+  }
 )
 </script>
 
@@ -204,20 +314,6 @@ watch(
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Periyodik Kredi</label>
-                    <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.creditByRange"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-                <div class="column is-12">
-                  <VField>
                     <label>Stok Grubu</label>
                     <VControl>
                       <Multiselect
@@ -231,6 +327,7 @@ watch(
                     </VControl>
                   </VField>
                 </div>
+
                 <div class="column is-12">
                   <VField>
                     <label>Toplam Kredi</label>
@@ -245,7 +342,7 @@ watch(
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
+                <div class="column is-4">
                   <VField>
                     <label>Yükleme periyodu</label>
                     <VControl>
@@ -260,12 +357,55 @@ watch(
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
+                <div class="column is-4">
                   <VField>
                     <label>Periyot süresi</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.rangeLength"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-4">
+                  <VField>
+                    <label>Periyodik Kredi</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.creditByRange"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>İki ürün arası minimum süre</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.productIntervalType"
+                        :value-prop="'id'"
+                        :label="'name'"
+                        placeholder="Süre türü"
+                        :searchable="true"
+                        :options="productIntervalTypes"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>Süre değeri</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.productIntervalTime"
                         type="number"
                         class="input"
                         placeholder=""
@@ -296,6 +436,23 @@ watch(
                         </VField>
                       </template>
                     </VDatePicker>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Çalışma takvimi</label>
+                    <VControl>
+                      <VCalendar
+                        :from-date="moment(modelObject.creditLoadDate).toDate()"
+                        :attributes="[
+                          {
+                            highlight: true,
+                            dates: schedulerDates,
+                          },
+                        ]"
+                        @dayclick="onDayClick"
+                      />
+                    </VControl>
                   </VField>
                 </div>
               </div>

@@ -109,6 +109,7 @@
     "vue-scrollto": "2.20.0",
     "vue-tippy": "6.0.0-alpha.43",
     "vue3-apexcharts": "1.4.1",
+    "vue3-json-excel": "^1.0.9-alpha",
     "workbox-window": "^6.5.0",
     "yup": "0.32.11"
   },

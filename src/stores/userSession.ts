@@ -52,11 +52,18 @@ export const useUserSession = defineStore('userSession', () => {
     return expression
   }
 
-  function setUser(newUser: Partial<UserData>) {
+  async function setUser(newUser: Partial<UserData>) {
     user.value = newUser
     localStorage.setItem('user', JSON.stringify(newUser))
     if (user.value && user.value.DefaultLanguage && user.value.DefaultLanguage.length > 0)
       setLanguage(user.value.DefaultLanguage)
+    if (user.value && user.value.AuthType && user.value.AuthType === 'FactoryOfficer') {
+      try {
+        const api = useApi()
+        const plantInfo = (await api.get('Plant/' + user.value.FactoryId)).data
+        if (plantInfo) user.value.PlantName = plantInfo.plantName
+      } catch (error) {}
+    }
   }
 
   function setToken(newToken: string) {

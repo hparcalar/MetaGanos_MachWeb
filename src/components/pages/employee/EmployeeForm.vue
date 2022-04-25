@@ -285,9 +285,11 @@ const showQuickCardForm = () => {
   }
   isQuickCardDialogOpen.value = true
 }
-const onQuickCardSaved = async () => {
+const onQuickCardSaved = async (cardNo: string) => {
   isQuickCardDialogOpen.value = false
   await updateCardList(modelObject.value.plantId)
+  const newCard: any = cards.value.find((d: any) => d.cardCode == cardNo)
+  if (newCard) modelObject.value.employeeCardId = newCard.id
 }
 // #endregion
 

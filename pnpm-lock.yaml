@@ -111,6 +111,7 @@ specifiers:
   vue-tippy: 6.0.0-alpha.43
   vue-tsc: 0.30.1
   vue3-apexcharts: 1.4.1
+  vue3-json-excel: ^1.0.9-alpha
   workbox-window: ^6.5.0
   yorkie: 2.0.0
   yup: 0.32.11
@@ -166,6 +167,7 @@ dependencies:
   vue-scrollto: 2.20.0
   vue-tippy: 6.0.0-alpha.43_vue@3.2.26
   vue3-apexcharts: 1.4.1_apexcharts@3.32.1+vue@3.2.26
+  vue3-json-excel: 1.0.9-alpha
   workbox-window: 6.5.0
   yup: 0.32.11
 
@@ -1950,8 +1952,8 @@ packages:
     resolution: {integrity: sha512-A+GgU4xetmBfofDQSBNENRsbZo3vMZTF4pkCxFObWs+y9j/C/oGwJwqiV3yrU9jFecF/MkffBbwNFug8j5EAtw==}
     dev: true
 
-  /@intlify/bundle-utils/2.2.1_vue-i18n@9.2.0-beta.26:
-    resolution: {integrity: sha512-8n8zhYEKypS+KP22KUAC6BnQifJDDWUGcn3OVPqsThqMMucU22MShGvOuiKqQ4AeT7XQ5O4pudlJmxv3L91JrQ==}
+  /@intlify/bundle-utils/3.0.0_vue-i18n@9.2.0-beta.26:
+    resolution: {integrity: sha512-y43Z5Q3ZJvxqtD8xUH6U3yrlZeay7ZTqkzv1GQ4b0mGQtk5uptOT9Ra4qvGuUv8QyPQsortrA/OHWUD5ax5ZNQ==}
     engines: {node: '>= 12'}
     peerDependencies:
       petite-vue-i18n: '*'
@@ -1962,8 +1964,8 @@ packages:
       vue-i18n:
         optional: true
     dependencies:
-      '@intlify/message-compiler': 9.2.0-beta.33
-      '@intlify/shared': 9.2.0-beta.33
+      '@intlify/message-compiler': 9.2.0-beta.35
+      '@intlify/shared': 9.2.0-beta.35
       jsonc-eslint-parser: 1.4.1
       source-map: 0.6.1
       vue-i18n: 9.2.0-beta.26_vue@3.2.26
@@ -1995,11 +1997,11 @@ packages:
       source-map: 0.6.1
     dev: false
 
-  /@intlify/message-compiler/9.2.0-beta.33:
-    resolution: {integrity: sha512-+SICjFlnHSbRLZT+sNdBvOAQfcNX+fESyMmgPxC8HHWu4GLN2CoVQS4ACXb3QBZDKLVJBFhFGMnl+UXyJrno6g==}
+  /@intlify/message-compiler/9.2.0-beta.35:
+    resolution: {integrity: sha512-wYQCgnRtyJ40HK3bJTrszHDaxqDXZH+9Ps7RsXNuNwZ9hIb1cVkLiUNIbuJS/XSJ1kATJXA6K+4if6ZLb0Ozxw==}
     engines: {node: '>= 12'}
     dependencies:
-      '@intlify/shared': 9.2.0-beta.33
+      '@intlify/shared': 9.2.0-beta.35
       source-map: 0.6.1
     dev: true
 
@@ -2008,8 +2010,8 @@ packages:
     engines: {node: '>= 12'}
     dev: false
 
-  /@intlify/shared/9.2.0-beta.33:
-    resolution: {integrity: sha512-HldlkV66vMt1vQsuUz4zjQ202C5KW6aHeIQhx7RxBO11i3E8V84dp5MG9epr9GZXVsrCAR56Ekj0HaTqksIRJA==}
+  /@intlify/shared/9.2.0-beta.35:
+    resolution: {integrity: sha512-DXf7xrwf08GKhr93XPQ8EgaEN0CIELl+mAS6SlRhi/aLtZv5HSGSMkz4M/ICwoWzFLSgOx/ZdBSasex19MMogg==}
     engines: {node: '>= 12'}
     dev: true
 
@@ -2026,8 +2028,8 @@ packages:
       vue-i18n:
         optional: true
     dependencies:
-      '@intlify/bundle-utils': 2.2.1_vue-i18n@9.2.0-beta.26
-      '@intlify/shared': 9.2.0-beta.33
+      '@intlify/bundle-utils': 3.0.0_vue-i18n@9.2.0-beta.26
+      '@intlify/shared': 9.2.0-beta.35
       '@rollup/pluginutils': 4.1.2
       debug: 4.3.3
       fast-glob: 3.2.11
@@ -4788,6 +4790,10 @@ packages:
       p-event: 2.3.1
       pify: 3.0.0
     dev: true
+
+  /downloadjs/1.4.7:
+    resolution: {integrity: sha1-9p+W+UDg0FU9rCkROYZaPNAQHjw=}
+    dev: false
 
   /dragula/3.7.3:
     resolution: {integrity: sha512-/rRg4zRhcpf81TyDhaHLtXt6sEywdfpv1cRUMeFFy7DuypH2U0WUL0GTdyAQvXegviT4PJK4KuMmOaIDpICseQ==}
@@ -11852,6 +11858,13 @@ packages:
       vue: '> 3.0.0'
     dependencies:
       apexcharts: 3.32.1
+      vue: 3.2.26
+    dev: false
+
+  /vue3-json-excel/1.0.9-alpha:
+    resolution: {integrity: sha512-S3Zdj/3pqaUr+IaetrvXl13DeYKeHhWsiQsWW5fWB6mWyK39mO8H2+Yi+JispLl+g1s15nFLvHxpZkAlKjtgXQ==}
+    dependencies:
+      downloadjs: 1.4.7
       vue: 3.2.26
     dev: false
 

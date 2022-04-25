@@ -124,6 +124,7 @@ watch(
             @click="switchSidebar('dashboard')"
           >
             <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:box"></i>
+            <p>Tanım</p>
           </a>
         </li>
         <li>
@@ -139,6 +140,7 @@ watch(
               class="iconify sidebar-svg"
               data-icon="feather:sliders"
             ></i>
+            <p>Hareket</p>
           </a>
         </li>
         <li>
@@ -154,6 +156,7 @@ watch(
               class="iconify sidebar-svg"
               data-icon="feather:archive"
             ></i>
+            <p>Depo</p>
           </a>
         </li>
       </template>

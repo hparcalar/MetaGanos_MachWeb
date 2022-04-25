@@ -1,53 +1,60 @@
 <script setup lang="ts">
+import moment from 'moment'
 import { computed, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ConsumptionSearchFilter } from '/@src/components/partials/filters/ConsumptionFilter.vue'
 import { useApi } from '/@src/composable/useApi'
+import { dateToStr } from '/@src/composable/useHelpers'
 
 const api = useApi()
-const router = useRouter()
 
 const filters = ref('')
-const employees = ref([])
+const reportData = ref([])
 
 const filteredData = computed(() => {
   if (!filters.value) {
-    return employees.value
+    return reportData.value
   } else {
     const filterRe = new RegExp(filters.value, 'i')
 
-    return employees.value.filter((item) => {
+    return reportData.value.filter((item: any) => {
       return (
-        item.employeeCode.match(filterRe) ||
-        item.employeeName.match(filterRe) ||
-        item.plantName.match(filterRe) ||
-        item.departmentName.match(filterRe) ||
-        item.employeeCardCode.match(filterRe)
+        item.itemName.match(filterRe) ||
+        item.itemCategoryName.match(filterRe) ||
+        item.itemGroupName?.match(filterRe) ||
+        item.machineName.match(filterRe) ||
+        item.employeeName.match(filterRe)
       )
     })
   }
 })
 
-const openDetail = (id: number) => {
-  router.push({
-    name: 'employee-slug',
-    params: {
-      slug: id,
-    },
-  })
-}
-
 onMounted(async () => {
-  try {
-    employees.value = (await api.get('Employee')).data
-  } catch (error) {}
+  await getReportData()
 })
 
+const getReportData = async (filterModel: ConsumptionSearchFilter | null = null) => {
+  try {
+    if (!filterModel)
+      filterModel = {
+        startDate: moment().toDate(),
+        endDate: moment().toDate(),
+        machineId: null,
+        plantId: null,
+        categoryId: null,
+        groupId: null,
+        itemId: null,
+      }
+    reportData.value = (await api.post('Machine/ConsumeReport', filterModel)).data
+  } catch (error) {}
+}
+
 const columns = {
-  employeeCode: 'Personel Kodu',
-  employeeName: 'Personel Adı',
-  plantName: 'Fabrika',
-  departmentName: 'Departman',
-  employeeCardCode: 'Kart No',
+  consumedDate: 'Tarih',
+  employeeName: 'Personel',
+  machineName: 'Makine',
+  itemCategoryName: 'Kategori',
+  itemName: 'Stok',
+  totalConsumed: 'Miktar',
   actions: {
     label: '#',
     align: 'center',
@@ -57,6 +64,15 @@ const columns = {
 
 <template>
   <div>
+    <div>
+      <h1 class="title is-narrow mb-5">Tüketim Raporu</h1>
+      <ConsumptionFilter
+        class="mb-5"
+        :start-date="moment().toDate()"
+        :end-date="moment().toDate()"
+        @search-triggered="getReportData"
+      />
+    </div>
     <div class="list-flex-toolbar is-reversed">
       <VControl icon="feather:search">
         <input
@@ -66,51 +82,59 @@ const columns = {
         />
       </VControl>
 
-      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Personel</VButton
-      >
+      <VButton color="success" icon="feather:download" raised>
+        <vue3-json-excel
+          :json-data="reportData"
+          :fields="{
+            Tarih: 'consumedDate',
+            Personel: 'employeeName',
+            Otomat: 'machineName',
+            Kategori: 'itemCategoryName',
+            Stok: 'itemName',
+            Miktar: 'totalConsumed',
+          }"
+          type="xlsx"
+          name="tuketim-raporu.xlsx"
+          header="Tüketim Raporu"
+          >Dışarı Aktar</vue3-json-excel
+        >
+      </VButton>
     </div>
 
     <div class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir personel tanımı mevcut değil."
-        subtitle="Yeni bir personel tanımlayın."
+        title="Henüz bir tüketim verisi mevcut değil."
+        subtitle=""
         larger
       >
       </VPlaceholderPage>
 
       <!--Active Tab-->
       <div v-else-if="filteredData.length" class="tab-content is-active">
-        <VFlexTable :data="filteredData" :columns="columns" rounded>
+        <VFlexTable id="reportTable" :data="filteredData" :columns="columns" rounded>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">
               <!--Table item-->
-              <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
+              <div v-for="item in filteredData" :key="item" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="">{{ item.employeeCode }}</span>
+                  <span class="">{{ dateToStr(item.consumedDate) }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.employeeName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.plantName }}</span>
+                  <span class="">{{ item.machineName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.departmentName }}</span>
+                  <span class="">{{ item.itemCategoryName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.employeeCardCode }}</span>
+                  <span class="">{{ item.itemName }}</span>
                 </VFlexTableCell>
-                <VFlexTableCell :columns="{ align: 'end' }">
-                  <button
-                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
-                    @click="openDetail(item.id)"
-                  >
-                    <i aria-hidden="true" class="fas fa-edit dot mr-2"></i>
-                    Düzenle
-                  </button>
+                <VFlexTableCell>
+                  <span class="">{{ item.totalConsumed }}</span>
                 </VFlexTableCell>
               </div>
             </TransitionGroup>
