@@ -24,6 +24,7 @@ const overallStats = ref({})
 
 const plants: Ref<any[]> = ref([])
 const selectedPlants: Ref<any[]> = ref(null)
+const isStatsLoading = ref(false)
 
 const series = ref([])
 
@@ -103,6 +104,7 @@ const goToRoute = (target: string, params?: Object) => {
 }
 
 const getStats = async () => {
+  isStatsLoading.value = true
   let plantsFilter = selectedPlants.value
   if (!selectedPlants.value || selectedPlants.value.length == 0)
     plantsFilter = plants.value.map((d: any) => d.id)
@@ -121,6 +123,8 @@ const getStats = async () => {
       }
     } catch (error) {}
   }
+
+  isStatsLoading.value = false
 }
 
 onMounted(async () => {
@@ -177,15 +181,26 @@ onMounted(async () => {
                 </VIconBox>
               </div>
               <div class="tile-body">
-                <span class="dark-inverted">
-                  {{ overallStats?.mostConsumedItemCount }} adet</span
-                >
+                <VLoader :active="isStatsLoading">
+                  <span
+                    v-show="overallStats && overallStats.mostConsumedItemCount"
+                    class="dark-inverted"
+                  >
+                    {{ overallStats?.mostConsumedItemCount }} adet</span
+                  >
+                </VLoader>
               </div>
               <div class="tile-foot">
                 <span class="text-h-green">
                   <!-- <i aria-hidden="true" class="iconify" data-icon="feather:trending-up" /> -->
                 </span>
-                <p class="subtitle is-6">{{ overallStats?.mostConsumedItemName }}</p>
+                <p class="subtitle is-6">
+                  <VLoader :active="isStatsLoading">
+                    <span v-show="overallStats && overallStats.mostConsumedItemName">{{
+                      overallStats?.mostConsumedItemName
+                    }}</span>
+                  </VLoader>
+                </p>
               </div>
             </div>
           </div>
@@ -200,11 +215,13 @@ onMounted(async () => {
                 </VIconBox>
               </div>
               <div class="tile-body">
-                <span class="dark-inverted">{{
-                  overallStats?.activeMachineCount +
-                  ' / ' +
-                  overallStats?.totalMachineCount
-                }}</span>
+                <VLoader :active="isStatsLoading">
+                  <span v-show="overallStats" class="dark-inverted">{{
+                    (overallStats.activeMachineCount ?? 0) +
+                    ' / ' +
+                    (overallStats?.totalMachineCount ?? 0)
+                  }}</span>
+                </VLoader>
               </div>
               <div class="tile-foot">
                 <span class="text-h-red">
@@ -229,7 +246,11 @@ onMounted(async () => {
                 </VIconBox>
               </div>
               <div class="tile-body">
-                <span class="dark-inverted">{{ overallStats?.inFaultSpiralCount }}</span>
+                <VLoader :active="isStatsLoading">
+                  <span class="dark-inverted">{{
+                    overallStats?.inFaultSpiralCount ?? 0
+                  }}</span>
+                </VLoader>
               </div>
               <div class="tile-foot">
                 <span class="text-h-green">

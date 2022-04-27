@@ -32,8 +32,8 @@ const modelObject = ref({
   creditRangeType: 4,
   creditByRange: 0,
   creditRangeLength: 1,
-  itemChangeTime: null,
-  controlTimeType: null,
+  itemChangeTime: 0,
+  controlTimeType: 0,
   plantId: 0,
 })
 
@@ -87,6 +87,7 @@ const bindModel = async () => {
 
 const saveModel = async () => {
   try {
+    modelObject.value.plantId = userSession.user.FactoryId
     const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
