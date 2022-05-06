@@ -25,7 +25,10 @@ const modelObject = ref({
   officerPassword: '',
   isActive: true,
   plantId: 0,
+  authUnits: [],
 })
+
+const authUnits: Ref<any[]> = ref([])
 
 const plants: Ref<any[]> = ref([])
 
@@ -40,11 +43,24 @@ const bindModel = async () => {
     if (modelObject.value.id === 0) modelObject.value.id = props.id
     const data = await api.get('Officer/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
+    else
+      modelObject.value = {
+        id: 0,
+        officerCode: '',
+        officerName: '',
+        officerPassword: '',
+        isActive: true,
+        plantId: 0,
+        authUnits: [],
+      }
+
+    authUnits.value = modelObject.value.authUnits
   } catch (error) {}
 }
 
 const saveModel = async () => {
   try {
+    modelObject.value.authUnits = authUnits.value
     const postResult = await api.post('Officer', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
@@ -56,6 +72,18 @@ const saveModel = async () => {
   }
 }
 
+const onReadChanged = (item: any, event: any) => {
+  item.canRead = event.target.checked
+}
+
+const onWriteChanged = (item: any, event: any) => {
+  item.canWrite = event.target.checked
+}
+
+const onDeleteChanged = (item: any, event: any) => {
+  item.canDelete = event.target.checked
+}
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -64,7 +92,7 @@ const isStuck = computed(() => {
 </script>
 
 <template>
-  <form class="form-layout" @submit.prevent>
+  <form class="form-layout" autocomplete="off" @submit.prevent>
     <div class="form-outer">
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
@@ -90,7 +118,7 @@ const isStuck = computed(() => {
       </div>
       <div class="form-body">
         <div class="columns is-multiline">
-          <div class="column is-12">
+          <div class="column is-6">
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
@@ -108,7 +136,7 @@ const isStuck = computed(() => {
                         type="text"
                         class="input"
                         placeholder=""
-                        autocomplete=""
+                        autocomplete="off"
                       />
                     </VControl>
                   </VField>
@@ -122,7 +150,7 @@ const isStuck = computed(() => {
                         type="text"
                         class="input"
                         placeholder=""
-                        autocomplete=""
+                        autocomplete="off"
                       />
                     </VControl>
                   </VField>
@@ -151,10 +179,60 @@ const isStuck = computed(() => {
                         type="password"
                         class="input"
                         placeholder=""
-                        autocomplete=""
+                        autocomplete="off"
                       />
                     </VControl>
                   </VField>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>Yetki tanımları</h4>
+                <p></p>
+              </div>
+
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <table class="table is-striped is-fullwidth">
+                    <thead>
+                      <tr>
+                        <th scope="col">Bölüm</th>
+                        <th scope="col">Okuma</th>
+                        <th scope="col">Yazma</th>
+                        <th scope="col">Silme</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in authUnits" :key="item">
+                        <td>{{ item.sectionText }}</td>
+                        <td>
+                          <VCheckbox
+                            v-model="item.canRead"
+                            color="info"
+                            @change="onReadChanged(item, $event)"
+                          />
+                        </td>
+                        <td>
+                          <VCheckbox
+                            v-model="item.canWrite"
+                            color="info"
+                            @change="onWriteChanged(item, $event)"
+                          />
+                        </td>
+                        <td>
+                          <VCheckbox
+                            v-model="item.canDelete"
+                            color="info"
+                            @change="onDeleteChanged(item, $event)"
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

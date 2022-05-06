@@ -17,13 +17,13 @@ const filteredData = computed(() => {
 
     return cards.value.filter((item) => {
       return (
-        item.itemCode.match(filterRe) ||
-        item.itemName.match(filterRe) ||
-        item.barcode1.match(filterRe) ||
-        item.barcode2.match(filterRe) ||
-        item.itemGroupName.match(filterRe) ||
-        item.itemCategoryName.match(filterRe) ||
-        item.unitTypeName.match(filterRe)
+        item.itemCode?.match(filterRe) ||
+        item.itemName?.match(filterRe) ||
+        item.barcode1?.match(filterRe) ||
+        item.barcode2?.match(filterRe) ||
+        item.itemGroupName?.match(filterRe) ||
+        item.itemCategoryName?.match(filterRe) ||
+        item.unitTypeName?.match(filterRe)
       )
     })
   }
@@ -62,10 +62,9 @@ onMounted(async () => {
 const columns = {
   itemCode: 'Stok Kodu',
   itemName: 'Stok Adı',
-  barcode1: 'Barkod-1',
-  barcode2: 'Barkod-2',
-  itemGroupName: 'Grup Adı',
-  itemCategoryName: 'Kategori Adı',
+  barcode1: 'Barkod',
+  itemGroupName: 'Grup',
+  itemCategoryName: 'Kategori',
   unitTypeName: 'Birim',
   actions: {
     label: '#',
@@ -111,7 +110,7 @@ const columns = {
 
       <!--Active Tab-->
       <div v-else-if="filteredData.length" class="tab-content is-active">
-        <VFlexTable :data="filteredData" :columns="columns" rounded>
+        <VFlexTable :data="filteredData" :columns="columns" clickable compact separators>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">
               <!--Table item-->
@@ -137,13 +136,12 @@ const columns = {
                 <VFlexTableCell>
                   <span class="">{{ item.unitTypeName }}</span>
                 </VFlexTableCell>
-                <VFlexTableCell :columns="{ align: 'end' }">
+                <VFlexTableCell :columns="{ align: 'center' }">
                   <button
-                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
+                    class="button v-button has-dot dark-outlined is-info is-pushed-mobile mx-auto"
                     @click="openDetail(item.id)"
                   >
-                    <i aria-hidden="true" class="fas fa-edit dot mr-2"></i>
-                    Düzenle
+                    <i aria-hidden="true" class="fas fa-search dot mr-0"></i>
                   </button>
                 </VFlexTableCell>
               </div>
@@ -151,14 +149,19 @@ const columns = {
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
-        <VFlexPagination
-          v-if="filteredData.length > 5"
-          :item-per-page="10"
-          :total-items="filteredData.length"
-          :current-page="1"
-          :max-links-displayed="10"
-        />
+        <VFlex class="mt-5">
+          <VCard class="p-1">
+            <VSnack
+              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              size="small"
+              solid
+              class="mt-2 ml-2"
+              color="info"
+              icon="feather:info"
+            >
+            </VSnack>
+          </VCard>
+        </VFlex>
       </div>
     </div>
   </div>

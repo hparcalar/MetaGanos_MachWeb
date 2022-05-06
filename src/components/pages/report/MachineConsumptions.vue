@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import moment from 'moment'
 import { computed, ref, onMounted } from 'vue'
+import type { Ref } from 'vue'
 import { ConsumptionSearchFilter } from '/@src/components/partials/filters/ConsumptionFilter.vue'
 import { useApi } from '/@src/composable/useApi'
-import { dateToStr } from '/@src/composable/useHelpers'
+import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
 
 const api = useApi()
 
 const filters = ref('')
 const reportData = ref([])
+const startDate: Ref<Date | null> = ref(null)
+const endDate: Ref<Date | null> = ref(null)
 
 const filteredData = computed(() => {
   if (!filters.value) {
@@ -18,11 +21,11 @@ const filteredData = computed(() => {
 
     return reportData.value.filter((item: any) => {
       return (
-        item.itemName.match(filterRe) ||
-        item.itemCategoryName.match(filterRe) ||
+        item.itemName?.match(filterRe) ||
+        item.itemCategoryName?.match(filterRe) ||
         item.itemGroupName?.match(filterRe) ||
-        item.machineName.match(filterRe) ||
-        item.employeeName.match(filterRe)
+        item.machineName?.match(filterRe) ||
+        item.employeeName?.match(filterRe)
       )
     })
   }
@@ -34,31 +37,36 @@ onMounted(async () => {
 
 const getReportData = async (filterModel: ConsumptionSearchFilter | null = null) => {
   try {
-    if (!filterModel)
+    if (!filterModel) {
       filterModel = {
-        startDate: moment().toDate(),
-        endDate: moment().toDate(),
+        startDate: removeTime(moment().toDate()),
+        endDate: moment(removeTime(moment().toDate()))
+          .add(23, 'hour')
+          .add(59, 'minute')
+          .toDate(),
         machineId: null,
         plantId: null,
         categoryId: null,
         groupId: null,
         itemId: null,
       }
+
+      startDate.value = filterModel.startDate
+      endDate.value = filterModel.endDate
+    }
+
     reportData.value = (await api.post('Machine/ConsumeReport', filterModel)).data
   } catch (error) {}
 }
 
 const columns = {
   consumedDate: 'Tarih',
+  consumedTime: 'Saat',
   employeeName: 'Personel',
   machineName: 'Makine',
   itemCategoryName: 'Kategori',
   itemName: 'Stok',
   totalConsumed: 'Miktar',
-  actions: {
-    label: '#',
-    align: 'center',
-  },
 } as const
 </script>
 
@@ -68,8 +76,8 @@ const columns = {
       <h1 class="title is-narrow mb-5">Tüketim Raporu</h1>
       <ConsumptionFilter
         class="mb-5"
-        :start-date="moment().toDate()"
-        :end-date="moment().toDate()"
+        :start-date="startDate"
+        :end-date="endDate"
         @search-triggered="getReportData"
       />
     </div>
@@ -87,6 +95,7 @@ const columns = {
           :json-data="reportData"
           :fields="{
             Tarih: 'consumedDate',
+            Saat: 'consumedDate',
             Personel: 'employeeName',
             Otomat: 'machineName',
             Kategori: 'itemCategoryName',
@@ -113,13 +122,27 @@ const columns = {
 
       <!--Active Tab-->
       <div v-else-if="filteredData.length" class="tab-content is-active">
-        <VFlexTable id="reportTable" :data="filteredData" :columns="columns" rounded>
+        <VFlexTable
+          id="reportTable"
+          :data="filteredData"
+          :columns="columns"
+          clickable
+          compact
+          separators
+        >
           <template #body>
-            <TransitionGroup name="list" tag="div" class="flex-list-inner">
+            <TransitionGroup
+              name="list"
+              tag="div"
+              class="flex-list-inner flex-list-small"
+            >
               <!--Table item-->
               <div v-for="item in filteredData" :key="item" class="flex-table-item">
                 <VFlexTableCell>
                   <span class="">{{ dateToStr(item.consumedDate) }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ timeToStr(item.consumedDate) }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.employeeName }}</span>
@@ -141,14 +164,19 @@ const columns = {
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
-        <VFlexPagination
-          v-if="filteredData.length > 5"
-          :item-per-page="10"
-          :total-items="filteredData.length"
-          :current-page="1"
-          :max-links-displayed="10"
-        />
+        <VFlex class="mt-5">
+          <VCard class="p-1">
+            <VSnack
+              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              size="small"
+              solid
+              class="mt-2 ml-2"
+              color="info"
+              icon="feather:info"
+            >
+            </VSnack>
+          </VCard>
+        </VFlex>
       </div>
     </div>
   </div>

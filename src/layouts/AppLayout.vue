@@ -143,7 +143,7 @@ watch(
             <p>Hareket</p>
           </a>
         </li>
-        <li>
+        <!-- <li>
           <a
             :class="[activeMobileSubsidebar === 'warehouse' && 'is-active']"
             data-content="Depo Yönetimi"
@@ -158,7 +158,7 @@ watch(
             ></i>
             <p>Depo</p>
           </a>
-        </li>
+        </li> -->
       </template>
     </Sidebar>
 
@@ -176,12 +176,12 @@ watch(
       />
     </Transition>
 
-    <Transition name="slide-x">
+    <!-- <Transition name="slide-x">
       <WarehouseSubsidebar
         v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'warehouse'"
         @close="isDesktopSidebarOpen = false"
       />
-    </Transition>
+    </Transition> -->
 
     <LanguagesPanel />
 

@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi, getApiBaseUrl } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -11,6 +12,7 @@ const props = defineProps({
   },
 })
 
+const { hasAuth, isDealer } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
@@ -57,6 +59,7 @@ const itemCategories = ref([])
 const isSpiralDetailVisible = ref(false)
 const isSpiralLoadVisible = ref(false)
 const selectedSpiralNo = ref(-1)
+const showOverallSaveInfo = ref(true)
 
 onMounted(async () => {
   await bindModel()
@@ -97,11 +100,20 @@ const bindModel = async () => {
       }
 
     plants.value = (await api.get('Plant')).data
-    itemCategories.value = (await api.get('ItemCategory')).data
 
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
       liveVideoStream.value = await api.get('Machine/' + props.id + '/Video')
     }
+
+    await bindCategories()
+  } catch (error) {}
+}
+
+const bindCategories = async () => {
+  try {
+    itemCategories.value = (
+      await api.get('Plant/' + modelObject.value.plantId + '/ItemCategories')
+    ).data
   } catch (error) {}
 }
 
@@ -109,7 +121,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('Machine', modelObject.value)
     if (postResult.data.result) {
-      notif.success('Kayıt başarılı.')
+      if (showOverallSaveInfo.value) notif.success('Kayıt başarılı.')
 
       // upload video if any files are selected
       if (modelObject.value.startVideoData != null && postResult.data.recordId > 0) {
@@ -220,6 +232,15 @@ const onSpiralSizeChanged = () => {
   }
 }
 
+const onChangePlant = async (plantId: any) => {
+  modelObject.value.plantId = plantId
+  if (spiralModel.value) {
+    spiralModel.value.itemCategoryId = null
+    spiralModel.value.itemId = null
+  }
+  await bindCategories()
+}
+
 // #region SPIRAL LOADING FUNCTIONS
 const showSpiralLoadDialog = () => {
   if (!spiralModel.value || !spiralModel.value.itemCategoryId) {
@@ -233,6 +254,10 @@ const showSpiralLoadDialog = () => {
 
 const onLoadSpiral = async (result: any) => {
   try {
+    showOverallSaveInfo.value = false
+    await saveModel()
+    showOverallSaveInfo.value = true
+
     result.spiralNo = selectedSpiralNo.value
     result.itemCategoryId = spiralModel.value.itemCategoryId
 
@@ -342,7 +367,13 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton color="info" icon="feather:upload" raised @click="fullAllSpirals">
+              <VButton
+                v-if="hasAuth('LoadMachine', 'Write')"
+                color="info"
+                icon="feather:upload"
+                raised
+                @click="fullAllSpirals"
+              >
                 Otomatı Tam Doldur
               </VButton>
               <VButton
@@ -353,7 +384,13 @@ const isStuck = computed(() => {
               >
                 Liste
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton
+                v-if="hasAuth('Machines', 'Write')"
+                color="primary"
+                icon="feather:save"
+                raised
+                @click="saveModel"
+              >
                 Kaydet
               </VButton>
             </div>
@@ -582,7 +619,7 @@ const isStuck = computed(() => {
                         </VControl>
                       </VField>
                     </div>
-                    <div class="column is-12">
+                    <div v-if="isDealer" class="column is-12">
                       <VField>
                         <label>Fabrika</label>
                         <VControl>
@@ -593,6 +630,7 @@ const isStuck = computed(() => {
                             placeholder="Bir fabrika seçiniz"
                             :searchable="true"
                             :options="plants"
+                            @change="onChangePlant"
                           />
                         </VControl>
                       </VField>
@@ -631,6 +669,7 @@ const isStuck = computed(() => {
                               class="input"
                               placeholder=""
                               autocomplete=""
+                              :readonly="!hasAuth('Machines', 'Write')"
                             />
                           </VControl>
                         </VField>
@@ -645,6 +684,7 @@ const isStuck = computed(() => {
                               class="input"
                               placeholder=""
                               autocomplete=""
+                              :readonly="!hasAuth('Machines', 'Write')"
                             />
                           </VControl>
                         </VField>
@@ -711,6 +751,7 @@ const isStuck = computed(() => {
                             Geri
                           </VButton>
                           <VButton
+                            v-if="hasAuth('LoadMachine', 'Write')"
                             color="primary"
                             icon="feather:upload"
                             raised
@@ -727,12 +768,14 @@ const isStuck = computed(() => {
                             Tüketimler
                           </VButton> -->
                           <VSwitchBlock
+                            v-if="hasAuth('Machines', 'Write')"
                             v-model="spiralModel.isEnabled"
                             class="ml-2"
                             label="Aktif"
                             color="success"
                           />
                           <VSwitchBlock
+                            v-if="hasAuth('Machines', 'Write')"
                             v-model="spiralModel.isInFault"
                             class="ml-2"
                             label="Arızalı"

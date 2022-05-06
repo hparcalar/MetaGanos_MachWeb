@@ -15,7 +15,7 @@ const props = defineProps({
 
 const api = useApi()
 const notif = useNotyf()
-const userSession = useUserSession
+const userSession = useUserSession()
 const { isDealer } = userSession
 
 const modelObject = ref({
@@ -37,6 +37,7 @@ const plantFiles = ref([])
 const departmentMachines: Ref<any[]> = ref([])
 const filters = ref('')
 const isMachineSelectionVisible: Ref<boolean> = ref(false)
+const isLoadCreditFormVisible = ref(false)
 
 onMounted(async () => {
   await bindModel()
@@ -59,16 +60,43 @@ const bindModel = async () => {
       }
 
     plants.value = (await api.get('Plant')).data
-    machines.value = (await api.get('Machine')).data
 
     if (!modelObject.value.plantId && plants.value.length == 1)
       modelObject.value.plantId = plants.value[0].id
+
+    if (modelObject.value.plantId)
+      machines.value = (
+        await api.get('Plant/' + modelObject.value.plantId + '/Machines')
+      ).data
 
     departmentMachines.value = (
       await api.get('Department/' + modelObject.value.id + '/Machines')
     ).data
     await updatePlantFiles(modelObject.value.plantId)
+    await checkUsableMachines()
   } catch (error) {}
+}
+
+const checkUsableMachines = async () => {
+  if (
+    modelObject.value.id == 0 ||
+    !departmentMachines.value ||
+    departmentMachines.value.length == 0
+  ) {
+    const plantMachines = (
+      await api.get('Plant/' + modelObject.value.plantId + '/Machines')
+    ).data
+    if (plantMachines) {
+      departmentMachines.value = machines.value.map((d: any) => {
+        return {
+          machineId: d.id,
+          departmentId: 0,
+          id: 0,
+          machineName: d.machineName,
+        }
+      })
+    }
+  }
 }
 
 const filteredData = computed(() => {
@@ -93,7 +121,15 @@ const columns = {
 
 const onChangePlant = async (plantId: any) => {
   modelObject.value.plantPrintFileId = null
+  modelObject.value.plantId = plantId
+  departmentMachines.value = []
+  machines.value = []
+  const plantMachines = (
+    await api.get('Plant/' + modelObject.value.plantId + '/Machines')
+  ).data
+  if (plantMachines) machines.value = plantMachines
   await updatePlantFiles(plantId)
+  await checkUsableMachines()
 }
 
 const showMachineSelection = () => {
@@ -167,6 +203,10 @@ const saveModel = async () => {
   }
 }
 
+const showLoadCreditForm = () => {
+  isLoadCreditFormVisible.value = true
+}
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -184,6 +224,14 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
+              <VButton
+                icon="feather:upload"
+                color="info"
+                raised
+                @click="showLoadCreditForm"
+              >
+                Toplu Kredi Yükleme
+              </VButton>
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
                 :to="{ name: 'department' }"
@@ -407,6 +455,13 @@ const isStuck = computed(() => {
       </div>
     </div>
   </form>
+
+  <BulkCreditLoad
+    :visible="isLoadCreditFormVisible"
+    :department-id="modelObject.id"
+    @close="isLoadCreditFormVisible = false"
+    @saved="isLoadCreditFormVisible = false"
+  />
 </template>
 
 <style lang="scss">

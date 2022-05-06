@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useApi } from '/@src/composable/useApi'
 
@@ -130,6 +130,20 @@ onMounted(async () => {
 const triggerForSearch = () => {
   emit('searchTriggered', filterModel.value)
 }
+
+watch(
+  () => props.startDate,
+  () => {
+    if (props.startDate) filterModel.value.startDate = props.startDate
+  }
+)
+
+watch(
+  () => props.endDate,
+  () => {
+    if (props.endDate) filterModel.value.endDate = props.endDate
+  }
+)
 </script>
 
 <template>
@@ -140,7 +154,9 @@ const triggerForSearch = () => {
         <VField>
           <VDatePicker
             v-model="filterModel.startDate"
-            :masks="{ input: 'DD.MM.YYYY' }"
+            mode="dateTime"
+            is24hr
+            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }"
             trim-weeks
           >
             <template #default="{ inputValue, inputEvents }">
@@ -166,7 +182,9 @@ const triggerForSearch = () => {
         <VField>
           <VDatePicker
             v-model="filterModel.endDate"
-            :masks="{ input: 'DD.MM.YYYY' }"
+            mode="dateTime"
+            is24hr
+            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }"
             trim-weeks
           >
             <template #default="{ inputValue, inputEvents }">

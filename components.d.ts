@@ -7,6 +7,7 @@ declare module 'vue' {
     AnimatedLogo: typeof import('./src/components/svg/AnimatedLogo.vue')['default']
     AppLayout: typeof import('./src/layouts/AppLayout.vue')['default']
     AuthLayout: typeof import('./src/layouts/AuthLayout.vue')['default']
+    BulkCreditLoad: typeof import('./src/components/partials/department/BulkCreditLoad.vue')['default']
     CardForm: typeof import('./src/components/pages/card/CardForm.vue')['default']
     CardList: typeof import('./src/components/pages/card/CardList.vue')['default']
     ConsumptionFilter: typeof import('./src/components/partials/filters/ConsumptionFilter.vue')['default']

@@ -267,3 +267,25 @@
     margin-right: auto;
   }
 }
+
+/* ==========================================================================
+7. Heka Custom Styles
+========================================================================== */
+.flex-table-cell {
+  white-space: normal !important;
+}
+
+.flex-list-inner {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.flex-list-small {
+  max-height: 35vh;
+  overflow-y: auto;
+}
+
+.flex-table-header span {
+  color: var(--dark-text) !important;
+  font-size: small !important;
+}

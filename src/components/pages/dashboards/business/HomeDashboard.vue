@@ -10,7 +10,7 @@ const router = useRouter()
 const api = useApi()
 const userSession = useUserSession()
 const userData: Ref<any> = ref({})
-const { isDealer, isOfficer } = userSession
+const { isDealer, isOfficer, hasAuth } = userSession
 
 const totals = ref({
   plantCount: 0,
@@ -338,7 +338,7 @@ onMounted(async () => {
         </div>
 
         <!--Machines Card-->
-        <div class="column is-4">
+        <div v-if="hasAuth('Machines', 'Read')" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
@@ -361,6 +361,7 @@ onMounted(async () => {
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
+                v-if="hasAuth('Machines', 'Write')"
                 class="button v-button is-raised is-primary"
                 @click="goToRoute('machine-slug', { slug: '0' })"
               >
@@ -374,7 +375,7 @@ onMounted(async () => {
         </div>
 
         <!-- Departments Card -->
-        <div class="column is-4">
+        <div v-if="hasAuth('Departments', 'Read')" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
@@ -397,6 +398,7 @@ onMounted(async () => {
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
+                v-if="hasAuth('Departments', 'Write')"
                 class="button v-button is-raised is-primary"
                 @click="goToRoute('department-slug', { slug: '0' })"
               >
@@ -410,7 +412,7 @@ onMounted(async () => {
         </div>
 
         <!-- Employees Card -->
-        <div class="column is-4">
+        <div v-if="hasAuth('Employees', 'Read')" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
@@ -433,6 +435,7 @@ onMounted(async () => {
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
+                v-if="hasAuth('Employees', 'Write')"
                 class="button v-button is-raised is-primary"
                 @click="goToRoute('employee-slug', { slug: '0' })"
               >
@@ -482,7 +485,7 @@ onMounted(async () => {
         </div>
 
         <!-- Items Card -->
-        <div class="column is-4">
+        <div v-if="hasAuth('Items', 'Read')" class="column is-4">
           <div class="card-grid-item">
             <VAvatar
               size="large"
@@ -505,6 +508,7 @@ onMounted(async () => {
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
               <button
+                v-if="hasAuth('Items', 'Write')"
                 class="button v-button is-raised is-primary"
                 @click="goToRoute('item-definition-slug', { slug: '0' })"
               >

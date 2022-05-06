@@ -62,6 +62,10 @@ export const useUserSession = defineStore('userSession', () => {
         const api = useApi()
         const plantInfo = (await api.get('Plant/' + user.value.FactoryId)).data
         if (plantInfo) user.value.PlantName = plantInfo.plantName
+
+        const officerData = (await api.get('Officer/' + user.value.UserId)).data
+        if (officerData && officerData.authUnits)
+          user.value.authUnits = officerData.authUnits
       } catch (error) {}
     }
   }
@@ -128,6 +132,28 @@ export const useUserSession = defineStore('userSession', () => {
     }
   }
 
+  const hasAuth = (section: string, actionType: string) => {
+    try {
+      if (user.value && user.value.AuthType == 'Dealer') return true
+
+      if (user.value && user.value.AuthType == 'FactoryOfficer') {
+        if (
+          user.value.authUnits &&
+          user.value.authUnits.some(
+            (d: any) =>
+              d.section == section &&
+              ((actionType == 'Read' && d.canRead == true) ||
+                (actionType == 'Write' && d.canWrite == true) ||
+                (actionType == 'Delete' && d.canDelete == true))
+          )
+        )
+          return true
+      }
+    } catch (error) {}
+
+    return false
+  }
+
   if (user.value && user.value.languageCode && user.value.languageCode.length > 0)
     setLanguage(user.value.languageCode)
 
@@ -146,6 +172,7 @@ export const useUserSession = defineStore('userSession', () => {
     getLocale,
     isDealer,
     isOfficer,
+    hasAuth,
   } as const
 })
 

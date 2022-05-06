@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useUserSession } from '/@src/stores/userSession'
 const emit = defineEmits(['close'])
 const openSubsidebarLinks = ref('')
+const { hasAuth, isDealer } = useUserSession()
 </script>
 
 <template>
@@ -19,7 +21,7 @@ const openSubsidebarLinks = ref('')
     </div>
     <div class="inner" data-simplebar>
       <ul>
-        <li>
+        <!-- <li>
           <RouterLink :to="{ name: 'plant' }"> Satınalma </RouterLink>
         </li>
         <li>
@@ -27,8 +29,8 @@ const openSubsidebarLinks = ref('')
         </li>
         <li>
           <RouterLink :to="{ name: 'department' }"> Satış </RouterLink>
-        </li>
-        <li>
+        </li> -->
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
           <RouterLink :to="{ name: 'report-consume' }"> Tüketim Raporu </RouterLink>
         </li>
       </ul>

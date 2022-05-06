@@ -166,8 +166,17 @@ const onCloseLoadCredit = () => {
   selectedItemCategoryObject.value = null
 }
 
-const deleteCredit = (itemCategoryId: number) => {
-  console.log(itemCategoryId)
+const deleteCredit = async (creditId: number) => {
+  if (confirm('Bu kredi tanımını silmek istediğinizden emin misiniz?')) {
+    try {
+      const postResult = (await api.delete('Employee/DeleteCredit?creditId=' + creditId))
+        .data
+      if (postResult && postResult.result) {
+        notif.success('Kredi başarıyla silindi.')
+        await bindModel()
+      } else notif.error(postResult.errorMessage)
+    } catch (error) {}
+  }
 }
 // #endregion
 
@@ -547,7 +556,7 @@ const isStuck = computed(() => {
                                   </button>
                                   <button
                                     class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                    @click="deleteCredit(item.itemCategoryId)"
+                                    @click="deleteCredit(item.id)"
                                   >
                                     <i aria-hidden="true" class="fas fa-trash dot"></i>
                                   </button>

@@ -18,11 +18,11 @@ const filteredData = computed(() => {
 
     return factories.value.filter((item) => {
       return (
-        item.plantCode.match(filterRe) ||
-        item.plantName.match(filterRe) ||
-        item.explanation.match(filterRe) ||
-        item.dealerCode.match(filterRe) ||
-        item.dealerName.match(filterRe)
+        item.plantCode?.match(filterRe) ||
+        item.plantName?.match(filterRe) ||
+        item.explanation?.match(filterRe) ||
+        item.dealerCode?.match(filterRe) ||
+        item.dealerName?.match(filterRe)
       )
     })
   }
@@ -83,7 +83,7 @@ const columns = {
 
       <!--Active Tab-->
       <div v-else-if="filteredData.length" class="tab-content is-active">
-        <VFlexTable :data="filteredData" :columns="columns" rounded>
+        <VFlexTable :data="filteredData" :columns="columns" clickable compact separators>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">
               <!--Table item-->
@@ -102,11 +102,10 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">
                   <button
-                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile"
+                    class="button v-button has-dot dark-outlined is-info is-pushed-mobile mx-auto"
                     @click="openDetail(item.id)"
                   >
-                    <i aria-hidden="true" class="fas fa-edit dot mr-2"></i>
-                    Düzenle
+                    <i aria-hidden="true" class="fas fa-search dot mr-0"></i>
                   </button>
                 </VFlexTableCell>
               </div>
@@ -114,14 +113,19 @@ const columns = {
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
-        <VFlexPagination
-          v-if="filteredData.length > 5"
-          :item-per-page="10"
-          :total-items="filteredData.length"
-          :current-page="1"
-          :max-links-displayed="10"
-        />
+        <VFlex class="mt-5">
+          <VCard class="p-1">
+            <VSnack
+              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              size="small"
+              solid
+              class="mt-2 ml-2"
+              color="info"
+              icon="feather:info"
+            >
+            </VSnack>
+          </VCard>
+        </VFlex>
       </div>
     </div>
   </div>
