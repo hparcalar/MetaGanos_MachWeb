@@ -11,6 +11,16 @@ export const dateToStr = (dateString: string): string => {
   return dateString
 }
 
+export const dateIsLtFromNow = (dateString: string): boolean => {
+  if (dateString && dateString.length > 0) {
+    try {
+      const dtObj = moment(dateString)
+      return moment() > dtObj
+    } catch (error) {}
+  }
+  return false
+}
+
 export const dateTimeToStr = (dateString: string): string => {
   if (dateString && dateString.length > 0) {
     try {

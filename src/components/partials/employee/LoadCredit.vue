@@ -92,6 +92,8 @@ const productIntervalTypes = ref([
 
 const bindCreditModel = async () => {
   modelIsBinding.value = true
+  if (modelObject.value.id > 0 && modelObject.value.id != props.params.creditId)
+    modelObject.value.id = props.params.creditId
   if (modelObject.value.id == 0 && props.params.creditId > 0)
     modelObject.value.id = props.params.creditId
 
@@ -119,6 +121,7 @@ const bindCreditModel = async () => {
       modelObject.value.itemCategoryId = props.params.itemCategoryId
       modelObject.value.itemGroupId = props.params.itemGroupId
       modelObject.value.itemId = props.params.itemId
+      modelObject.value.employeeId = props.params.employeeId
     }
   } else if (
     props.isBulk &&
@@ -147,6 +150,7 @@ const bindCreditModel = async () => {
     modelObject.value.itemCategoryId = props.params.itemCategoryId
     modelObject.value.itemGroupId = props.params.itemGroupId
     modelObject.value.itemId = props.params.itemId
+    modelObject.value.employeeId = props.params.employeeId
 
     // if (props.params.itemCategoryId > 0) bindCategoryDefaults(props.params.itemCategoryId)
   }

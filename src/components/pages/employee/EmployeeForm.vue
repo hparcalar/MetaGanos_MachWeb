@@ -4,7 +4,7 @@ import type { Ref } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
-import { dateToStr } from '/@src/composable/useHelpers'
+import { dateToStr, dateIsLtFromNow } from '/@src/composable/useHelpers'
 import { creditRangeOption } from '/@src/shared-types'
 import type { CreditRangeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
@@ -510,7 +510,13 @@ const isStuck = computed(() => {
 
                       <!--Active Tab-->
                       <div v-else-if="filteredData.length" class="tab-content is-active">
-                        <VFlexTable :data="filteredData" :columns="columns" rounded>
+                        <VFlexTable
+                          :data="filteredData"
+                          :columns="columns"
+                          clickable
+                          compact
+                          separators
+                        >
                           <template #body>
                             <TransitionGroup
                               name="list"
@@ -522,10 +528,15 @@ const isStuck = computed(() => {
                                 v-for="item in filteredData"
                                 :key="item.id"
                                 class="flex-table-item"
+                                :class="{
+                                  'past-credit':
+                                    item.creditEndDate &&
+                                    dateIsLtFromNow(item.creditEndDate),
+                                }"
                               >
                                 <VFlexTableCell>
                                   <span class=""
-                                    ><b>{{ item.itemCategoryName }}</b></span
+                                    ><small>{{ item.itemCategoryName }}</small></span
                                   >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
@@ -534,18 +545,26 @@ const isStuck = computed(() => {
                                   >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
-                                  <span class="">{{
-                                    dateToStr(item.creditLoadDate)
-                                  }}</span>
+                                  <span class=""
+                                    ><small>{{
+                                      dateToStr(item.creditLoadDate)
+                                    }}</small></span
+                                  >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
-                                  <span class="">{{ getRangeStr(item) }}</span>
+                                  <span class=""
+                                    ><small>{{ getRangeStr(item) }}</small></span
+                                  >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
-                                  <span class="">{{ item.creditByRange }}</span>
+                                  <span class=""
+                                    ><small>{{ item.creditByRange }}</small></span
+                                  >
                                 </VFlexTableCell>
                                 <VFlexTableCell>
-                                  <span class="">{{ item.rangeCredit }}</span>
+                                  <span class=""
+                                    ><small>{{ item.rangeCredit }}</small></span
+                                  >
                                 </VFlexTableCell>
                                 <VFlexTableCell :columns="{ align: 'end' }">
                                   <button
@@ -705,6 +724,10 @@ const isStuck = computed(() => {
   .form-layout {
     margin-top: 30px;
   }
+}
+
+.past-credit {
+  background-color: var(--yellow) !important;
 }
 
 .form-layout {

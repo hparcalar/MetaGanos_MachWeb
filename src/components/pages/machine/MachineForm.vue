@@ -101,11 +101,11 @@ const bindModel = async () => {
 
     plants.value = (await api.get('Plant')).data
 
+    await bindCategories()
+
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
       liveVideoStream.value = await api.get('Machine/' + props.id + '/Video')
     }
-
-    await bindCategories()
   } catch (error) {}
 }
 
