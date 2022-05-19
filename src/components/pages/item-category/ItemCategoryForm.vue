@@ -87,7 +87,6 @@ const bindModel = async () => {
 
 const saveModel = async () => {
   try {
-    modelObject.value.plantId = userSession.user.FactoryId
     const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
