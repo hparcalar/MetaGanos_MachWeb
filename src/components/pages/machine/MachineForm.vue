@@ -203,8 +203,8 @@ const onSpiralSizeChanged = () => {
     const newSpiralList = []
     for (let r = 1; r <= modelObject.value.rows; r++) {
       for (let c = 1; c < modelObject.value.cols + 1; c++) {
-        const spiralNo: number =
-          modelObject.value.spiralStartIndex - 1 + ((r - 1) * modelObject.value.cols + c)
+        const spiralNo: number = r * 10 + (c - 1)
+        //modelObject.value.spiralStartIndex - 1 + ((r - 1) * modelObject.value.cols + c)
         const existingSpiral = modelObject.value.spirals.find(
           (d) => d.posOrders == spiralNo
         )
@@ -800,43 +800,25 @@ const isStuck = computed(() => {
             >
               <VButton
                 :color="
-                  isSpiralEnabled(
-                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
-                  )
-                    ? isSpiralInFault(
-                        modelObject.spiralStartIndex -
-                          1 +
-                          ((r - 1) * modelObject.cols + c)
-                      )
+                  isSpiralEnabled(r * 10 + (c - 1))
+                    ? isSpiralInFault(r * 10 + (c - 1))
                       ? 'warning'
                       : 'info'
                     : 'danger'
                 "
                 :rounded="true"
                 :outlined="
-                  isSpiralEnabled(
-                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
-                  ) &&
-                  !isSpiralInFault(
-                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
-                  )
+                  isSpiralEnabled(r * 10 + (c - 1)) && !isSpiralInFault(r * 10 + (c - 1))
                 "
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="
-                  showSpiralDetail(
-                    modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
-                  )
-                "
+                @click="showSpiralDetail(r * 10 + (c - 1))"
               >
-                {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }}
+                {{ r * 10 + (c - 1) }}
+                <!-- {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }} -->
                 <p class="spiral-quantity-info">
-                  {{
-                    getSpiralQuantityInfo(
-                      modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c)
-                    )
-                  }}
+                  {{ getSpiralQuantityInfo(r * 10 + (c - 1)) }}
                 </p>
               </VButton>
             </div>
