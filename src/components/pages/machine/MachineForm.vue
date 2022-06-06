@@ -104,9 +104,13 @@ const bindModel = async () => {
     await bindCategories()
 
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
-      liveVideoStream.value = await api.get('Machine/' + props.id + '/Video')
+      bindVideo()
     }
   } catch (error) {}
+}
+
+const bindVideo = async () => {
+  liveVideoStream.value = await api.get('Machine/' + modelObject.value.id + '/Video')
 }
 
 const bindCategories = async () => {
@@ -203,7 +207,7 @@ const onSpiralSizeChanged = () => {
     const newSpiralList = []
     for (let r = 1; r <= modelObject.value.rows; r++) {
       for (let c = 1; c < modelObject.value.cols + 1; c++) {
-        const spiralNo: number = r * 10 + (c - 1)
+        const spiralNo: number = r * 10 + c
         //modelObject.value.spiralStartIndex - 1 + ((r - 1) * modelObject.value.cols + c)
         const existingSpiral = modelObject.value.spirals.find(
           (d) => d.posOrders == spiralNo
@@ -281,6 +285,8 @@ const onLoadSpiral = async (result: any) => {
       spiralModel.value.itemId = newSpiralValue.itemId
       spiralModel.value.itemName = newSpiralValue.itemName
       spiralModel.value.itemCategoryId = newSpiralValue.itemCategoryId
+
+      await bindModel()
     } else notif.error('Hata: ' + postResult.data.errorMessage)
   } catch (error: any) {
     notif.error('Yükleme başarısız: ' + error)
@@ -800,25 +806,23 @@ const isStuck = computed(() => {
             >
               <VButton
                 :color="
-                  isSpiralEnabled(r * 10 + (c - 1))
-                    ? isSpiralInFault(r * 10 + (c - 1))
+                  isSpiralEnabled(r * 10 + c)
+                    ? isSpiralInFault(r * 10 + c)
                       ? 'warning'
                       : 'info'
                     : 'danger'
                 "
                 :rounded="true"
-                :outlined="
-                  isSpiralEnabled(r * 10 + (c - 1)) && !isSpiralInFault(r * 10 + (c - 1))
-                "
+                :outlined="isSpiralEnabled(r * 10 + c) && !isSpiralInFault(r * 10 + c)"
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="showSpiralDetail(r * 10 + (c - 1))"
+                @click="showSpiralDetail(r * 10 + c)"
               >
-                {{ r * 10 + (c - 1) }}
+                {{ r * 10 + c }}
                 <!-- {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }} -->
                 <p class="spiral-quantity-info">
-                  {{ getSpiralQuantityInfo(r * 10 + (c - 1)) }}
+                  {{ getSpiralQuantityInfo(r * 10 + c) }}
                 </p>
               </VButton>
             </div>
