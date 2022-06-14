@@ -82,6 +82,8 @@ const bindModel = async () => {
       plants.value.length == 1
     )
       modelObject.value.plantId = plants.value[0].id
+    else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
+      modelObject.value.plantId = userSession.user.FactoryId
   } catch (error) {}
 }
 

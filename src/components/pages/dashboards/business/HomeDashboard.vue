@@ -473,7 +473,7 @@ onMounted(async () => {
               </button>
               <button
                 class="button v-button is-raised is-primary"
-                @click="goToRoute('card-slug', { slug: '0' })"
+                @click="goToRoute('officer-slug', { slug: '0' })"
               >
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>

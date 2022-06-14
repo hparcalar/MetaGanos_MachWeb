@@ -28,6 +28,7 @@ onMounted(async () => {
 const bindModel = async () => {
   try {
     const data = await api.get('UnitType/' + props.id)
+
     if (data.status === 200) modelObject.value = data.data
   } catch (error) {}
 }

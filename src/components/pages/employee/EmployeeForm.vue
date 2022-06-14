@@ -74,6 +74,8 @@ const bindModel = async () => {
 
     if (!modelObject.value.plantId && plants.value.length == 1)
       modelObject.value.plantId = plants.value[0].id
+    else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
+      modelObject.value.plantId = userSession.user.FactoryId
 
     await updateDepartmentList(modelObject.value.plantId)
     await updateCardList(modelObject.value.plantId)

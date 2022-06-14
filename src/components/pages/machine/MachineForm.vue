@@ -12,7 +12,7 @@ const props = defineProps({
   },
 })
 
-const { hasAuth, isDealer } = useUserSession()
+const { hasAuth, isDealer, user } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
@@ -79,7 +79,7 @@ const bindModel = async () => {
         machineName: '',
         specialCustomer: '',
         inventoryCode: '',
-        plantId: null,
+        plantId: 0,
         barcode: '',
         productionDate: null,
         inventoryEntryDate: null,
@@ -100,6 +100,11 @@ const bindModel = async () => {
       }
 
     plants.value = (await api.get('Plant')).data
+
+    try {
+      if (!modelObject.value.plantId || modelObject.value.plantId == 0)
+        modelObject.value.plantId = user.FactoryId
+    } catch (error) {}
 
     await bindCategories()
 
@@ -253,6 +258,33 @@ const showSpiralLoadDialog = () => {
   }
   if (selectedSpiralNo.value > 0) {
     isSpiralLoadVisible.value = true
+  }
+}
+
+const emptySpiral = async () => {
+  if (!spiralModel.value || !spiralModel.value.itemCategoryId) {
+    notif.warning('Boşaltmak için bir spiral seçmelisiniz.')
+    return
+  }
+
+  if (confirm('Bu spiralin içerisini boşaltmak istediğinize emin misiniz?') == true) {
+    try {
+      const postResult = (
+        await api.get(
+          'Machine/' +
+            modelObject.value.id +
+            '/EmptySpiral/' +
+            spiralModel.value.posOrders,
+          {}
+        )
+      ).data
+      if (postResult.result) {
+        notif.success('Spiral boşaltıldı')
+        await bindModel()
+      } else notif.error(postResult.errorMessage)
+    } catch (error: any) {
+      notif.error(error?.message)
+    }
   }
 }
 
@@ -764,6 +796,15 @@ const isStuck = computed(() => {
                             @click="showSpiralLoadDialog()"
                           >
                             Yükleme Yap
+                          </VButton>
+                          <VButton
+                            v-if="hasAuth('LoadMachine', 'Write')"
+                            color="danger"
+                            icon="feather:trash"
+                            raised
+                            @click="emptySpiral()"
+                          >
+                            Boşalt
                           </VButton>
                           <!-- <VButton
                             color="dark"

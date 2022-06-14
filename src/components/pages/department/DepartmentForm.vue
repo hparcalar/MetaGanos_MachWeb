@@ -63,6 +63,10 @@ const bindModel = async () => {
 
     if (!modelObject.value.plantId && plants.value.length == 1)
       modelObject.value.plantId = plants.value[0].id
+    else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
+      modelObject.value.plantId = userSession.user.FactoryId
+
+    console.log(modelObject.value.plantId)
 
     if (modelObject.value.plantId)
       machines.value = (
