@@ -131,13 +131,14 @@ const saveModel = async () => {
     const postResult = await api.post('Machine', modelObject.value)
     if (postResult.data.result) {
       if (showOverallSaveInfo.value) notif.success('Kayıt başarılı.')
+      modelObject.value.id = postResult.data.recordId
 
       // upload video if any files are selected
       if (modelObject.value.startVideoData != null && postResult.data.recordId > 0) {
         let formData = new FormData()
         formData.append('videoData', modelObject.value.startVideoData)
-
-        notif.info('Video yükleniyor...')
+        notif.properties().options.duration = 0
+        notif.info('Video yükleniyor, lütfen bekleyiniz.')
 
         const postVideoResult = await api.post(
           'Machine/' + postResult.data.recordId + '/UploadVideo',
@@ -150,6 +151,8 @@ const saveModel = async () => {
         )
 
         if (postVideoResult.data.result) {
+          notif.properties().dismissAll()
+          notif.properties().options.duration = 2000
           notif.success('Video başarıyla yüklendi.')
         } else
           notif.error('Video yükleme işlemi başarısız oldu, lütfen tekrar deneyiniz.')
@@ -212,7 +215,7 @@ const onSpiralSizeChanged = () => {
     const newSpiralList = []
     for (let r = 1; r <= modelObject.value.rows; r++) {
       for (let c = 1; c < modelObject.value.cols + 1; c++) {
-        const spiralNo: number = r * 10 + c
+        const spiralNo: number = getSpiralNo(r, c)
         //modelObject.value.spiralStartIndex - 1 + ((r - 1) * modelObject.value.cols + c)
         const existingSpiral = modelObject.value.spirals.find(
           (d) => d.posOrders == spiralNo
@@ -361,6 +364,14 @@ const onVideoSelected = async (event: any) => {
     modelObject.value.startVideoData = fileData
   } else {
     modelObject.value.startVideoData = null
+  }
+}
+
+const getSpiralNo = (r, c) => {
+  if (modelObject.value.brandModel == 'Meta S350') {
+    return r * 10 + c - 1
+  } else {
+    return r * 10 + c
   }
 }
 
@@ -847,23 +858,26 @@ const isStuck = computed(() => {
             >
               <VButton
                 :color="
-                  isSpiralEnabled(r * 10 + c)
-                    ? isSpiralInFault(r * 10 + c)
+                  isSpiralEnabled(getSpiralNo(r, c))
+                    ? isSpiralInFault(getSpiralNo(r, c))
                       ? 'warning'
                       : 'info'
                     : 'danger'
                 "
                 :rounded="true"
-                :outlined="isSpiralEnabled(r * 10 + c) && !isSpiralInFault(r * 10 + c)"
+                :outlined="
+                  isSpiralEnabled(getSpiralNo(r, c)) &&
+                  !isSpiralInFault(getSpiralNo(r, c))
+                "
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="showSpiralDetail(r * 10 + c)"
+                @click="showSpiralDetail(getSpiralNo(r, c))"
               >
-                {{ r * 10 + c }}
+                {{ getSpiralNo(r, c) }}
                 <!-- {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }} -->
                 <p class="spiral-quantity-info">
-                  {{ getSpiralQuantityInfo(r * 10 + c) }}
+                  {{ getSpiralQuantityInfo(getSpiralNo(r, c)) }}
                 </p>
               </VButton>
             </div>

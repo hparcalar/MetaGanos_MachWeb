@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
 export type ConsumptionSearchFilter = {
   startDate: Date | null
@@ -13,6 +14,7 @@ export type ConsumptionSearchFilter = {
   itemId: number[] | null
 }
 
+const { isDealer, user } = useUserSession()
 const api = useApi()
 
 const props = defineProps({
@@ -48,6 +50,9 @@ const items = ref([])
 const bindFilterModel = async () => {
   try {
     plants.value = (await api.get('Plant')).data
+    if (isDealer == false) {
+      plants.value = plants.value.filter((d) => d.id == user.FactoryId)
+    }
     categories.value = (await api.get('ItemCategory')).data
   } catch (error) {}
 }

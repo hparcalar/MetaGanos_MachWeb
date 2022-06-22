@@ -32,7 +32,8 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('ItemGroup/' + props.id)
+    if (modelObject.value.id == 0) modelObject.value.id = props.id
+    const data = await api.get('ItemGroup/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
 
     categories.value = (await api.get('ItemCategory')).data
@@ -43,6 +44,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('ItemGroup', modelObject.value)
     if (postResult.data.result) {
+      modelObject.value.id = postResult.data.recordId
       notif.success('Kayıt başarılı.')
       await bindModel()
     } else notif.error(postResult.data.errorMessage)

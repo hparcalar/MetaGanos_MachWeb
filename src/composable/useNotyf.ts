@@ -88,6 +88,9 @@ export const useNotyf = createSharedComposable(() => {
   })
 
   return {
+    properties: (): Notyf => {
+      return notyf
+    },
     dismiss: (notification: NotyfNotification) => {
       notyf.dismiss(notification)
     },

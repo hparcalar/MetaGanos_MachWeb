@@ -118,6 +118,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('Employee', modelObject.value)
     if (postResult.data.result) {
+      modelObject.value.id = postResult.data.recordId
       notif.success('Kayıt başarılı.')
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
@@ -225,8 +226,8 @@ const filteredData = computed(() => {
 })
 
 const columns = {
-  itemCategoryName: 'Kategori',
-  itemGroupName: 'Grup',
+  itemCategoryName: 'Stok',
+  // itemGroupName: 'Grup',
   creditLoadDate: 'Yükleme',
   rangeType: 'Periyot',
   creditByRange: 'Toplam',
@@ -538,12 +539,13 @@ const isStuck = computed(() => {
                               >
                                 <VFlexTableCell>
                                   <span class=""
-                                    ><small>{{ item.itemCategoryName }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{ item.itemGroupName }}</small></span
+                                    ><small>{{
+                                      item.itemName.length > 0
+                                        ? item.itemName
+                                        : item.itemGroupName.length > 0
+                                        ? item.itemGroupName
+                                        : item.itemCategoryName
+                                    }}</small></span
                                   >
                                 </VFlexTableCell>
                                 <VFlexTableCell>

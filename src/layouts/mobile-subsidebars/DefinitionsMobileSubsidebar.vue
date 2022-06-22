@@ -1,27 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useUserSession } from '/@src/stores/userSession'
-const emit = defineEmits(['close'])
-const openSubsidebarLinks = ref('')
+import { ref } from 'vue'
+
 const userSession = useUserSession()
+const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer } = userSession
 </script>
-
 <template>
-  <div class="sidebar-panel is-generic">
-    <div class="subpanel-header">
-      <h3 class="no-mb">Tanımlar</h3>
-      <div
-        class="panel-close"
-        tabindex="0"
-        @keydown.space.prevent="emit('close')"
-        @click="emit('close')"
-      >
-        <i aria-hidden="true" class="iconify" data-icon="feather:x"></i>
+  <div class="mobile-subsidebar">
+    <div class="inner">
+      <div class="sidebar-title">
+        <h3>Tanımlar</h3>
       </div>
-    </div>
-    <div class="inner" data-simplebar>
-      <ul>
+
+      <ul class="submenu" data-simplebar>
         <li v-if="isDealer">
           <RouterLink :to="{ name: 'plant' }">
             {{ userSession.getExpression('Factories') }}
@@ -42,11 +34,6 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('Employees') }}
           </RouterLink>
         </li>
-        <!-- <li v-if="hasAuth('Cards', 'Read')">
-          <RouterLink :to="{ name: 'card' }">
-            {{ userSession.getExpression('Cards') }}
-          </RouterLink>
-        </li> -->
 
         <VCollapseLinks
           v-if="
@@ -87,17 +74,7 @@ const { hasAuth, isDealer } = userSession
             <span>{{ userSession.getExpression('Units') }}</span>
           </RouterLink>
         </VCollapseLinks>
-
-        <li>
-          <RouterLink :to="{ name: 'language' }">
-            {{ userSession.getExpression('LanguageSettings') }}
-          </RouterLink>
-        </li>
       </ul>
     </div>
   </div>
 </template>
-
-<style lang="scss">
-@import '../../scss/layout/sidebar-panel';
-</style>

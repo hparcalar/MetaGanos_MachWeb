@@ -31,6 +31,8 @@ const filteredData = computed(() => {
   }
 })
 
+const lastFilterModel: Ref<any> = ref(null)
+
 onMounted(async () => {
   await getReportData()
 })
@@ -55,8 +57,69 @@ const getReportData = async (filterModel: ConsumptionSearchFilter | null = null)
       endDate.value = filterModel.endDate
     }
 
-    reportData.value = (await api.post('Machine/ConsumeReport', filterModel)).data
+    lastFilterModel.value = filterModel
+
+    const filterPrm = {
+      ...filterModel,
+      startDate: moment(filterModel.startDate).format('yyyy-MM-DDTHH:mm:SS.000Z'),
+      endDate: moment(filterModel.endDate).format('yyyy-MM-DDTHH:mm:SS.000Z'),
+    }
+
+    reportData.value = (await api.post('Machine/ConsumeReport', filterPrm)).data
   } catch (error) {}
+}
+
+const exportToExcel = async () => {
+  if (!lastFilterModel.value) {
+    lastFilterModel.value = {
+      startDate: removeTime(moment().toDate()),
+      endDate: moment(removeTime(moment().toDate()))
+        .add(23, 'hour')
+        .add(59, 'minute')
+        .toDate(),
+      machineId: null,
+      plantId: null,
+      categoryId: null,
+      groupId: null,
+      itemId: null,
+    }
+
+    startDate.value = lastFilterModel.value.startDate
+    endDate.value = lastFilterModel.value.endDate
+  }
+
+  const filterPrm = {
+    ...lastFilterModel.value,
+    startDate: moment(lastFilterModel.value.startDate).format('yyyy-MM-DDTHH:mm:SS.000Z'),
+    endDate: moment(lastFilterModel.value.endDate).format('yyyy-MM-DDTHH:mm:SS.000Z'),
+  }
+
+  const bs64Str = (await api.post('Machine/ExcelConsumeReport', filterPrm)).data
+  downloadFile(bs64Str)
+}
+
+const downloadFile = function (base64: any) {
+  let bytes = base64ToByteArray(base64)
+
+  let blob = new Blob([bytes], { type: 'application/octet-stream' })
+  let link = document.createElement('a')
+  link.href = window.URL.createObjectURL(blob)
+
+  let fileName = 'tuketim_raporu.xlsx'
+  link.download = fileName
+  link.click()
+}
+
+const base64ToByteArray = function (base64: any) {
+  let binaryString = window.atob(base64)
+  let len = binaryString.length
+
+  let bytes = new Uint8Array(len)
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return bytes.buffer
 }
 
 const columns = {
@@ -66,6 +129,7 @@ const columns = {
   machineName: 'Makine',
   itemCategoryName: 'Kategori',
   itemName: 'Stok',
+  spiralNo: 'Spiral',
   totalConsumed: 'Miktar',
 } as const
 </script>
@@ -90,8 +154,9 @@ const columns = {
         />
       </VControl>
 
-      <VButton color="success" icon="feather:download" raised>
-        <vue3-json-excel
+      <VButton color="success" icon="feather:download" raised @click="exportToExcel">
+        Dışarı Aktar
+        <!-- <vue3-json-excel
           :json-data="reportData"
           :fields="{
             Tarih: 'consumedDate',
@@ -102,10 +167,10 @@ const columns = {
             Stok: 'itemName',
             Miktar: 'totalConsumed',
           }"
-          type="xlsx"
-          name="tuketim-raporu.xlsx"
+          type="xls"
+          name="tuketim-raporu.xls"
           header="Tüketim Raporu"
-          >Dışarı Aktar</vue3-json-excel
+          >Dışarı Aktar</vue3-json-excel -->
         >
       </VButton>
     </div>
@@ -155,6 +220,9 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.itemName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.spiralNo }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.totalConsumed }}</span>

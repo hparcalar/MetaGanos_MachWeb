@@ -77,7 +77,7 @@ watch(
         </RouterLink>
 
         <div class="brand-end">
-          <NotificationsMobileDropdown />
+          <!-- <NotificationsMobileDropdown /> -->
           <UserProfileDropdown />
         </div>
       </template>
@@ -94,6 +94,21 @@ watch(
             <i aria-hidden="true" class="iconify" data-icon="feather:box"></i>
           </RouterLink>
         </li>
+        <li>
+          <a
+            :class="[activeMobileSubsidebar === 'movements' && 'is-active']"
+            data-content="Hareketler"
+            tabindex="0"
+            @keydown.space.prevent="switchSidebar('movements')"
+            @click="switchSidebar('movements')"
+          >
+            <i
+              aria-hidden="true"
+              class="iconify sidebar-svg"
+              data-icon="feather:sliders"
+            ></i>
+          </a>
+        </li>
       </template>
 
       <template #bottom-links>
@@ -107,8 +122,14 @@ watch(
 
     <!-- Mobile subsidebar links -->
     <Transition name="slide-x">
-      <DashboardsMobileSubsidebar
+      <DefinitionsMobileSubsidebar
         v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'dashboard'"
+      />
+    </Transition>
+
+    <Transition name="slide-x">
+      <MovementsMobileSubsidebar
+        v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'movements'"
       />
     </Transition>
 

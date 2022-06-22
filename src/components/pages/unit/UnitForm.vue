@@ -27,7 +27,8 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('UnitType/' + props.id)
+    if (modelObject.value.id == 0) modelObject.value.id = props.id
+    const data = await api.get('UnitType/' + modelObject.value.id)
 
     if (data.status === 200) modelObject.value = data.data
   } catch (error) {}
@@ -37,6 +38,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('UnitType', modelObject.value)
     if (postResult.data.result) {
+      modelObject.value.id = postResult.data.recordId
       notif.success('Kayıt başarılı.')
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
