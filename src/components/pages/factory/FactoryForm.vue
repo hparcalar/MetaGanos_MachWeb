@@ -24,6 +24,7 @@ const modelObject = ref({
   explanation: '',
   dealerId: null,
   plantLogo: '',
+  last4CharForCardRead: false,
 })
 const printFiles = ref([])
 const dealers = ref([])
@@ -34,7 +35,9 @@ onMounted(async () => {
 
 const bindModel = async () => {
   try {
-    const data = await api.get('Plant/' + props.id)
+    if (modelObject.value.id == 0) modelObject.value.id = props.id
+
+    const data = await api.get('Plant/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
 
     printFiles.value = (await api.get('Plant/' + props.id + '/PrintFiles')).data
@@ -47,6 +50,7 @@ const saveModel = async () => {
     const postResult = await api.post('Plant', modelObject.value)
     if (postResult.data.result) {
       notif.success('Kayıt başarılı.')
+      modelObject.value.id = postResult.data.recordId
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -271,6 +275,17 @@ const isStuck = computed(() => {
                         <img alt="" :src="modelObject.plantLogo" width="150" />
                       </p>
                     </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label></label>
+                    <VSwitchBlock
+                      v-model="modelObject.last4CharForCardRead"
+                      class="ml-2"
+                      label="Kart Okuyucu Son 4 Karakter"
+                      color="success"
+                    />
                   </VField>
                 </div>
               </div>

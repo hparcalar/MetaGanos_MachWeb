@@ -53,6 +53,9 @@ const bindFilterModel = async () => {
     if (isDealer == false) {
       plants.value = plants.value.filter((d) => d.id == user.FactoryId)
     }
+
+    if (plants.value.length == 1) filterModel.value.plantId = [plants.value[0].id]
+
     categories.value = (await api.get('ItemCategory')).data
   } catch (error) {}
 }

@@ -14,7 +14,7 @@ export const dateToStr = (dateString: string): string => {
 export const dateIsLtFromNow = (dateString: string): boolean => {
   if (dateString && dateString.length > 0) {
     try {
-      const dtObj = moment(dateString)
+      const dtObj = removeTime(moment(dateString))
       return moment() > dtObj
     } catch (error) {}
   }
