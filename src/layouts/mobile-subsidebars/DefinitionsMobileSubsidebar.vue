@@ -34,6 +34,11 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('Employees') }}
           </RouterLink>
         </li>
+        <li>
+          <RouterLink :to="{ name: 'warehouse' }">
+            {{ userSession.getExpression('Warehouses') }}
+          </RouterLink>
+        </li>
 
         <VCollapseLinks
           v-if="

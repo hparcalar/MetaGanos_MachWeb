@@ -5,6 +5,7 @@ import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useHelpers } from '/@src/utils/helpers'
 import EditPrintFile from '/@src/components/partials/dialogs/EditPrintFile.vue'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -13,6 +14,7 @@ const props = defineProps({
   },
 })
 
+const userSession = useUserSession()
 const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
@@ -49,7 +51,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('Plant', modelObject.value)
     if (postResult.data.result) {
-      notif.success('Kayıt başarılı.')
+      notif.success(userSession.getExpression('SaveSuccess'))
       modelObject.value.id = postResult.data.recordId
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
@@ -149,7 +151,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Fabrika Tanımı</h3>
+            <h3>{{ userSession.getExpression('FactoryDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -159,10 +161,10 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ userSession.getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ userSession.getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -174,14 +176,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Fabrika bilgileri</h4>
+                <h4>{{ userSession.getExpression('Factory') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
-                    <label>Fabrika Kodu</label>
+                    <label>{{ userSession.getExpression('FactoryCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.plantCode"
@@ -195,7 +197,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Fabrika Adı</label>
+                    <label>{{ userSession.getExpression('FactoryName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.plantName"
@@ -209,7 +211,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Açıklama</label>
+                    <label>{{ userSession.getExpression('Explanation') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.explanation"
@@ -227,14 +229,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Bayi bilgileri</h4>
+                <h4>{{ userSession.getExpression('Dealer') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-12">
                   <VField>
-                    <label>Bayi</label>
+                    <label>{{ userSession.getExpression('Dealer') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.dealerId"
@@ -254,7 +256,7 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Logo bilgileri</h4>
+                <h4>Logo</h4>
                 <p></p>
               </div>
 
@@ -283,7 +285,7 @@ const isStuck = computed(() => {
                     <VSwitchBlock
                       v-model="modelObject.last4CharForCardRead"
                       class="ml-2"
-                      label="Kart Okuyucu Son 4 Karakter"
+                      :label="userSession.getExpression('CardReaderLast4Char')"
                       color="success"
                     />
                   </VField>

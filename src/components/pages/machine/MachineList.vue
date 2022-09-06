@@ -2,7 +2,9 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
+const userSession = useUserSession()
 const api = useApi()
 const router = useRouter()
 
@@ -44,14 +46,12 @@ onMounted(async () => {
 })
 
 const columns = {
-  machineCode: 'Makine Kodu',
-  machineName: 'Makine Adı',
-  plantName: 'Fabrika',
-  inventoryCode: 'Envanter Kodu',
-  barcode: 'Barkod',
-  brand: 'Marka',
-  brandModel: 'Model',
-  city: 'Şehir',
+  machineCode: userSession.getExpression('MachineCode'),
+  machineName: userSession.getExpression('MachineName'),
+  plantName: userSession.getExpression('Factory'),
+  brand: userSession.getExpression('Brand'),
+  brandModel: userSession.getExpression('Model'),
+  city: userSession.getExpression('City'),
   actions: {
     label: '#',
     align: 'center',
@@ -66,12 +66,16 @@ const columns = {
         <input
           v-model="filters"
           class="input custom-text-filter"
-          placeholder="Arama..."
+          :placeholder="userSession.getExpression('Search')"
         />
       </VControl>
 
-      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Makine</VButton
+      <VButton
+        :color="'info'"
+        :raised="true"
+        icon="feather:plus"
+        @click="openDetail(0)"
+        >{{ userSession.getExpression('NewMachine') }}</VButton
       >
     </div>
 
@@ -79,8 +83,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir makine tanımı mevcut değil."
-        subtitle="Yeni bir makine tanımlayın."
+        :title="userSession.getExpression('AnyDataDoesntExists')"
+        subtitle=""
         larger
       >
       </VPlaceholderPage>
@@ -100,12 +104,6 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.plantName }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="">{{ item.inventoryCode }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="">{{ item.barcode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.brand }}</span>
@@ -132,7 +130,9 @@ const columns = {
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              :title="
+                filteredData.length + ' ' + userSession.getExpression('RecordsDisplayed')
+              "
               size="small"
               solid
               class="mt-2 ml-2"

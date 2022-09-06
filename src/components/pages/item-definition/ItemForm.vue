@@ -3,6 +3,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { useHelpers } from '/@src/utils/helpers'
+import { useRouter } from 'vue-router'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -11,6 +14,9 @@ const props = defineProps({
   },
 })
 
+const { getExpression } = useUserSession()
+const router = useRouter()
+const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 
@@ -18,6 +24,7 @@ const modelObject = ref({
   id: 0,
   itemCode: '',
   itemName: '',
+  itemImage: '',
   alternatingCode1: '',
   alternatingCode2: '',
   criticalMax: null,
@@ -48,10 +55,54 @@ const bindModel = async () => {
     const data = await api.get('Item/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
 
+    if (!modelObject.value)
+      modelObject.value = {
+        id: 0,
+        itemCode: '',
+        itemName: '',
+        itemImage: '',
+        alternatingCode1: '',
+        alternatingCode2: '',
+        criticalMax: null,
+        criticalMin: null,
+        price1: null,
+        price2: null,
+        explanation: '',
+        viewOrder: 0,
+        unitTypeId: null,
+        barcode1: '',
+        barcode2: '',
+        itemGroupId: null,
+        itemCategoryId: null,
+        isActive: true,
+      }
+
     categories.value = (await api.get('ItemCategory')).data
     unitTypes.value = (await api.get('UnitType')).data
     await updateGroupList(modelObject.value.itemCategoryId)
   } catch (error) {}
+}
+
+const deleteModel = async () => {
+  try {
+    const delResult = await api.delete('Item/' + modelObject.value.id)
+    if (delResult.data.result) {
+      modelObject.value.id = 0
+      notif.success(getExpression('SaveSuccess'))
+      router.push({ name: 'item' })
+    } else notif.error(delResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
+  }
+}
+
+const onIconSelected = async (event: any) => {
+  if (event.target.files && event.target.files.length > 0) {
+    const base64Str: string = await helpers.blobToBase64(event.target.files[0])
+    modelObject.value.itemImage = base64Str
+  } else {
+    modelObject.value.itemImage = ''
+  }
 }
 
 const updateGroupList = async (categoryId: any) => {
@@ -73,7 +124,7 @@ const saveModel = async () => {
     const postResult = await api.post('Item', modelObject.value)
     if (postResult.data.result) {
       modelObject.value.id = postResult.data.recordId
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -94,7 +145,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Stok Tanımı</h3>
+            <h3>{{ getExpression('ItemDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -104,10 +155,13 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
+              </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                {{ getExpression('Delete') }}
               </VButton>
             </div>
           </div>
@@ -119,14 +173,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Stok bilgileri</h4>
+                <h4>{{ getExpression('ItemInformation') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-12">
                   <VField>
-                    <label>Stok Kodu</label>
+                    <label>{{ getExpression('ItemCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.itemCode"
@@ -140,7 +194,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Stok Adı</label>
+                    <label>{{ getExpression('ItemName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.itemName"
@@ -154,13 +208,13 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Kategori</label>
+                    <label>{{ getExpression('Category') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.itemCategoryId"
                         :value-prop="'id'"
                         :label="'itemCategoryName'"
-                        placeholder="Bir kategori seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="categories"
                         @change="onChangeCategory"
@@ -170,13 +224,13 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Grup</label>
+                    <label>{{ getExpression('Group') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.itemGroupId"
                         :value-prop="'id'"
                         :label="'itemGroupName'"
-                        placeholder="Bir grup seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="groups"
                       />
@@ -185,13 +239,13 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Birim</label>
+                    <label>{{ getExpression('Unit') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.unitTypeId"
                         :value-prop="'id'"
                         :label="'unitTypeName'"
-                        placeholder="Bir birim seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="unitTypes"
                       />
@@ -200,7 +254,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Açıklama</label>
+                    <label>{{ getExpression('Explanation') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.explanation"
@@ -212,6 +266,24 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>Logo</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        type="file"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                        accept="image/*"
+                        @change="onIconSelected"
+                      />
+                      <p v-if="modelObject.itemImage && modelObject.itemImage.length > 0">
+                        <img alt="" :src="modelObject.itemImage" width="150" />
+                      </p>
+                    </VControl>
+                  </VField>
+                </div>
               </div>
             </div>
           </div>
@@ -219,14 +291,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Fiyat, kritik seviye ve diğer bilgiler</h4>
+                <h4>{{ getExpression('OtherInformation') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
-                    <label>Fiyat-1</label>
+                    <label>{{ getExpression('Price') }}-1</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.price1"
@@ -240,7 +312,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Fiyat-2</label>
+                    <label>{{ getExpression('Price') }}-2</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.price2"
@@ -254,7 +326,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Minimum Kritik Stok</label>
+                    <label>{{ getExpression('MinimumStock') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.criticalMin"
@@ -268,7 +340,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Maksimum Kritik Stok</label>
+                    <label>{{ getExpression('MaximumStock') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.criticalMax"
@@ -282,7 +354,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Görünüm Sırası</label>
+                    <label>{{ getExpression('VisualOrder') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.viewOrder"
@@ -296,7 +368,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Barkod-1</label>
+                    <label>{{ getExpression('Barcode') }}-1</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.barcode1"
@@ -310,7 +382,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Barkod-2</label>
+                    <label>{{ getExpression('Barcode') }}-2</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.barcode2"

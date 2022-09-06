@@ -12,7 +12,7 @@ const props = defineProps({
   },
 })
 
-const { hasAuth, isDealer, user } = useUserSession()
+const { hasAuth, isDealer, user, getExpression } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
@@ -130,7 +130,7 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('Machine', modelObject.value)
     if (postResult.data.result) {
-      if (showOverallSaveInfo.value) notif.success('Kayıt başarılı.')
+      if (showOverallSaveInfo.value) notif.success(getExpression('SaveSuccess'))
       modelObject.value.id = postResult.data.recordId
 
       // upload video if any files are selected
@@ -138,7 +138,7 @@ const saveModel = async () => {
         let formData = new FormData()
         formData.append('videoData', modelObject.value.startVideoData)
         notif.properties().options.duration = 0
-        notif.info('Video yükleniyor, lütfen bekleyiniz.')
+        notif.info('Video is uploading')
 
         const postVideoResult = await api.post(
           'Machine/' + postResult.data.recordId + '/UploadVideo',
@@ -153,9 +153,8 @@ const saveModel = async () => {
         if (postVideoResult.data.result) {
           notif.properties().dismissAll()
           notif.properties().options.duration = 2000
-          notif.success('Video başarıyla yüklendi.')
-        } else
-          notif.error('Video yükleme işlemi başarısız oldu, lütfen tekrar deneyiniz.')
+          notif.success('Video is uploaded successfuly.')
+        } else notif.error('Video couldnt be loaded. Please try again later.')
       }
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
@@ -412,7 +411,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Makine Tanımı</h3>
+            <h3>{{ getExpression('MachineDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -423,7 +422,7 @@ const isStuck = computed(() => {
                 raised
                 @click="fullAllSpirals"
               >
-                Otomatı Tam Doldur
+                {{ getExpression('FillMachine') }}
               </VButton>
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
@@ -431,7 +430,7 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton
                 v-if="hasAuth('Machines', 'Write')"
@@ -440,7 +439,7 @@ const isStuck = computed(() => {
                 raised
                 @click="saveModel"
               >
-                Kaydet
+                {{ getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -452,13 +451,13 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Makine bilgileri</h4>
+                <h4>{{ getExpression('Machine') }}</h4>
                 <p></p>
               </div>
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
-                    <label>Makine Kodu</label>
+                    <label>{{ getExpression('MachineCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.machineCode"
@@ -472,7 +471,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Makine Adı</label>
+                    <label>{{ getExpression('MachineName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.machineName"
@@ -486,7 +485,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Envanter Kodu</label>
+                    <label>{{ getExpression('InventoryCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.inventoryCode"
@@ -500,7 +499,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Barkod</label>
+                    <label>{{ getExpression('Barcode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.barcode"
@@ -514,7 +513,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Özel Müşteri</label>
+                    <label>{{ getExpression('SpecialCustomer') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.specialCustomer"
@@ -535,7 +534,7 @@ const isStuck = computed(() => {
                     >
                       <template #default="{ inputValue, inputEvents }">
                         <VField>
-                          <label>Üretim Tarihi</label>
+                          <label>{{ getExpression('ProductionDate') }}</label>
                           <VControl icon="feather:calendar">
                             <input
                               class="input"
@@ -559,12 +558,12 @@ const isStuck = computed(() => {
                     >
                       <template #default="{ inputValue, inputEvents }">
                         <VField>
-                          <label>Envantere Giriş Tarihi</label>
+                          <label>{{ getExpression('InventoryDate') }}</label>
                           <VControl icon="feather:calendar">
                             <input
                               class="input"
                               type="text"
-                              placeholder="Bir tarih seçin"
+                              placeholder=""
                               :value="inputValue"
                               v-on="inputEvents"
                             />
@@ -576,7 +575,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Marka</label>
+                    <label>{{ getExpression('Brand') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.brand"
@@ -590,7 +589,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Model</label>
+                    <label>{{ getExpression('Model') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.brandModel"
@@ -604,7 +603,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Açılış Videosu</label>
+                    <label>Video</label>
                     <VControl icon="feather:terminal">
                       <input
                         type="file"
@@ -635,14 +634,14 @@ const isStuck = computed(() => {
                 <!--Fieldset-->
                 <div class="form-fieldset">
                   <div class="fieldset-heading">
-                    <h4>Lokasyon bilgileri</h4>
+                    <h4>{{ getExpression('LocationInformation') }}</h4>
                     <p></p>
                   </div>
 
                   <div class="columns is-multiline">
                     <div class="column is-6">
                       <VField>
-                        <label>Bölge</label>
+                        <label>{{ getExpression('Region') }}</label>
                         <VControl icon="feather:terminal">
                           <input
                             v-model="modelObject.district"
@@ -656,7 +655,7 @@ const isStuck = computed(() => {
                     </div>
                     <div class="column is-6">
                       <VField>
-                        <label>Şehir</label>
+                        <label>{{ getExpression('City') }}</label>
                         <VControl icon="feather:terminal">
                           <input
                             v-model="modelObject.city"
@@ -670,13 +669,13 @@ const isStuck = computed(() => {
                     </div>
                     <div v-if="isDealer" class="column is-12">
                       <VField>
-                        <label>Fabrika</label>
+                        <label>{{ getExpression('Factory') }}</label>
                         <VControl>
                           <Multiselect
                             v-model="modelObject.plantId"
                             :value-prop="'id'"
                             :label="'plantName'"
-                            placeholder="Bir fabrika seçiniz"
+                            placeholder=""
                             :searchable="true"
                             :options="plants"
                             @change="onChangePlant"
@@ -703,14 +702,14 @@ const isStuck = computed(() => {
                     class="form-fieldset hk-slide-content"
                   >
                     <div class="fieldset-heading">
-                      <h4>Spiral bilgileri</h4>
+                      <h4>{{ getExpression('SpiralInformation') }}</h4>
                       <p></p>
                     </div>
 
                     <div class="columns is-multiline">
                       <div class="column is-6">
                         <VField>
-                          <label>Satır</label>
+                          <label>{{ getExpression('Row') }}</label>
                           <VControl icon="feather:terminal">
                             <input
                               v-model="modelObject.rows"
@@ -725,7 +724,7 @@ const isStuck = computed(() => {
                       </div>
                       <div class="column is-6">
                         <VField>
-                          <label>Sütun</label>
+                          <label>{{ getExpression('Column') }}</label>
                           <VControl icon="feather:terminal">
                             <input
                               v-model="modelObject.cols"
@@ -762,13 +761,13 @@ const isStuck = computed(() => {
                     <div class="columns is-multiline">
                       <div class="column is-12">
                         <VField>
-                          <label>Stok Kategorisi</label>
+                          <label>{{ getExpression('Category') }}</label>
                           <VControl>
                             <Multiselect
                               v-model="spiralModel.itemCategoryId"
                               :value-prop="'id'"
                               :label="'itemCategoryName'"
-                              placeholder="Bir kategori seçiniz"
+                              placeholder=""
                               :searchable="true"
                               :options="itemCategories"
                             />
@@ -777,7 +776,7 @@ const isStuck = computed(() => {
                       </div>
                       <div class="column is-12">
                         <VField>
-                          <label>Kapasite</label>
+                          <label>{{ getExpression('Capacity') }}</label>
                           <VControl icon="feather:terminal">
                             <input
                               v-model="spiralModel.capacity"
@@ -797,7 +796,7 @@ const isStuck = computed(() => {
                             dark-outlined
                             @click="isSpiralDetailVisible = false"
                           >
-                            Geri
+                            {{ getExpression('Back') }}
                           </VButton>
                           <VButton
                             v-if="hasAuth('LoadMachine', 'Write')"
@@ -806,7 +805,7 @@ const isStuck = computed(() => {
                             raised
                             @click="showSpiralLoadDialog()"
                           >
-                            Yükleme Yap
+                            {{ getExpression('LoadMachine') }}
                           </VButton>
                           <VButton
                             v-if="hasAuth('LoadMachine', 'Write')"
@@ -815,7 +814,7 @@ const isStuck = computed(() => {
                             raised
                             @click="emptySpiral()"
                           >
-                            Boşalt
+                            {{ getExpression('Empty') }}
                           </VButton>
                           <!-- <VButton
                             color="dark"
@@ -823,20 +822,20 @@ const isStuck = computed(() => {
                             raised
                             @click="showSpiralConsumeDialog()"
                           >
-                            Tüketimler
+                            {{ getExpression('Consumptions') }}
                           </VButton> -->
                           <VSwitchBlock
                             v-if="hasAuth('Machines', 'Write')"
                             v-model="spiralModel.isEnabled"
                             class="ml-2"
-                            label="Aktif"
+                            :label="getExpression('Active')"
                             color="success"
                           />
                           <VSwitchBlock
                             v-if="hasAuth('Machines', 'Write')"
                             v-model="spiralModel.isInFault"
                             class="ml-2"
-                            label="Arızalı"
+                            :label="getExpression('Faulty')"
                             color="warning"
                           />
                         </div>

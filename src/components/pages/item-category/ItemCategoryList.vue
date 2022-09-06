@@ -2,7 +2,9 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
+const { getExpression } = useUserSession()
 const api = useApi()
 const router = useRouter()
 
@@ -39,9 +41,9 @@ onMounted(async () => {
 })
 
 const columns = {
-  itemCategoryCode: 'Kategori Kodu',
-  itemCategoryName: 'Kategori Adı',
-  plantName: 'Fabrika',
+  itemCategoryCode: getExpression('CategoryCode'),
+  itemCategoryName: getExpression('CategoryName'),
+  plantName: getExpression('Factory'),
   actions: {
     label: '#',
     align: 'center',
@@ -56,12 +58,16 @@ const columns = {
         <input
           v-model="filters"
           class="input custom-text-filter"
-          placeholder="Arama..."
+          :placeholder="getExpression('Search')"
         />
       </VControl>
 
-      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Kategori</VButton
+      <VButton
+        :color="'info'"
+        :raised="true"
+        icon="feather:plus"
+        @click="openDetail(0)"
+        >{{ getExpression('NewCategory') }}</VButton
       >
     </div>
 
@@ -69,8 +75,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir stok kategori tanımı mevcut değil."
-        subtitle="Yeni bir stok kategorisi tanımlayın."
+        :title="getExpression('AnyDataDoesntExists')"
+        subtitle=""
         larger
       >
       </VPlaceholderPage>
@@ -107,7 +113,7 @@ const columns = {
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
               size="small"
               solid
               class="mt-2 ml-2"

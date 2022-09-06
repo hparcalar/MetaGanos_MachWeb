@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useUserSession } from '/@src/stores/userSession'
 const emit = defineEmits(['close'])
 const openSubsidebarLinks = ref('')
-const { hasAuth, isDealer } = useUserSession()
+const { hasAuth, isDealer, getExpression } = useUserSession()
 </script>
 
 <template>
@@ -31,7 +31,9 @@ const { hasAuth, isDealer } = useUserSession()
           <RouterLink :to="{ name: 'department' }"> Satış </RouterLink>
         </li> -->
         <li v-if="hasAuth('ConsumptionReport', 'Read')">
-          <RouterLink :to="{ name: 'report-consume' }"> Tüketim Raporu </RouterLink>
+          <RouterLink :to="{ name: 'report-consume' }">
+            {{ getExpression('ConsumptionReport') }}
+          </RouterLink>
         </li>
       </ul>
     </div>

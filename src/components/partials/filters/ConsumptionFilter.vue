@@ -14,7 +14,7 @@ export type ConsumptionSearchFilter = {
   itemId: number[] | null
 }
 
-const { isDealer, user } = useUserSession()
+const { isDealer, user, getExpression } = useUserSession()
 const api = useApi()
 
 const props = defineProps({
@@ -169,12 +169,12 @@ watch(
           >
             <template #default="{ inputValue, inputEvents }">
               <VField>
-                <label>Başlangıç Tarihi</label>
+                <label>{{ getExpression('StartDate') }}</label>
                 <VControl icon="feather:calendar">
                   <input
                     class="input"
                     type="text"
-                    placeholder="Bir tarih seçin"
+                    placeholder=""
                     :value="inputValue"
                     v-on="inputEvents"
                   />
@@ -197,12 +197,12 @@ watch(
           >
             <template #default="{ inputValue, inputEvents }">
               <VField>
-                <label>Bitiş Tarihi</label>
+                <label>{{ getExpression('EndDate') }}</label>
                 <VControl icon="feather:calendar">
                   <input
                     class="input"
                     type="text"
-                    placeholder="Bir tarih seçin"
+                    placeholder=""
                     :value="inputValue"
                     v-on="inputEvents"
                   />
@@ -222,14 +222,14 @@ watch(
           raised
           @click="triggerForSearch"
         >
-          Ara
+          {{ getExpression('Search') }}
         </VButton>
       </div>
 
       <!-- plant -->
       <div class="column is-4">
         <VField>
-          <label>Fabrika</label>
+          <label>{{ getExpression('Factory') }}</label>
           <VControl>
             <Multiselect
               v-model="filterModel.plantId"
@@ -237,7 +237,7 @@ watch(
               class="is-stacked"
               :value-prop="'id'"
               :label="'plantName'"
-              placeholder="Bir fabrika seçiniz"
+              placeholder=""
               :searchable="true"
               :options="plants"
               @change="onChangePlant"
@@ -249,7 +249,7 @@ watch(
       <!-- machine -->
       <div class="column is-4">
         <VField>
-          <label>Otomat</label>
+          <label>{{ getExpression('Automat') }}</label>
           <VControl>
             <Multiselect
               v-model="filterModel.machineId"
@@ -257,7 +257,7 @@ watch(
               class="is-stacked"
               :value-prop="'id'"
               :label="'machineName'"
-              placeholder="Bir otomat seçiniz"
+              placeholder=""
               :searchable="true"
               :options="machines"
             />
@@ -269,7 +269,7 @@ watch(
       <!-- item category -->
       <div class="column is-4">
         <VField>
-          <label>Kategori</label>
+          <label>{{ getExpression('Category') }}</label>
           <VControl>
             <Multiselect
               v-model="filterModel.categoryId"
@@ -277,7 +277,7 @@ watch(
               class="is-stacked"
               :value-prop="'id'"
               :label="'itemCategoryName'"
-              placeholder="Bir kategori seçiniz"
+              placeholder=""
               :searchable="true"
               :options="categories"
               @change="onChangeCategory"
@@ -289,7 +289,7 @@ watch(
       <!-- item group -->
       <div class="column is-4">
         <VField>
-          <label>Grup</label>
+          <label>{{ getExpression('Group') }}</label>
           <VControl>
             <Multiselect
               v-model="filterModel.groupId"
@@ -297,7 +297,7 @@ watch(
               class="is-stacked"
               :value-prop="'id'"
               :label="'itemGroupName'"
-              placeholder="Bir grup seçiniz"
+              placeholder=""
               :searchable="true"
               :options="groups"
               @change="onChangeGroup"
@@ -309,7 +309,7 @@ watch(
       <!-- item -->
       <div class="column is-4">
         <VField>
-          <label>Stok</label>
+          <label>{{ getExpression('Item') }}</label>
           <VControl>
             <Multiselect
               v-model="filterModel.itemId"
@@ -317,7 +317,7 @@ watch(
               class="is-stacked"
               :value-prop="'id'"
               :label="'itemName'"
-              placeholder="Bir stok seçiniz"
+              placeholder=""
               :searchable="true"
               :options="items"
             />

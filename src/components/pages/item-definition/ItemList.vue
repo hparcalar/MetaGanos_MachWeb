@@ -2,7 +2,9 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
+const { getExpression } = useUserSession()
 const api = useApi()
 const router = useRouter()
 
@@ -60,12 +62,12 @@ onMounted(async () => {
 })
 
 const columns = {
-  itemCode: 'Stok Kodu',
-  itemName: 'Stok Adı',
-  barcode1: 'Barkod',
-  itemGroupName: 'Grup',
-  itemCategoryName: 'Kategori',
-  unitTypeName: 'Birim',
+  itemCode: getExpression('ItemCode'),
+  itemName: getExpression('ItemName'),
+  barcode1: getExpression('Barcode'),
+  itemGroupName: getExpression('Group'),
+  itemCategoryName: getExpression('Category'),
+  unitTypeName: getExpression('Unit'),
   actions: {
     label: '#',
     align: 'center',
@@ -80,7 +82,7 @@ const columns = {
         <input
           v-model="filters"
           class="input custom-text-filter"
-          placeholder="Arama..."
+          :placeholder="getExpression('Search')"
         />
       </VControl>
 
@@ -90,11 +92,15 @@ const columns = {
         :raised="true"
         icon="feather:upload"
         @click="openFileDialog"
-        >Dosyadan Yükle</VButton
+        >{{ getExpression('ImportFromFile') }}</VButton
       >
 
-      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Stok</VButton
+      <VButton
+        :color="'info'"
+        :raised="true"
+        icon="feather:plus"
+        @click="openDetail(0)"
+        >{{ getExpression('NewStock') }}</VButton
       >
     </div>
 
@@ -102,8 +108,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir kart tanımı mevcut değil."
-        subtitle="Yeni bir kart tanımlayın."
+        :title="getExpression('AnyDataDoesntExists')"
+        subtitle=""
         larger
       >
       </VPlaceholderPage>
@@ -152,7 +158,7 @@ const columns = {
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
               size="small"
               solid
               class="mt-2 ml-2"

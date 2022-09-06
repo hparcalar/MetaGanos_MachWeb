@@ -5,7 +5,9 @@ import type { Ref } from 'vue'
 import { ConsumptionSearchFilter } from '/@src/components/partials/filters/ConsumptionFilter.vue'
 import { useApi } from '/@src/composable/useApi'
 import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
+import { useUserSession } from '/@src/stores/userSession'
 
+const { getExpression } = useUserSession()
 const api = useApi()
 
 const filters = ref('')
@@ -123,21 +125,21 @@ const base64ToByteArray = function (base64: any) {
 }
 
 const columns = {
-  consumedDate: 'Tarih',
-  consumedTime: 'Saat',
-  employeeName: 'Personel',
-  machineName: 'Makine',
-  itemCategoryName: 'Kategori',
-  itemName: 'Stok',
+  consumedDate: getExpression('Date'),
+  consumedTime: getExpression('Hour'),
+  employeeName: getExpression('Employee'),
+  machineName: getExpression('MachineOrWarehouse'),
+  itemCategoryName: getExpression('Category'),
+  itemName: getExpression('Item'),
   spiralNo: 'Spiral',
-  totalConsumed: 'Miktar',
+  totalConsumed: getExpression('Quantity'),
 } as const
 </script>
 
 <template>
   <div>
     <div>
-      <h1 class="title is-narrow mb-5">Tüketim Raporu</h1>
+      <h1 class="title is-narrow mb-5">{{ getExpression('ConsumptionReport') }}</h1>
       <ConsumptionFilter
         class="mb-5"
         :start-date="startDate"
@@ -150,12 +152,12 @@ const columns = {
         <input
           v-model="filters"
           class="input custom-text-filter"
-          placeholder="Arama..."
+          :placeholder="getExpression('Search')"
         />
       </VControl>
 
       <VButton color="success" icon="feather:download" raised @click="exportToExcel">
-        Dışarı Aktar
+        {{ getExpression('Export') }}
         <!-- <vue3-json-excel
           :json-data="reportData"
           :fields="{
@@ -171,7 +173,7 @@ const columns = {
           name="tuketim-raporu.xls"
           header="Tüketim Raporu"
           >Dışarı Aktar</vue3-json-excel -->
-        >
+        <!-- > -->
       </VButton>
     </div>
 
@@ -179,7 +181,7 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir tüketim verisi mevcut değil."
+        :title="getExpression('AnyDataDoesntExists')"
         subtitle=""
         larger
       >
@@ -213,7 +215,9 @@ const columns = {
                   <span class="">{{ item.employeeName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.machineName }}</span>
+                  <span class="">{{
+                    item.machineName.length > 0 ? item.machineName : item.warehouseName
+                  }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.itemCategoryName }}</span>
@@ -235,7 +239,7 @@ const columns = {
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
               size="small"
               solid
               class="mt-2 ml-2"

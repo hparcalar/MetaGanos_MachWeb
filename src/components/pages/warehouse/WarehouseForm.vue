@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import type { Ref } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useHelpers } from '/@src/utils/helpers'
-import { useRouter } from 'vue-router'
+import { creditRangeOption, controlTimeOption } from '/@src/shared-types'
+import type { CreditRangeType, ControlTimeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
@@ -14,69 +16,74 @@ const props = defineProps({
   },
 })
 
-const { getExpression } = useUserSession()
-const router = useRouter()
-
 const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
+const userSession = useUserSession()
+const { getExpression } = useUserSession()
+const { isDealer } = userSession
 
 const modelObject = ref({
   id: 0,
-  itemGroupCode: '',
-  itemGroupName: '',
-  itemCategoryId: null,
+  warehouseCode: '',
+  warehouseName: '',
   isActive: true,
+  plantId: 0,
 })
 
-const categories = ref([])
+const creditTypes: Ref<CreditRangeType[]> = ref(creditRangeOption)
+const controlTypes: Ref<ControlTimeType[]> = ref(controlTimeOption)
+const plants: Ref<any[]> = ref([])
 
 onMounted(async () => {
+  creditTypes.value.forEach((c: CreditRangeType) => {
+    c.value = userSession.getExpression(c.value)
+  })
+  controlTypes.value.forEach((c: ControlTimeType) => {
+    c.value = userSession.getExpression(c.value)
+  })
+
   await bindModel()
 })
 
 const bindModel = async () => {
   try {
-    if (modelObject.value.id == 0) modelObject.value.id = props.id
-    const data = await api.get('ItemGroup/' + modelObject.value.id)
+    plants.value = (await api.get('Plant')).data
+
+    if (modelObject.value.id == 0 && props.id > 0) modelObject.value.id = props.id
+
+    const data = await api.get('Warehouse/' + modelObject.value.id)
     if (data.status === 200) modelObject.value = data.data
 
-    categories.value = (await api.get('ItemCategory')).data
+    if (!modelObject.value)
+      modelObject.value = {
+        id: 0,
+        warehouseCode: '',
+        warehouseName: '',
+        isActive: true,
+        plantId: 0,
+      }
+
+    if (
+      !(modelObject.value.plantId || modelObject.value.plantId == 0) &&
+      plants.value.length == 1
+    )
+      modelObject.value.plantId = plants.value[0].id
+    else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
+      modelObject.value.plantId = userSession.user.FactoryId
   } catch (error) {}
 }
 
 const saveModel = async () => {
   try {
-    const postResult = await api.post('ItemGroup', modelObject.value)
+    const postResult = await api.post('Warehouse', modelObject.value)
     if (postResult.data.result) {
-      modelObject.value.id = postResult.data.recordId
       notif.success(getExpression('SaveSuccess'))
+      modelObject.value.id = postResult.data.recordId
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
-  } catch (error) {
-    notif.error(error)
-  }
-}
-
-const deleteModel = async () => {
-  try {
-    const delResult = await api.delete('ItemGroup/' + modelObject.value.id)
-    if (delResult.data.result) {
-      modelObject.value.id = 0
-      notif.success(getExpression('SaveSuccess'))
-      router.push({ name: 'item-group' })
-    } else notif.error(delResult.data.errorMessage)
-  } catch (error) {
-    notif.error(error)
-  }
-}
-
-const onIconSelected = async (event: any) => {
-  if (event.target.files && event.target.files.length > 0) {
-    const base64Str: string = await helpers.blobToBase64(event.target.files[0])
-    modelObject.value.groupImage = base64Str
-  } else {
-    modelObject.value.groupImage = ''
+  } catch (error: any) {
+    notif.error(error?.message)
   }
 }
 
@@ -93,13 +100,13 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>{{ getExpression('GroupDefinitions') }}</h3>
+            <h3>{{ getExpression('WarehouseDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'item-group' }"
+                :to="{ name: 'warehouse' }"
                 light
                 dark-outlined
               >
@@ -108,82 +115,65 @@ const isStuck = computed(() => {
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
-                {{ getExpression('Delete') }}
-              </VButton>
             </div>
           </div>
         </div>
       </div>
       <div class="form-body">
-        <!--Fieldset-->
-        <div class="form-fieldset">
-          <div class="fieldset-heading">
-            <h4>{{ getExpression('GroupInformation') }}</h4>
-            <p></p>
-          </div>
+        <div class="columns is-multiline">
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>{{ getExpression('WarehouseInformation') }}</h4>
+                <p></p>
+              </div>
 
-          <div class="columns is-multiline">
-            <div class="column is-6">
-              <VField>
-                <label>{{ getExpression('GroupCode') }}</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemGroupCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-6">
-              <VField>
-                <label>{{ getExpression('GroupName') }}</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemGroupName"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-12">
-              <VField>
-                <label>{{ getExpression('Category') }}</label>
-                <VControl>
-                  <Multiselect
-                    v-model="modelObject.itemCategoryId"
-                    :value-prop="'id'"
-                    :label="'itemCategoryName'"
-                    placeholder=""
-                    :searchable="true"
-                    :options="categories"
-                  />
-                </VControl>
-              </VField>
-            </div>
-            <div class="column is-12">
-              <VField>
-                <label>Logo</label>
-                <VControl icon="feather:terminal">
-                  <input
-                    type="file"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                    accept="image/*"
-                    @change="onIconSelected"
-                  />
-                  <p v-if="modelObject.groupImage && modelObject.groupImage.length > 0">
-                    <img alt="" :src="modelObject.groupImage" width="150" />
-                  </p>
-                </VControl>
-              </VField>
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <VField>
+                    <label>{{ getExpression('WarehouseCode') }}</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.warehouseCode"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>{{ getExpression('WarehouseName') }}</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="modelObject.warehouseName"
+                        type="text"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div v-if="isDealer" class="column is-12">
+                  <VField>
+                    <label>{{ getExpression('Factory') }}</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.plantId"
+                        :value-prop="'id'"
+                        :label="'plantName'"
+                        placeholder=""
+                        :searchable="true"
+                        :options="plants"
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+              </div>
             </div>
           </div>
         </div>

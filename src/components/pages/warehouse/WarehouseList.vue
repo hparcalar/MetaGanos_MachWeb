@@ -9,27 +9,23 @@ const api = useApi()
 const router = useRouter()
 
 const filters = ref('')
-const departments = ref([])
+const cards = ref([])
 
 const filteredData = computed(() => {
   if (!filters.value) {
-    return departments.value
+    return cards.value
   } else {
     const filterRe = new RegExp(filters.value, 'i')
 
-    return departments.value.filter((item) => {
-      return (
-        item.departmentCode?.match(filterRe) ||
-        item.departmentName?.match(filterRe) ||
-        item.plantName?.match(filterRe)
-      )
+    return cards.value.filter((item) => {
+      return item.warehouseCode?.match(filterRe) || item.warehouseName?.match(filterRe)
     })
   }
 })
 
 const openDetail = (id: number) => {
   router.push({
-    name: 'department-slug',
+    name: 'warehouse-slug',
     params: {
       slug: id,
     },
@@ -38,13 +34,13 @@ const openDetail = (id: number) => {
 
 onMounted(async () => {
   try {
-    departments.value = (await api.get('Department')).data
+    cards.value = (await api.get('Warehouse')).data
   } catch (error) {}
 })
 
 const columns = {
-  departmentCode: getExpression('DepartmentCode'),
-  departmentName: getExpression('DepartmentName'),
+  warehouseCode: getExpression('WarehouseCode'),
+  warehouseName: getExpression('WarehouseName'),
   plantName: getExpression('Factory'),
   actions: {
     label: '#',
@@ -69,7 +65,7 @@ const columns = {
         :raised="true"
         icon="feather:plus"
         @click="openDetail(0)"
-        >{{ getExpression('NewDepartment') }}</VButton
+        >{{ getExpression('NewWarehouse') }}</VButton
       >
     </div>
 
@@ -91,10 +87,10 @@ const columns = {
               <!--Table item-->
               <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="">{{ item.departmentCode }}</span>
+                  <span class="">{{ item.warehouseCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <span class="">{{ item.departmentName }}</span>
+                  <span class="">{{ item.warehouseName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.plantName }}</span>

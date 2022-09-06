@@ -9,6 +9,7 @@ import ApexChart from 'vue3-apexcharts'
 const router = useRouter()
 const api = useApi()
 const userSession = useUserSession()
+const { getExpression } = useUserSession()
 const userData: Ref<any> = ref({})
 const { isDealer, isOfficer, hasAuth } = userSession
 
@@ -151,7 +152,7 @@ onMounted(async () => {
     <div v-if="userData?.AuthType == 'Dealer'" class="columns">
       <div class="column is-4">
         <VField>
-          <label>Fabrika</label>
+          <label>{{ getExpression('Factory') }}</label>
           <VControl>
             <Multiselect
               v-model="selectedPlants"
@@ -159,7 +160,7 @@ onMounted(async () => {
               class="is-stacked"
               :value-prop="'id'"
               :label="'plantName'"
-              placeholder="Tüm fabrikalar"
+              placeholder=""
               :searchable="true"
               :options="plants"
               @change="onChangePlant"
@@ -175,7 +176,7 @@ onMounted(async () => {
           <div class="column is-3">
             <div class="dashboard-tile">
               <div class="tile-head">
-                <h3 class="dark-inverted">En Çok Tüketilen</h3>
+                <h3 class="dark-inverted">{{ getExpression('MostConsumed') }}</h3>
                 <VIconBox color="primary" size="small" rounded>
                   <i aria-hidden="true" class="fas fa-gem"></i>
                 </VIconBox>
@@ -186,8 +187,8 @@ onMounted(async () => {
                     v-show="overallStats && overallStats.mostConsumedItemCount"
                     class="dark-inverted"
                   >
-                    {{ overallStats?.mostConsumedItemCount }} adet</span
-                  >
+                    {{ overallStats?.mostConsumedItemCount }}
+                  </span>
                 </VLoader>
               </div>
               <div class="tile-foot">
@@ -209,7 +210,7 @@ onMounted(async () => {
           <div class="column is-3">
             <div class="dashboard-tile">
               <div class="tile-head">
-                <h3 class="dark-inverted">Aktif Otomatlar</h3>
+                <h3 class="dark-inverted">{{ getExpression('ActiveAutomats') }}</h3>
                 <VIconBox color="green" size="small" rounded>
                   <i class="iconify" data-icon="feather:activity"></i>
                 </VIconBox>
@@ -240,7 +241,7 @@ onMounted(async () => {
           <div class="column is-3">
             <div class="dashboard-tile">
               <div class="tile-head">
-                <h3 class="dark-inverted">Arızalı Motorlar</h3>
+                <h3 class="dark-inverted">{{ getExpression('FaultyMotors') }}</h3>
                 <VIconBox color="danger" size="small" rounded>
                   <i class="iconify" data-icon="feather:alert-octagon"></i>
                 </VIconBox>
@@ -279,7 +280,9 @@ onMounted(async () => {
           <div class="column is-12">
             <div class="dashboard-card">
               <div class="card-head">
-                <h3 class="dark-inverted">Kategori Bazında Tüketimler</h3>
+                <h3 class="dark-inverted">
+                  {{ getExpression('ConsumptionsBasedCategory') }}
+                </h3>
               </div>
               <ApexChart
                 id="profit-chart"

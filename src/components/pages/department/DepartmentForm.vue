@@ -16,6 +16,7 @@ const props = defineProps({
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
+const { getExpression } = useUserSession()
 const { isDealer } = userSession
 
 const modelObject = ref({
@@ -116,7 +117,7 @@ const filteredData = computed(() => {
 })
 
 const columns = {
-  machineName: 'Otomat',
+  machineName: getExpression('Automat'),
   actions: {
     label: '#',
     align: 'center',
@@ -199,7 +200,7 @@ const saveModel = async () => {
         departmentMachines.value
       )
 
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error: any) {
@@ -224,7 +225,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Departman Tanımı</h3>
+            <h3>{{ getExpression('DepartmentDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -234,7 +235,7 @@ const isStuck = computed(() => {
                 raised
                 @click="showLoadCreditForm"
               >
-                Toplu Kredi Yükleme
+                {{ getExpression('LoadCreditByDepartment') }}
               </VButton>
               <VButton
                 icon="lnir lnir-arrow-left rem-100"
@@ -242,10 +243,10 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -257,14 +258,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Departman bilgileri</h4>
+                <h4>{{ getExpression('Department') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
-                    <label>Departman Kodu</label>
+                    <label>{{ getExpression('DepartmentCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.departmentCode"
@@ -278,7 +279,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Departman Adı</label>
+                    <label>{{ getExpression('DepartmentName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.departmentName"
@@ -292,13 +293,13 @@ const isStuck = computed(() => {
                 </div>
                 <div v-if="isDealer" class="column is-12">
                   <VField>
-                    <label>Fabrika</label>
+                    <label>{{ getExpression('Factory') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.plantId"
                         :value-prop="'id'"
                         :label="'plantName'"
-                        placeholder="Bir fabrika seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="plants"
                         @change="onChangePlant"
@@ -328,26 +329,26 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Kullanılabilir otomatlar</h4>
+                <h4>{{ getExpression('AvailableMachines') }}</h4>
                 <p></p>
               </div>
               <div class="columns is-multiline">
                 <div class="column is-12">
                   <div v-if="isMachineSelectionVisible" class="form-fieldset">
                     <div class="fieldset-heading">
-                      <h4>Otomat seçimi</h4>
+                      <h4>{{ getExpression('MachineSelection') }}</h4>
                       <p></p>
                     </div>
                     <div class="columns is-multiline">
                       <div class="column is-12">
                         <VField>
-                          <label>Makine</label>
+                          <label>{{ getExpression('Machine') }}</label>
                           <VControl>
                             <Multiselect
                               v-model="machineModel.machineId"
                               :value-prop="'id'"
                               :label="'machineName'"
-                              placeholder="Bir otomat seçiniz"
+                              placeholder=""
                               :searchable="true"
                               :options="machines"
                             />
@@ -363,7 +364,7 @@ const isStuck = computed(() => {
                               dark-outlined
                               @click="isMachineSelectionVisible = false"
                             >
-                              Vazgeç
+                              {{ getExpression('Cancel') }}
                             </VButton>
                             <VButton
                               color="primary"
@@ -371,7 +372,7 @@ const isStuck = computed(() => {
                               raised
                               @click="addMachine()"
                             >
-                              Ekle
+                              {{ getExpression('Add') }}
                             </VButton>
                           </div>
                         </div>
@@ -394,15 +395,15 @@ const isStuck = computed(() => {
                         :raised="true"
                         icon="feather:plus"
                         @click="showMachineSelection()"
-                        >Otomat Ekle</VButton
+                        >{{ getExpression('AddMachine') }}</VButton
                       >
                     </div>
                     <div class="flex-list-wrapper flex-list-v3">
                       <!--List Empty Search Placeholder -->
                       <VPlaceholderPage
                         v-if="!filteredData || !filteredData.length"
-                        title="Henüz bir otomat seçilmemiş."
-                        subtitle="Bir otomat ekleyerek bu departman için makine tanımlayın."
+                        title=""
+                        subtitle=""
                         larger
                       >
                       </VPlaceholderPage>

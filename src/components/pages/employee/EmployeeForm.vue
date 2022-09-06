@@ -20,6 +20,7 @@ const props = defineProps({
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
+const { getExpression } = useUserSession()
 const { isDealer } = userSession
 
 const modelObject = ref({
@@ -119,7 +120,7 @@ const saveModel = async () => {
     const postResult = await api.post('Employee', modelObject.value)
     if (postResult.data.result) {
       modelObject.value.id = postResult.data.recordId
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -226,12 +227,12 @@ const filteredData = computed(() => {
 })
 
 const columns = {
-  itemCategoryName: 'Stok',
+  itemCategoryName: getExpression('Item'),
   // itemGroupName: 'Grup',
-  creditLoadDate: 'Yükleme',
-  rangeType: 'Periyot',
-  creditByRange: 'Toplam',
-  rangeCredit: 'Kalan',
+  creditLoadDate: getExpression('Load'),
+  rangeType: getExpression('Period'),
+  creditByRange: getExpression('Total'),
+  rangeCredit: getExpression('Remaining'),
   actions: {
     label: '#',
     align: 'center',
@@ -255,7 +256,7 @@ const loadCredit = async () => {
   try {
     const postResult = await api.post('Employee/LoadCredit', creditLoadModel.value)
     if (postResult.data.result) {
-      notif.success('Yükleme başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
 
       creditLoadModel.value.itemCategoryId = null
@@ -292,7 +293,7 @@ const onApproveFileProcess = (data: any) => {
 const isQuickCardDialogOpen: Ref<boolean> = ref(false)
 const showQuickCardForm = () => {
   if (!modelObject.value.plantId) {
-    notif.error('Önce bir fabrika seçmelisiniz.')
+    notif.error(getExpression('PlantDoesntExists'))
     return
   }
   isQuickCardDialogOpen.value = true
@@ -318,7 +319,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Personel Tanımı</h3>
+            <h3>{{ getExpression('EmployeeDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -336,10 +337,10 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -351,14 +352,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Personel bilgileri</h4>
+                <h4>{{ getExpression('EmployeeInformation') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
-                    <label>Personel Kodu</label>
+                    <label>{{ getExpression('EmployeeCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.employeeCode"
@@ -372,7 +373,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Personel Adı</label>
+                    <label>{{ getExpression('EmployeeName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.employeeName"
@@ -386,13 +387,13 @@ const isStuck = computed(() => {
                 </div>
                 <div v-if="isDealer" class="column is-12">
                   <VField>
-                    <label>Fabrika</label>
+                    <label>{{ getExpression('Factory') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.plantId"
                         :value-prop="'id'"
                         :label="'plantName'"
-                        placeholder="Bir fabrika seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="plants"
                         @change="onChangePlant"
@@ -402,13 +403,13 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Departman</label>
+                    <label>{{ getExpression('Department') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.departmentId"
                         :value-prop="'id'"
                         :label="'departmentName'"
-                        placeholder="Bir departman seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="departments"
                       />
@@ -416,14 +417,14 @@ const isStuck = computed(() => {
                   </VField>
                 </div>
                 <div class="column is-12">
-                  <label class="expanded-label">Kart</label>
+                  <label class="expanded-label">{{ getExpression('Card') }}</label>
                   <VField addons>
                     <Multiselect
                       v-model="modelObject.employeeCardId"
                       expanded
                       :value-prop="'id'"
                       :label="'cardCode'"
-                      placeholder="Bir kart seçiniz"
+                      placeholder=""
                       :searchable="true"
                       :options="cards"
                     />
@@ -433,14 +434,14 @@ const isStuck = computed(() => {
                         :raised="true"
                         icon="feather:plus"
                         @click="showQuickCardForm"
-                        >Yeni Kart</VButton
+                        >{{ getExpression('NewCard') }}</VButton
                       >
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>Gsm</label>
+                    <label>{{ getExpression('Gsm') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.gsm"
@@ -454,7 +455,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <label>E-Mail</label>
+                    <label>{{ getExpression('Email') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.email"
@@ -478,7 +479,7 @@ const isStuck = computed(() => {
               <!--Fieldset-->
               <div v-if="!isLoadDialogOpen" class="form-fieldset hk-slide-content">
                 <div class="fieldset-heading">
-                  <h4>Kredi durumu</h4>
+                  <h4>{{ getExpression('CreditState') }}</h4>
                   <p></p>
                 </div>
                 <div class="columns is-multiline">
@@ -488,7 +489,7 @@ const isStuck = computed(() => {
                         <input
                           v-model="filters"
                           class="input custom-text-filter"
-                          placeholder="Arama..."
+                          :placeholder="getExpression('Search')"
                         />
                       </VControl>
 
@@ -498,15 +499,15 @@ const isStuck = computed(() => {
                         :raised="true"
                         icon="feather:plus"
                         @click="openLoadDialog(null)"
-                        >Yükleme Yap</VButton
+                        >{{ getExpression('LoadMachine') }}</VButton
                       >
                     </div>
                     <div class="flex-list-wrapper flex-list-v3">
                       <!--List Empty Search Placeholder -->
                       <VPlaceholderPage
                         v-if="!filteredData || !filteredData.length"
-                        title="Henüz bir kredi mevcut değil."
-                        subtitle="Yeni bir kredi tanımlayın."
+                        :title="getExpression('AnyDataDoesntExists')"
+                        subtitle=""
                         larger
                       >
                       </VPlaceholderPage>
@@ -605,19 +606,19 @@ const isStuck = computed(() => {
 
               <div v-else-if="isLoadDialogOpen" class="form-fieldset hk-slide-content">
                 <div class="fieldset-heading">
-                  <h4>Kredi yükleme</h4>
+                  <h4>{{ getExpression('LoadCredit') }}</h4>
                   <p></p>
                 </div>
                 <div class="columns is-multiline">
                   <div class="column is-12">
                     <VField>
-                      <label>Stok Kategorisi</label>
+                      <label>{{ getExpression('Category') }}</label>
                       <VControl>
                         <Multiselect
                           v-model="creditLoadModel.itemCategoryId"
                           :value-prop="'id'"
                           :label="'itemCategoryName'"
-                          placeholder="Bir kategori seçiniz"
+                          placeholder=""
                           :searchable="true"
                           :options="itemCategories"
                         />
@@ -626,7 +627,7 @@ const isStuck = computed(() => {
                   </div>
                   <div class="column is-12">
                     <VField>
-                      <label>Kredi</label>
+                      <label>{{ getExpression('Credit') }}</label>
                       <VControl icon="feather:terminal">
                         <input
                           v-model="creditLoadModel.activeCredit"
@@ -647,7 +648,7 @@ const isStuck = computed(() => {
                           dark-outlined
                           @click="isLoadDialogOpen = false"
                         >
-                          Vazgeç
+                          {{ getExpression('Cancel') }}
                         </VButton>
                         <VButton
                           color="primary"
@@ -655,7 +656,7 @@ const isStuck = computed(() => {
                           raised
                           @click="loadCredit()"
                         >
-                          Yüklemeyi Tamamla
+                          {{ getExpression('Save') }}
                         </VButton>
                       </div>
                     </div>
@@ -681,7 +682,7 @@ const isStuck = computed(() => {
 
   <VModal
     :open="isLoadDialogOpen"
-    title="Personel Kredi Yükleme"
+    :title="getExpression('EmployeeLoadCredit')"
     size="big"
     actions="right"
     :cancel-label="'Vazgeç'"
@@ -697,7 +698,7 @@ const isStuck = computed(() => {
 
   <VModal
     :open="isQuickCardDialogOpen"
-    title="Yeni Kart Oluştur"
+    :title="getExpression('NewCard')"
     size="big"
     actions="right"
     :cancel-label="'Vazgeç'"

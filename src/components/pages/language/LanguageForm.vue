@@ -4,6 +4,7 @@ import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import VCheckBox from '../../base/form/VCheckbox.vue'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -12,6 +13,7 @@ const props = defineProps({
   },
 })
 
+const { getExpression } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
@@ -67,7 +69,7 @@ const saveModel = async () => {
         }
       } catch (errDict) {}
 
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -88,7 +90,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Dil Tanımı</h3>
+            <h3>{{ getExpression('LanguageDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -98,10 +100,10 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -111,14 +113,14 @@ const isStuck = computed(() => {
         <!--Fieldset-->
         <div class="form-fieldset">
           <div class="fieldset-heading">
-            <h4>Dil bilgileri</h4>
+            <h4>{{ getExpression('LanguageInformation') }}</h4>
             <p></p>
           </div>
 
           <div class="columns is-multiline">
             <div class="column is-6">
               <VField>
-                <label>Dil Kodu</label>
+                <label>{{ getExpression('LanguageCode') }}</label>
                 <VControl icon="feather:terminal">
                   <input
                     v-model="modelObject.languageCode"
@@ -132,7 +134,7 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-6">
               <VField>
-                <label>Dil Adı</label>
+                <label>{{ getExpression('LanguageName') }}</label>
                 <VControl icon="feather:terminal">
                   <input
                     v-model="modelObject.languageName"
@@ -146,7 +148,7 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-6">
               <VField>
-                <label>Varsayılan</label>
+                <label>{{ getExpression('Default') }}</label>
                 <VControl>
                   <VCheckBox v-model="modelObject.isDefault"></VCheckBox>
                 </VControl>
@@ -154,7 +156,7 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-6">
               <VField>
-                <label>Aktif</label>
+                <label>{{ getExpression('Active') }}</label>
                 <VControl>
                   <VCheckBox v-model="modelObject.isActive"></VCheckBox>
                 </VControl>
@@ -166,7 +168,7 @@ const isStuck = computed(() => {
         <!--Fieldset-->
         <div v-if="modelObject.id > 0" class="form-fieldset">
           <div class="fieldset-heading">
-            <h4>Sözlük bilgileri</h4>
+            <h4>{{ getExpression('DictionaryInformation') }}</h4>
             <p></p>
           </div>
 

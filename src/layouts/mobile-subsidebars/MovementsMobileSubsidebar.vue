@@ -15,7 +15,9 @@ const { hasAuth, isDealer } = userSession
 
       <ul class="submenu" data-simplebar>
         <li v-if="hasAuth('ConsumptionReport', 'Read')">
-          <RouterLink :to="{ name: 'report-consume' }"> Tüketim Raporu </RouterLink>
+          <RouterLink :to="{ name: 'report-consume' }">
+            {{ userSession.getExpression('ConsumptionReport') }}
+          </RouterLink>
         </li>
       </ul>
     </div>

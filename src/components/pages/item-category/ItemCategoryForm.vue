@@ -8,6 +8,7 @@ import { useHelpers } from '/@src/utils/helpers'
 import { creditRangeOption, controlTimeOption } from '/@src/shared-types'
 import type { CreditRangeType, ControlTimeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   id: {
@@ -16,10 +17,12 @@ const props = defineProps({
   },
 })
 
+const router = useRouter()
 const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
+const { getExpression } = useUserSession()
 const { isDealer } = userSession
 
 const modelObject = ref({
@@ -91,12 +94,25 @@ const saveModel = async () => {
   try {
     const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       modelObject.value.id = postResult.data.recordId
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error: any) {
     notif.error(error?.message)
+  }
+}
+
+const deleteModel = async () => {
+  try {
+    const delResult = await api.delete('ItemCategory/' + modelObject.value.id)
+    if (delResult.data.result) {
+      modelObject.value.id = 0
+      notif.success(getExpression('SaveSuccess'))
+      router.push({ name: 'item-category' })
+    } else notif.error(delResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
   }
 }
 
@@ -122,7 +138,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Stok Kategori Tanımı</h3>
+            <h3>{{ getExpression('ItemCategoryDefinition') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -132,10 +148,13 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
+              </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                {{ getExpression('Delete') }}
               </VButton>
             </div>
           </div>
@@ -147,14 +166,14 @@ const isStuck = computed(() => {
             <!--Fieldset-->
             <div class="form-fieldset">
               <div class="fieldset-heading">
-                <h4>Kategori bilgileri</h4>
+                <h4>{{ getExpression('CategoryInformation') }}</h4>
                 <p></p>
               </div>
 
               <div class="columns is-multiline">
                 <div class="column is-12">
                   <VField>
-                    <label>Kategori Kodu</label>
+                    <label>{{ getExpression('CategoryCode') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.itemCategoryCode"
@@ -168,7 +187,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Kategori Adı</label>
+                    <label>{{ getExpression('CategoryName') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.itemCategoryName"
@@ -182,13 +201,13 @@ const isStuck = computed(() => {
                 </div>
                 <div v-if="isDealer" class="column is-12">
                   <VField>
-                    <label>Fabrika</label>
+                    <label>{{ getExpression('Factory') }}</label>
                     <VControl>
                       <Multiselect
                         v-model="modelObject.plantId"
                         :value-prop="'id'"
                         :label="'plantName'"
-                        placeholder="Bir fabrika seçiniz"
+                        placeholder=""
                         :searchable="true"
                         :options="plants"
                       />
@@ -197,7 +216,7 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-12">
                   <VField>
-                    <label>Görünüm Sırası</label>
+                    <label>{{ getExpression('VisualOrder') }}</label>
                     <VControl icon="feather:terminal">
                       <input
                         v-model="modelObject.viewOrder"
@@ -254,7 +273,7 @@ const isStuck = computed(() => {
                 </div> -->
                 <div class="column is-12">
                   <VField>
-                    <label>İkon</label>
+                    <label>Logo</label>
                     <VControl icon="feather:terminal">
                       <input
                         type="file"

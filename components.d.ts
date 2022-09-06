@@ -132,6 +132,8 @@ declare module 'vue' {
     VTextEllipsis: typeof import('./src/components/base/typography/VTextEllipsis.vue')['default']
     VViewWrapper: typeof import('./src/components/base/layouts/VViewWrapper.vue')['default']
     VVivus: typeof import('./src/components/base/plugins/VVivus.vue')['default']
+    WarehouseForm: typeof import('./src/components/pages/warehouse/WarehouseForm.vue')['default']
+    WarehouseList: typeof import('./src/components/pages/warehouse/WarehouseList.vue')['default']
     WarehouseSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/WarehouseSubsidebar.vue')['default']
   }
 }

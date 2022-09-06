@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
   id: {
@@ -11,6 +12,7 @@ const props = defineProps({
   },
 })
 
+const { getExpression } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
@@ -39,7 +41,7 @@ const saveModel = async () => {
     const postResult = await api.post('UnitType', modelObject.value)
     if (postResult.data.result) {
       modelObject.value.id = postResult.data.recordId
-      notif.success('Kayıt başarılı.')
+      notif.success(getExpression('SaveSuccess'))
       await bindModel()
     } else notif.error(postResult.data.errorMessage)
   } catch (error) {
@@ -60,7 +62,7 @@ const isStuck = computed(() => {
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
           <div class="left">
-            <h3>Birim Tanımı</h3>
+            <h3>{{ getExpression('UnitDefinitions') }}</h3>
           </div>
           <div class="right">
             <div class="buttons">
@@ -70,10 +72,10 @@ const isStuck = computed(() => {
                 light
                 dark-outlined
               >
-                Liste
+                {{ getExpression('List') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
-                Kaydet
+                {{ getExpression('Save') }}
               </VButton>
             </div>
           </div>
@@ -83,14 +85,14 @@ const isStuck = computed(() => {
         <!--Fieldset-->
         <div class="form-fieldset">
           <div class="fieldset-heading">
-            <h4>Birim bilgileri</h4>
+            <h4>{{ getExpression('UnitInformation') }}</h4>
             <p></p>
           </div>
 
           <div class="columns is-multiline">
             <div class="column is-12">
               <VField>
-                <label>Birim Kodu</label>
+                <label>{{ getExpression('UnitCode') }}</label>
                 <VControl icon="feather:terminal">
                   <input
                     v-model="modelObject.unitTypeCode"
@@ -104,7 +106,7 @@ const isStuck = computed(() => {
             </div>
             <div class="column is-12">
               <VField>
-                <label>Birim Adı</label>
+                <label>{{ getExpression('UnitName') }}</label>
                 <VControl icon="feather:terminal">
                   <input
                     v-model="modelObject.unitTypeName"

@@ -19,7 +19,7 @@ const props = withDefaults(
   }
 )
 
-const { checkToken } = useUserSession()
+const { checkToken, getExpression } = useUserSession()
 onMounted(async () => {
   await checkToken()
 })
@@ -145,7 +145,7 @@ watch(
             @click="switchSidebar('dashboard')"
           >
             <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:box"></i>
-            <p>Tanım</p>
+            <p>{{ getExpression('Definitions') }}</p>
           </a>
         </li>
         <li>
@@ -161,7 +161,7 @@ watch(
               class="iconify sidebar-svg"
               data-icon="feather:sliders"
             ></i>
-            <p>Hareket</p>
+            <p>{{ getExpression('Actions') }}</p>
           </a>
         </li>
         <!-- <li>

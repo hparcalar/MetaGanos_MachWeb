@@ -2,7 +2,9 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
+import { useUserSession } from '/@src/stores/userSession'
 
+const { getExpression } = useUserSession()
 const api = useApi()
 const router = useRouter()
 
@@ -37,8 +39,8 @@ onMounted(async () => {
 })
 
 const columns = {
-  unitTypeCode: 'Birim Kodu',
-  unitTypeName: 'Birim Adı',
+  unitTypeCode: getExpression('UnitCode'),
+  unitTypeName: getExpression('UnitName'),
   actions: {
     label: '#',
     align: 'center',
@@ -53,12 +55,16 @@ const columns = {
         <input
           v-model="filters"
           class="input custom-text-filter"
-          placeholder="Arama..."
+          :placeholder="getExpression('Search')"
         />
       </VControl>
 
-      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
-        >Yeni Birim</VButton
+      <VButton
+        :color="'info'"
+        :raised="true"
+        icon="feather:plus"
+        @click="openDetail(0)"
+        >{{ getExpression('NewUnit') }}</VButton
       >
     </div>
 
@@ -66,8 +72,8 @@ const columns = {
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
         v-if="!filteredData.length"
-        title="Henüz bir birim tanımı mevcut değil."
-        subtitle="Yeni bir birim tanımlayın."
+        :title="getExpression('AnyDataDoesntExists')"
+        subtitle=""
         larger
       >
       </VPlaceholderPage>
@@ -101,7 +107,7 @@ const columns = {
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="filteredData.length + ' kayıt görüntüleniyor'"
+              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
               size="small"
               solid
               class="mt-2 ml-2"
