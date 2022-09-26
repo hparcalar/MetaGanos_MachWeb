@@ -4,23 +4,23 @@ import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import type { PropType } from 'vue'
 
-export type LoadSpiralParams = {
-  itemCategoryId: number | null
-  itemId: number | null
-  itemName: string
-  spiralNo: number | null
-  activeQuantity: number | null
+export type LoadWarehouseParams = {
+  warehouseId: number | null
+  loadType: number | null
 }
 
-export type LoadSpiralResult = {
+export type LoadWarehouseResult = {
   approved: Boolean
-  itemId: number | null
-  quantity: number | null
+  loadType: Number | null
+  itemId: Number | null
+  quantity: Number | null
+  warehouseId: Number | null
+  machineId: Number | null
 }
 
 const props = defineProps({
-  itemCategory: {
-    type: Object as PropType<LoadSpiralParams>,
+  params: {
+    type: Object as PropType<LoadWarehouseParams>,
     required: true,
   },
   visible: {
@@ -32,29 +32,27 @@ const props = defineProps({
 
 const emit = defineEmits({
   close: () => true,
-  loadSpiral: (result: LoadSpiralResult) => true,
+  loadWarehouse: (result: LoadWarehouseResult) => true,
 })
 
 const api = useApi()
 const notif = useNotyf()
 
-const modelObject: Ref<LoadSpiralResult> = ref({
+const modelObject: Ref<LoadWarehouseResult> = ref({
   approved: false,
+  warehouseId: null,
   itemId: null,
   quantity: null,
+  loadType: null,
+  machineId: null,
 })
 const items = ref([])
+const machines = ref([])
 
 const bindModel = async () => {
   try {
-    if (props.itemCategory && props.itemCategory.itemId)
-      modelObject.value.itemId = props.itemCategory.itemId
-
-    if (props.itemCategory && props.itemCategory.itemCategoryId) {
-      items.value = (
-        await api.get('ItemCategory/' + props.itemCategory.itemCategoryId + '/Items')
-      ).data
-    }
+    items.value = (await api.get('Item')).data
+    machines.value = (await api.get('Machine')).data
   } catch (error) {}
 }
 
@@ -70,8 +68,10 @@ const approveLoad = () => {
   }
 
   modelObject.value.approved = true
+  modelObject.value.warehouseId = props.params.warehouseId
+  modelObject.value.loadType = props.params.loadType
 
-  emit('loadSpiral', modelObject.value)
+  emit('loadWarehouse', modelObject.value)
 }
 
 watch(
@@ -81,18 +81,24 @@ watch(
       modelObject.value = {
         approved: false,
         itemId: null,
+        loadType: props.params.loadType,
         quantity: null,
+        warehouseId: props.params.warehouseId,
       }
       await bindModel()
     }
   }
 )
 </script>
-
+    
 <template>
   <VModal
     :open="props.visible"
-    title="Makineye Stok Yükleyin"
+    :title="
+      props.params && props.params.loadType == 1
+        ? 'Depoya Stok Girişi'
+        : 'Depodan Stok Çıkışı'
+    "
     size="small"
     actions="right"
     :cancel-label="'Vazgeç'"
@@ -100,18 +106,6 @@ watch(
   >
     <template #content>
       <form class="modal-form py-0">
-        <h4 class="spiral-header mt-0">
-          Spiral: <b>{{ props.itemCategory.spiralNo }}</b>
-        </h4>
-        <h4
-          v-if="
-            props.itemCategory.activeQuantity && props.itemCategory.activeQuantity > 0
-          "
-          class="spiral-header mt-2 mb-2"
-          style="background-color: var(--placeholder); color: var(--dark)"
-        >
-          {{ props.itemCategory.itemName }}: {{ props.itemCategory.activeQuantity }} adet
-        </h4>
         <div class="field">
           <label>Stok *</label>
           <div class="control">
@@ -127,6 +121,21 @@ watch(
             </VControl>
           </div>
         </div>
+        <div v-if="props.params && props.params.loadType == 2" class="field">
+          <label>Otomat *</label>
+          <div class="control">
+            <VControl>
+              <Multiselect
+                v-model="modelObject.machineId"
+                :value-prop="'id'"
+                :label="'machineName'"
+                placeholder="Bir otomat seçiniz"
+                :searchable="true"
+                :options="machines"
+              />
+            </VControl>
+          </div>
+        </div>
         <div class="field">
           <label>Adet *</label>
           <div class="control">
@@ -136,7 +145,7 @@ watch(
       </form>
     </template>
     <template #action>
-      <VButton color="primary" raised @click="approveLoad()">Yükle</VButton>
+      <VButton color="primary" raised @click="approveLoad()">Kaydet</VButton>
     </template>
   </VModal>
 </template>

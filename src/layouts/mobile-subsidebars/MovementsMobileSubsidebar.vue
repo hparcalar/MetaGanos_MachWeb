@@ -19,6 +19,14 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('ConsumptionReport') }}
           </RouterLink>
         </li>
+        <li v-if="hasAuth('Item', 'Read')">
+          <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Yönetimi </RouterLink>
+        </li>
+        <li v-if="hasAuth('LoadMachine', 'Read')">
+          <RouterLink :to="{ name: 'machine-load' }">
+            {{ userSession.getExpression('LoadMachine') }}
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

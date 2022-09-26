@@ -39,6 +39,8 @@ declare module 'vue' {
     LanguagesPanel: typeof import('./src/components/partials/panels/LanguagesPanel.vue')['default']
     LoadCredit: typeof import('./src/components/partials/employee/LoadCredit.vue')['default']
     LoadMachineSpiral: typeof import('./src/components/partials/dialogs/LoadMachineSpiral.vue')['default']
+    LoadSpiralForm: typeof import('./src/components/pages/machine/LoadSpiralForm.vue')['default']
+    LoadWarehouse: typeof import('./src/components/partials/dialogs/LoadWarehouse.vue')['default']
     MachineConsumptions: typeof import('./src/components/pages/report/MachineConsumptions.vue')['default']
     MachineForm: typeof import('./src/components/pages/machine/MachineForm.vue')['default']
     MachineList: typeof import('./src/components/pages/machine/MachineList.vue')['default']
@@ -133,7 +135,9 @@ declare module 'vue' {
     VViewWrapper: typeof import('./src/components/base/layouts/VViewWrapper.vue')['default']
     VVivus: typeof import('./src/components/base/plugins/VVivus.vue')['default']
     WarehouseForm: typeof import('./src/components/pages/warehouse/WarehouseForm.vue')['default']
+    WarehouseItemStatusFilter: typeof import('./src/components/partials/filters/WarehouseItemStatusFilter.vue')['default']
     WarehouseList: typeof import('./src/components/pages/warehouse/WarehouseList.vue')['default']
+    WarehouseManager: typeof import('./src/components/pages/warehouse/WarehouseManager.vue')['default']
     WarehouseSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/WarehouseSubsidebar.vue')['default']
   }
 }

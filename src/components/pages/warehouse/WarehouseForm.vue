@@ -5,8 +5,6 @@ import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useHelpers } from '/@src/utils/helpers'
-import { creditRangeOption, controlTimeOption } from '/@src/shared-types'
-import type { CreditRangeType, ControlTimeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
 
 const props = defineProps({
@@ -29,20 +27,24 @@ const modelObject = ref({
   warehouseName: '',
   isActive: true,
   plantId: 0,
+  hotSalesCategories: [],
 })
 
-const creditTypes: Ref<CreditRangeType[]> = ref(creditRangeOption)
-const controlTypes: Ref<ControlTimeType[]> = ref(controlTimeOption)
+const hotSalesModel = ref({
+  id: 0,
+  itemCategoryId: null,
+  itemGroupId: null,
+  itemId: null,
+  itemText: '',
+})
+
 const plants: Ref<any[]> = ref([])
 
-onMounted(async () => {
-  creditTypes.value.forEach((c: CreditRangeType) => {
-    c.value = userSession.getExpression(c.value)
-  })
-  controlTypes.value.forEach((c: ControlTimeType) => {
-    c.value = userSession.getExpression(c.value)
-  })
+const itemCategories = ref([])
+const itemGroups = ref([])
+const items = ref([])
 
+onMounted(async () => {
   await bindModel()
 })
 
@@ -62,6 +64,7 @@ const bindModel = async () => {
         warehouseName: '',
         isActive: true,
         plantId: 0,
+        hotSalesCategories: [],
       }
 
     if (
@@ -71,6 +74,8 @@ const bindModel = async () => {
       modelObject.value.plantId = plants.value[0].id
     else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
       modelObject.value.plantId = userSession.user.FactoryId
+
+    await updateCategoryList()
   } catch (error) {}
 }
 
@@ -86,6 +91,104 @@ const saveModel = async () => {
     notif.error(error?.message)
   }
 }
+
+const updateCategoryList = async () => {
+  itemCategories.value = (
+    await api.get('Plant/' + modelObject.value.plantId + '/ItemCategories')
+  ).data
+}
+
+const updateGroupList = async (categoryId: any) => {
+  if (categoryId && categoryId > 0) {
+    try {
+      const relatedGroups = await api.get('ItemCategory/' + categoryId + '/Groups')
+      itemGroups.value = relatedGroups.data
+    } catch (error) {}
+  } else itemGroups.value = []
+}
+
+const updateItems = async () => {
+  if (hotSalesModel.value.itemGroupId) {
+    items.value = (
+      await api.get('ItemGroup/' + hotSalesModel.value.itemGroupId + '/Items')
+    ).data
+  } else items.value = []
+}
+
+const onChangeItemCategory = async (categoryId: any) => {
+  hotSalesModel.value.itemGroupId = null
+  await updateGroupList(categoryId)
+}
+
+const onChangeItemGroup = async (groupId: any) => {
+  hotSalesModel.value.itemGroupId = groupId
+  hotSalesModel.value.itemId = null
+  await updateItems()
+}
+
+const deleteHotCategory = (item: any) => {
+  try {
+    const itemIndex = modelObject.value.hotSalesCategories.indexOf(item)
+    if (itemIndex > -1) {
+      modelObject.value.hotSalesCategories.splice(itemIndex, 1)
+
+      newHotCategory()
+    }
+  } catch (error) {}
+}
+
+const saveHotCategory = () => {
+  try {
+    if (hotSalesModel.value.itemId && hotSalesModel.value.itemId > 0) {
+      const fItem = items.value.find((d) => d.id == hotSalesModel.value.itemId)
+      hotSalesModel.value.itemText = fItem?.itemName
+    } else if (hotSalesModel.value.itemGroupId && hotSalesModel.value.itemGroupId > 0) {
+      const fItem = itemGroups.value.find((d) => d.id == hotSalesModel.value.itemGroupId)
+      hotSalesModel.value.itemText = fItem?.itemGroupName
+    } else if (
+      hotSalesModel.value.itemCategoryId &&
+      hotSalesModel.value.itemCategoryId > 0
+    ) {
+      const fItem = itemCategories.value.find(
+        (d) => d.id == hotSalesModel.value.itemCategoryId
+      )
+      hotSalesModel.value.itemText = fItem?.itemCategoryName
+    }
+  } catch (error) {}
+
+  if (modelObject.value.hotSalesCategories.indexOf(hotSalesModel.value) <= -1) {
+    if (
+      modelObject.value.hotSalesCategories.some(
+        (d) =>
+          d.itemCategoryId == hotSalesModel.value.itemCategoryId &&
+          d.itemGroupId == hotSalesModel.value.itemGroupId &&
+          d.itemId == hotSalesModel.value.itemId
+      )
+    ) {
+      notif.error('Bu seçimlerin aynısı zaten mevcut.')
+    } else modelObject.value.hotSalesCategories.push(hotSalesModel.value)
+  }
+
+  newHotCategory()
+}
+
+const newHotCategory = () => {
+  hotSalesModel.value = {
+    id: 0,
+    itemCategoryId: null,
+    itemGroupId: null,
+    itemId: null,
+    itemText: '',
+  }
+}
+
+const columns = {
+  itemText: 'Ürün Başlığı',
+  actions: {
+    label: '#',
+    align: 'center',
+  },
+} as const
 
 const { y } = useWindowScroll()
 
@@ -176,6 +279,143 @@ const isStuck = computed(() => {
               </div>
             </div>
           </div>
+          <div class="column is-6">
+            <!--Fieldset-->
+            <div class="form-fieldset">
+              <div class="fieldset-heading">
+                <h4>Teslim Edilebilir Ürünler</h4>
+                <p></p>
+              </div>
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <div class="form-fieldset">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <VField>
+                          <label>{{ getExpression('Category') }}</label>
+                          <VControl>
+                            <Multiselect
+                              v-model="hotSalesModel.itemCategoryId"
+                              :value-prop="'id'"
+                              :label="'itemCategoryName'"
+                              placeholder=""
+                              :searchable="true"
+                              :options="itemCategories"
+                              @change="onChangeItemCategory"
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-6">
+                        <VField>
+                          <label>{{ getExpression('Group') }}</label>
+                          <VControl>
+                            <Multiselect
+                              v-model="hotSalesModel.itemGroupId"
+                              :value-prop="'id'"
+                              :label="'itemGroupName'"
+                              placeholder=""
+                              :searchable="true"
+                              :options="itemGroups"
+                              @change="onChangeItemGroup"
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-6">
+                        <VField>
+                          <label>{{ getExpression('Item') }}</label>
+                          <VControl>
+                            <Multiselect
+                              v-model="hotSalesModel.itemId"
+                              :value-prop="'id'"
+                              :label="'itemName'"
+                              placeholder=""
+                              :searchable="true"
+                              :options="items"
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-6">
+                        <div class="flex mt-5">
+                          <VButton
+                            color="primary"
+                            icon="feather:save"
+                            raised
+                            @click="saveHotCategory"
+                          >
+                            {{ getExpression('Save') }}
+                          </VButton>
+                          <VButton
+                            class="ml-2"
+                            color="info"
+                            icon="feather:plus"
+                            raised
+                            @click="newHotCategory"
+                          >
+                            {{ getExpression('New') }}
+                          </VButton>
+                        </div>
+                      </div>
+                      <div class="column is-12">
+                        <div class="flex-list-wrapper flex-list-v3">
+                          <div class="tab-content is-active">
+                            <VFlexTable
+                              :data="modelObject.hotSalesCategories"
+                              :columns="columns"
+                              clickable
+                              compact
+                              separators
+                            >
+                              <template #body>
+                                <TransitionGroup
+                                  name="list"
+                                  tag="div"
+                                  class="flex-list-inner"
+                                >
+                                  <!--Table item-->
+                                  <div
+                                    v-for="item in modelObject.hotSalesCategories"
+                                    :key="item"
+                                    class="flex-table-item"
+                                    :class="{ 'selected-row': item == hotSalesModel }"
+                                  >
+                                    <VFlexTableCell>
+                                      <span class=""
+                                        ><b>{{ item.itemText }}</b></span
+                                      >
+                                    </VFlexTableCell>
+                                    <VFlexTableCell :columns="{ align: 'end' }">
+                                      <button
+                                        class="button v-button has-dot dark-outlined is-info mx-1 is-pushed-mobile py-0 px-2"
+                                        @click="hotSalesModel = item"
+                                      >
+                                        <i aria-hidden="true" class="fas fa-edit dot"></i>
+                                      </button>
+                                      <button
+                                        class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
+                                        @click="deleteHotCategory(item)"
+                                      >
+                                        <i
+                                          aria-hidden="true"
+                                          class="fas fa-trash dot"
+                                        ></i>
+                                      </button>
+                                    </VFlexTableCell>
+                                  </div>
+                                </TransitionGroup>
+                              </template>
+                            </VFlexTable>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -184,6 +424,11 @@ const isStuck = computed(() => {
 
 <style lang="scss">
 @import '../../../scss/abstracts/mixins';
+
+.selected-row,
+.selected-row .flex-table-cell {
+  background-color: #cccccc !important;
+}
 
 .is-navbar {
   .form-layout {
