@@ -133,6 +133,12 @@ watch(
       />
     </Transition>
 
+    <Transition name="slide-x">
+      <ReportsMobileSubsidebar
+        v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'reports'"
+      />
+    </Transition>
+
     <Sidebar :theme="props.theme" :is-open="isDesktopSidebarOpen">
       <template #links>
         <!-- Dashboards -->
@@ -164,6 +170,22 @@ watch(
             <p>{{ getExpression('Actions') }}</p>
           </a>
         </li>
+        <li>
+          <a
+            :class="[activeMobileSubsidebar === 'reports' && 'is-active']"
+            data-content="Raporlar"
+            tabindex="0"
+            @keydown.space.prevent="switchSidebar('reports')"
+            @click="switchSidebar('reports')"
+          >
+            <i
+              aria-hidden="true"
+              class="iconify sidebar-svg"
+              data-icon="feather:pie-chart"
+            ></i>
+            <p>Raporlar</p>
+          </a>
+        </li>
         <!-- <li>
           <a
             :class="[activeMobileSubsidebar === 'warehouse' && 'is-active']"
@@ -193,6 +215,13 @@ watch(
     <Transition name="slide-x">
       <MovementsSubsidebar
         v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'movements'"
+        @close="isDesktopSidebarOpen = false"
+      />
+    </Transition>
+
+    <Transition name="slide-x">
+      <ReportsSubsidebar
+        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'reports'"
         @close="isDesktopSidebarOpen = false"
       />
     </Transition>

@@ -138,7 +138,7 @@ const triggerForSearch = () => {
       </div>
 
       <!-- warehouse -->
-      <div class="column is-4">
+      <!-- <div class="column is-4">
         <VField>
           <label>Depo</label>
           <VControl>
@@ -154,7 +154,7 @@ const triggerForSearch = () => {
             />
           </VControl>
         </VField>
-      </div>
+      </div> -->
       <!-- search button -->
       <div class="column is-4">
         <VButton

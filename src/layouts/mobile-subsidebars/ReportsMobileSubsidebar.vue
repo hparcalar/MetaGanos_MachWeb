@@ -6,23 +6,24 @@ const userSession = useUserSession()
 const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer } = userSession
 </script>
-<template>
+    <template>
   <div class="mobile-subsidebar">
     <div class="inner">
       <div class="sidebar-title">
-        <h3>Hareketler</h3>
+        <h3>Raporlar</h3>
       </div>
 
       <ul class="submenu" data-simplebar>
-        <li v-if="hasAuth('Warehouse', 'Write')">
-          <RouterLink :to="{ name: 'wrmove' }"> Depo Giriş/Çıkış </RouterLink>
-        </li>
-        <li v-if="hasAuth('LoadMachine', 'Read')">
-          <RouterLink :to="{ name: 'machine-load' }">
-            {{ userSession.getExpression('LoadMachine') }}
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
+          <RouterLink :to="{ name: 'report-consume' }">
+            {{ userSession.getExpression('ConsumptionReport') }}
           </RouterLink>
+        </li>
+        <li v-if="hasAuth('Item', 'Read')">
+          <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Durum Raporu </RouterLink>
         </li>
       </ul>
     </div>
   </div>
 </template>
+    

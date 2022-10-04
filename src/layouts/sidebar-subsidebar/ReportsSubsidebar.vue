@@ -5,11 +5,11 @@ const emit = defineEmits(['close'])
 const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer, getExpression } = useUserSession()
 </script>
-
-<template>
+    
+    <template>
   <div class="sidebar-panel is-generic">
     <div class="subpanel-header">
-      <h3 class="no-mb">Hareketler</h3>
+      <h3 class="no-mb">Raporlar</h3>
       <div
         class="panel-close"
         tabindex="0"
@@ -21,19 +21,20 @@ const { hasAuth, isDealer, getExpression } = useUserSession()
     </div>
     <div class="inner" data-simplebar>
       <ul>
-        <li v-if="hasAuth('Warehouse', 'Write')">
-          <RouterLink :to="{ name: 'wrmove' }"> Depo Giriş/Çıkış </RouterLink>
-        </li>
-        <li v-if="hasAuth('LoadMachine', 'Read')">
-          <RouterLink :to="{ name: 'machine-load' }">
-            {{ getExpression('LoadMachine') }}
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
+          <RouterLink :to="{ name: 'report-consume' }">
+            {{ getExpression('ConsumptionReport') }}
           </RouterLink>
+        </li>
+        <li v-if="hasAuth('Item', 'Read')">
+          <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Durum Raporu </RouterLink>
         </li>
       </ul>
     </div>
   </div>
 </template>
-
-<style lang="scss">
+    
+    <style lang="scss">
 @import '../../scss/layout/sidebar-panel';
 </style>
+    
