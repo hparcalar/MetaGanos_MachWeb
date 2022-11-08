@@ -374,6 +374,12 @@ const getSpiralNo = (r, c) => {
   }
 }
 
+const reversedRows = computed(() =>
+  [...Array(modelObject.value.rows + 1).keys()]
+    .slice(1, modelObject.value.rows + 1)
+    .reverse()
+)
+
 watch(
   () => modelObject.value.rows,
   () => {
@@ -848,7 +854,7 @@ const isStuck = computed(() => {
           </div>
         </div>
         <div v-if="modelObject.rows > 0 && modelObject.cols > 0">
-          <div v-for="r in modelObject.rows" :key="r" class="columns is-multiline">
+          <div v-for="r in reversedRows" :key="r" class="columns is-multiline">
             <div
               v-for="c in modelObject.cols"
               :key="c"
@@ -874,7 +880,6 @@ const isStuck = computed(() => {
                 @click="showSpiralDetail(getSpiralNo(r, c))"
               >
                 {{ getSpiralNo(r, c) }}
-                <!-- {{ modelObject.spiralStartIndex - 1 + ((r - 1) * modelObject.cols + c) }} -->
                 <p class="spiral-quantity-info">
                   {{ getSpiralQuantityInfo(getSpiralNo(r, c)) }}
                 </p>

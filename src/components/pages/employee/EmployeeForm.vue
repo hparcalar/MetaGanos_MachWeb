@@ -9,6 +9,7 @@ import { creditRangeOption } from '/@src/shared-types'
 import type { CreditRangeType } from '/@src/shared-types'
 import { useUserSession } from '/@src/stores/userSession'
 import LoadCredit from '../../partials/employee/LoadCredit.vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   id: {
@@ -17,11 +18,13 @@ const props = defineProps({
   },
 })
 
+const router = useRouter()
+
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
 const { getExpression } = useUserSession()
-const { isDealer } = userSession
+const { isDealer, hasAuth } = userSession
 
 const modelObject = ref({
   id: 0,
@@ -34,7 +37,13 @@ const modelObject = ref({
   plantId: null,
   departmentId: null,
   isActive: true,
+  employeeStatus: 0,
 })
+
+const statusTypes = ref([
+  { id: 0, text: 'Çalışıyor' },
+  { id: 2, text: 'İşten Ayrıldı' },
+])
 
 const rangeTypes = ref(creditRangeOption)
 const plants: Ref<any[]> = ref([])
@@ -67,11 +76,15 @@ const bindModel = async () => {
         plantId: null,
         departmentId: null,
         isActive: true,
+        employeeStatus: 0,
       }
 
     credits.value = modelObject.value.credits
     plants.value = (await api.get('Plant')).data
     itemCategories.value = (await api.get('ItemCategory')).data
+
+    if (modelObject.value && !modelObject.value.employeeStatus)
+      modelObject.value.employeeStatus = 0
 
     if (!modelObject.value.plantId && plants.value.length == 1)
       modelObject.value.plantId = plants.value[0].id
@@ -168,6 +181,19 @@ const onEditCredit = async (result: any) => {
 const onCloseLoadCredit = () => {
   isEditCreditDialogVisible.value = false
   selectedItemCategoryObject.value = null
+}
+
+const deleteModel = async () => {
+  try {
+    const delResult = await api.delete('Employee/' + modelObject.value.id)
+    if (delResult.data.result) {
+      modelObject.value.id = 0
+      notif.success('Silme işlemi tamamlandı')
+      router.push({ name: 'employee' })
+    } else notif.error(delResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
+  }
 }
 
 const deleteCredit = async (creditId: number) => {
@@ -342,6 +368,9 @@ const isStuck = computed(() => {
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                {{ getExpression('Delete') }}
+              </VButton>
             </div>
           </div>
         </div>
@@ -385,7 +414,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div v-if="isDealer" class="column is-12">
+                <div v-if="hasAuth('EmployeeCards', 'Read')" class="column is-12">
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
@@ -416,7 +445,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-12">
+                <div v-if="userSession.isDealer" class="column is-12">
                   <label class="expanded-label">{{ getExpression('Card') }}</label>
                   <VField addons>
                     <Multiselect
@@ -463,6 +492,21 @@ const isStuck = computed(() => {
                         class="input"
                         placeholder=""
                         autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>Durumu</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="modelObject.employeeStatus"
+                        :value-prop="'id'"
+                        :label="'text'"
+                        placeholder=""
+                        :searchable="true"
+                        :options="statusTypes"
                       />
                     </VControl>
                   </VField>

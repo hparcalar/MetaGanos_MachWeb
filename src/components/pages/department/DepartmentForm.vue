@@ -5,6 +5,7 @@ import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useUserSession } from '/@src/stores/userSession'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   id: {
@@ -12,6 +13,8 @@ const props = defineProps({
     default: 0,
   },
 })
+
+const router = useRouter()
 
 const api = useApi()
 const notif = useNotyf()
@@ -123,6 +126,19 @@ const columns = {
     align: 'center',
   },
 } as const
+
+const deleteModel = async () => {
+  try {
+    const delResult = await api.delete('Department/' + modelObject.value.id)
+    if (delResult.data.result) {
+      modelObject.value.id = 0
+      notif.success('Silme işlemi tamamlandı')
+      router.push({ name: 'department' })
+    } else notif.error(delResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
+  }
+}
 
 const onChangePlant = async (plantId: any) => {
   modelObject.value.plantPrintFileId = null
@@ -247,6 +263,9 @@ const isStuck = computed(() => {
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
+              </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                {{ getExpression('Delete') }}
               </VButton>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useApi } from '/@src/composable/useApi'
 import { useUserSession } from '/@src/stores/userSession'
 
-const { getExpression } = useUserSession()
+const { getExpression, isDealer, hasAuth } = useUserSession()
 const api = useApi()
 const router = useRouter()
 
@@ -55,6 +55,8 @@ const bindList = async () => {
 
 onMounted(async () => {
   try {
+    if (!hasAuth('EmployeeCards', 'Read')) delete columns.employeeCardCode
+
     await bindList()
   } catch (error) {}
 })
@@ -69,7 +71,7 @@ const columns = {
     label: '#',
     align: 'center',
   },
-} as const
+}
 </script>
 
 <template>
@@ -130,7 +132,7 @@ const columns = {
                 <VFlexTableCell>
                   <span class="">{{ item.departmentName }}</span>
                 </VFlexTableCell>
-                <VFlexTableCell>
+                <VFlexTableCell v-if="isDealer">
                   <span class="">{{ item.employeeCardCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">

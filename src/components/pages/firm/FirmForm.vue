@@ -4,6 +4,7 @@ import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useUserSession } from '/@src/stores/userSession'
+import { useRouter } from 'vue-router'
 
 const userSession = useUserSession()
 
@@ -13,6 +14,8 @@ const props = defineProps({
     default: 0,
   },
 })
+
+const router = useRouter()
 
 const api = useApi()
 const notif = useNotyf()
@@ -62,6 +65,21 @@ const saveModel = async () => {
   }
 }
 
+const deleteModel = async () => {
+  try {
+    if (confirm('Bu firma tanımını silmek istediğinizden emin misiniz?')) {
+      const delResult = await api.delete('Firm/' + modelObject.value.id)
+      if (delResult.data.result) {
+        modelObject.value.id = 0
+        notif.success('Silme işlemi tamamlandı')
+        router.push({ name: 'firm' })
+      } else notif.error(delResult.data.errorMessage)
+    }
+  } catch (error) {
+    notif.error(error)
+  }
+}
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -89,6 +107,9 @@ const isStuck = computed(() => {
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 Kaydet
+              </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                Sil
               </VButton>
             </div>
           </div>

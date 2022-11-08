@@ -24,6 +24,10 @@ const doLogout = () => {
     name: 'auth',
   })
 }
+
+const goToUserSettings = () => {
+  router.push({ name: 'user' })
+}
 </script>
 <template>
   <VDropdown
@@ -88,7 +92,13 @@ const doLogout = () => {
 
       <hr class="dropdown-divider" /> -->
 
-      <a href="#" role="menuitem" class="dropdown-item is-media">
+      <a
+        v-if="!userSession.isDealer && userSession.isOfficer"
+        href="#"
+        role="menuitem"
+        class="dropdown-item is-media"
+        @click="goToUserSettings"
+      >
         <div class="icon">
           <i aria-hidden="true" class="lnil lnil-cog"></i>
         </div>

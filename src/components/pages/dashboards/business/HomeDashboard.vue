@@ -241,7 +241,7 @@ onMounted(async () => {
           <div class="column is-3">
             <div class="dashboard-tile">
               <div class="tile-head">
-                <h3 class="dark-inverted">{{ getExpression('FaultyMotors') }}</h3>
+                <h3 class="dark-inverted">Arızalı Motorlar</h3>
                 <VIconBox color="danger" size="small" rounded>
                   <i class="iconify" data-icon="feather:alert-octagon"></i>
                 </VIconBox>

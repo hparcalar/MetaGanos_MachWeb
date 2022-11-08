@@ -64,12 +64,8 @@ const columns = {
         />
       </VControl>
 
-      <VButton
-        :color="'info'"
-        :raised="true"
-        icon="feather:plus"
-        @click="openDetail(0)"
-        >{{ getExpression('NewDepartment') }}</VButton
+      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="openDetail(0)"
+        >Yeni Departman</VButton
       >
     </div>
 

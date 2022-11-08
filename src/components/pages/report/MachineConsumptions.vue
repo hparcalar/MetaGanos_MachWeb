@@ -6,6 +6,7 @@ import { ConsumptionSearchFilter } from '/@src/components/partials/filters/Consu
 import { useApi } from '/@src/composable/useApi'
 import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
 import { useUserSession } from '/@src/stores/userSession'
+import EditConsume from '../../partials/employee/EditConsume.vue'
 
 const { getExpression } = useUserSession()
 const api = useApi()
@@ -14,6 +15,9 @@ const filters = ref('')
 const reportData = ref([])
 const startDate: Ref<Date | null> = ref(null)
 const endDate: Ref<Date | null> = ref(null)
+
+const isConsumeDialogOpen = ref(false)
+const consumeModel = ref({ id: 0 })
 
 const filteredData = computed(() => {
   if (!filters.value) {
@@ -27,6 +31,8 @@ const filteredData = computed(() => {
         item.itemCategoryName?.match(filterRe) ||
         item.itemGroupName?.match(filterRe) ||
         item.machineName?.match(filterRe) ||
+        item.employeeCode?.match(filterRe) ||
+        item.departmentName?.match(filterRe) ||
         item.employeeName?.match(filterRe)
       )
     })
@@ -100,6 +106,16 @@ const exportToExcel = async () => {
   downloadFile(bs64Str)
 }
 
+const showEditConsumeForm = async (id: any) => {
+  consumeModel.value.id = id
+  isConsumeDialogOpen.value = true
+}
+
+const onConsumeDialogSubmit = async () => {
+  await getReportData(lastFilterModel.value)
+  isConsumeDialogOpen.value = false
+}
+
 const downloadFile = function (base64: any) {
   let bytes = base64ToByteArray(base64)
 
@@ -127,12 +143,15 @@ const base64ToByteArray = function (base64: any) {
 const columns = {
   consumedDate: getExpression('Date'),
   consumedTime: getExpression('Hour'),
+  employeeCode: 'Personel Kodu',
   employeeName: getExpression('Employee'),
+  departmentName: 'Departman',
   machineName: getExpression('MachineOrWarehouse'),
   itemCategoryName: getExpression('Category'),
   itemName: getExpression('Item'),
   spiralNo: 'Spiral',
   totalConsumed: getExpression('Quantity'),
+  buttons: '#',
 } as const
 </script>
 
@@ -212,7 +231,13 @@ const columns = {
                   <span class="">{{ timeToStr(item.consumedDate) }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
+                  <span class="">{{ item.employeeCode }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
                   <span class="">{{ item.employeeName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.departmentName }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{
@@ -230,6 +255,15 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.totalConsumed }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <VButton
+                    color="warning"
+                    icon="feather:edit"
+                    raised
+                    @click="showEditConsumeForm(item.id)"
+                    >Düzenle
+                  </VButton>
                 </VFlexTableCell>
               </div>
             </TransitionGroup>
@@ -251,6 +285,22 @@ const columns = {
         </VFlex>
       </div>
     </div>
+
+    <VModal
+      :open="isConsumeDialogOpen"
+      :title="'Tüketim Bilgisi'"
+      size="big"
+      actions="right"
+      :cancel-label="'Vazgeç'"
+      @close="isConsumeDialogOpen = false"
+    >
+      <template #content>
+        <EditConsume :params="consumeModel" @submit="onConsumeDialogSubmit" />
+      </template>
+      <template #action>
+        <span />
+      </template>
+    </VModal>
   </div>
 </template>
 
