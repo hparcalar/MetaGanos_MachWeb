@@ -20,6 +20,18 @@ const dealersCount = ref(0)
 const loginModel = ref({ Login: '', Password: '', DealerCode: '' })
 const api = useApi()
 
+const props = defineProps({
+  isConfirmation: {
+    type: Boolean,
+    default: false,
+    required: false,
+  },
+})
+
+const emit = defineEmits({
+  submit: () => true,
+})
+
 onMounted(async () => {
   try {
     dealersCount.value = (await api.get('Dealer/Count')).data
@@ -41,15 +53,20 @@ const handleLogin = async () => {
 
       if (loginResult.status === 200) {
         const postResult = loginResult.data
-        if (postResult.DefaultLanguage == null) postResult.DefaultLanguage = 'tr'
 
-        userSession.setToken(postResult.Token)
-        userSession.setUser({ name: postResult.Username, ...postResult })
+        if (!props.isConfirmation) {
+          if (postResult.DefaultLanguage == null) postResult.DefaultLanguage = 'tr'
 
-        notif.dismissAll()
-        router.push({
-          name: 'app',
-        })
+          userSession.setToken(postResult.Token)
+          userSession.setUser({ name: postResult.Username, ...postResult })
+
+          notif.dismissAll()
+          router.push({
+            name: 'app',
+          })
+        } else {
+          emit('submit')
+        }
       }
     } catch (error) {
       notif.error('Hatalı giriş')
@@ -93,7 +110,7 @@ useHead({
 
     <!-- Form section -->
     <div class="column">
-      <div class="hero is-fullheight is-white">
+      <div class="is-white" :class="{ 'hero is-fullheight': !isConfirmation }">
         <div class="hero-heading">
           <!-- <label
             class="dark-mode ml-auto"
@@ -107,7 +124,7 @@ useHead({
             />
             <span></span>
           </label> -->
-          <div class="auth-logo">
+          <div v-if="!isConfirmation" class="auth-logo">
             <RouterLink :to="{ name: 'index' }">
               <img
                 class="light-image"
@@ -122,7 +139,7 @@ useHead({
           <div class="container">
             <div class="columns">
               <div class="column is-12">
-                <div class="auth-content">
+                <div v-if="!isConfirmation" class="auth-content">
                   <h2 style="text-align: center">Otomat Yönetim Sistemi</h2>
                   <p></p>
                   <!-- <RouterLink :to="{ name: 'auth-signup' }">
@@ -173,7 +190,7 @@ useHead({
                       </VField>
 
                       <!-- Switch -->
-                      <VControl class="setting-item">
+                      <!-- <VControl class="setting-item">
                         <label for="remember-me" class="form-switch is-primary">
                           <input id="remember-me" type="checkbox" class="is-switch" />
                           <i aria-hidden="true"></i>
@@ -183,7 +200,7 @@ useHead({
                             <span>Beni hatırla</span>
                           </label>
                         </div>
-                      </VControl>
+                      </VControl> -->
 
                       <!-- Submit -->
                       <VControl class="login">

@@ -414,7 +414,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div v-if="hasAuth('EmployeeCards', 'Read')" class="column is-12">
+                <div v-if="userSession.isDealer" class="column is-12">
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
@@ -445,7 +445,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div v-if="userSession.isDealer" class="column is-12">
+                <div v-if="hasAuth('EmployeeCards', 'Read')" class="column is-12">
                   <label class="expanded-label">{{ getExpression('Card') }}</label>
                   <VField addons>
                     <Multiselect

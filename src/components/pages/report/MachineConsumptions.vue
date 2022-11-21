@@ -23,7 +23,7 @@ const filteredData = computed(() => {
   if (!filters.value) {
     return reportData.value
   } else {
-    const filterRe = new RegExp(filters.value, 'i')
+    const filterRe = new RegExp(filters.value.replace('İ', 'i'), 'i')
 
     return reportData.value.filter((item: any) => {
       return (
@@ -144,8 +144,10 @@ const columns = {
   consumedDate: getExpression('Date'),
   consumedTime: getExpression('Hour'),
   employeeCode: 'Personel Kodu',
+  employeeCardCode: 'Sicil Kodu',
   employeeName: getExpression('Employee'),
-  departmentName: 'Departman',
+  departmentCode: 'Dpt. Kodu',
+  departmentName: 'Dpt. Adı',
   machineName: getExpression('MachineOrWarehouse'),
   itemCategoryName: getExpression('Category'),
   itemName: getExpression('Item'),
@@ -234,7 +236,13 @@ const columns = {
                   <span class="">{{ item.employeeCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
+                  <span class="">{{ item.employeeCardCode }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
                   <span class="">{{ item.employeeName }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.departmentCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.departmentName }}</span>
@@ -262,8 +270,7 @@ const columns = {
                     icon="feather:edit"
                     raised
                     @click="showEditConsumeForm(item.id)"
-                    >Düzenle
-                  </VButton>
+                  ></VButton>
                 </VFlexTableCell>
               </div>
             </TransitionGroup>
@@ -279,6 +286,17 @@ const columns = {
               class="mt-2 ml-2"
               color="info"
               icon="feather:info"
+            >
+            </VSnack>
+
+            <VSnack
+              :title="'Toplam Tüketim: ' + filteredData.map((m: any) => m.totalConsumed).reduce((a,b) => a + b) + ' ADET'"
+              size="small"
+              solid
+              class="mt-2 ml-2 mr-2"
+              style="float: right"
+              color="info"
+              icon="feather:wind"
             >
             </VSnack>
           </VCard>

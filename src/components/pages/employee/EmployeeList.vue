@@ -132,7 +132,7 @@ const columns = {
                 <VFlexTableCell>
                   <span class="">{{ item.departmentName }}</span>
                 </VFlexTableCell>
-                <VFlexTableCell v-if="isDealer">
+                <VFlexTableCell v-if="hasAuth('EmployeeCards', 'Read')">
                   <span class="">{{ item.employeeCardCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">

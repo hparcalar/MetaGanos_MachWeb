@@ -12,6 +12,8 @@ export type ConsumptionSearchFilter = {
   categoryId: number[] | null
   groupId: number[] | null
   itemId: number[] | null
+  employeeId: number[] | null
+  departmentId: number[] | null
 }
 
 const { isDealer, user, getExpression } = useUserSession()
@@ -40,12 +42,16 @@ const filterModel: Ref<ConsumptionSearchFilter> = ref({
   categoryId: null,
   groupId: null,
   itemId: null,
+  employeeId: null,
+  departmentId: null,
 })
 const plants = ref([])
 const machines = ref([])
 const categories = ref([])
 const groups = ref([])
 const items = ref([])
+const departments = ref([])
+const employees: Ref<any[]> = ref([])
 
 const bindFilterModel = async () => {
   try {
@@ -56,7 +62,9 @@ const bindFilterModel = async () => {
 
     if (plants.value.length == 1) filterModel.value.plantId = [plants.value[0].id]
 
-    categories.value = (await api.get('ItemCategory')).data
+    await bindCategories()
+    await bindDepartments()
+    await bindEmployees()
   } catch (error) {}
 }
 
@@ -70,6 +78,52 @@ const bindMachines = async () => {
       })
     } catch (error) {}
   }
+}
+
+const bindDepartments = async () => {
+  try {
+    if (filterModel.value.plantId) {
+      departments.value = []
+      filterModel.value.plantId.forEach(async (d: number) => {
+        const plantDeps = (await api.get('Plant/' + d + '/Departments')).data
+        if (plantDeps) departments.value = departments.value.concat(plantDeps)
+      })
+    } else departments.value = []
+  } catch (error) {}
+}
+
+const bindEmployees = async () => {
+  try {
+    if (filterModel.value.plantId && filterModel.value.plantId.length > 0) {
+      let empData: Array<any> = []
+      employees.value = []
+
+      for (let i = 0; i < filterModel.value.plantId.length; i++) {
+        const d: number = filterModel.value.plantId[i]
+        const plantEmps = (await api.get('Plant/' + d + '/Employees')).data
+        if (plantEmps) empData = empData.concat(plantEmps)
+      }
+
+      if (filterModel.value.departmentId && filterModel.value.departmentId.length > 0) {
+        for (let i = 0; i < filterModel.value.departmentId.length; i++) {
+          const d: number = filterModel.value.departmentId[i]
+          empData = empData.filter((d: any) =>
+            filterModel.value.departmentId?.some(
+              (m: any) => parseInt(d.departmentId) == parseInt(m)
+            )
+          )
+        }
+      }
+
+      employees.value = empData
+    } else employees.value = []
+  } catch (error) {}
+}
+
+const bindCategories = async () => {
+  try {
+    categories.value = (await api.get('ItemCategory')).data
+  } catch (error) {}
 }
 
 const bindGroups = async () => {
@@ -112,8 +166,13 @@ const bindItems = async () => {
 
 const onChangePlant = async (plantId: any) => {
   filterModel.value.machineId = null
+  filterModel.value.departmentId = null
+  filterModel.value.employeeId = null
   filterModel.value.plantId = plantId
   await bindMachines()
+  await bindCategories()
+  await bindDepartments()
+  await bindEmployees()
 }
 
 const onChangeCategory = async (categoryId: any) => {
@@ -121,6 +180,11 @@ const onChangeCategory = async (categoryId: any) => {
   filterModel.value.itemId = null
   filterModel.value.categoryId = categoryId
   await bindGroups()
+}
+
+const onChangeDepartment = async (departmentId: any) => {
+  filterModel.value.departmentId = departmentId
+  await bindEmployees()
 }
 
 const onChangeGroup = async (groupId: any) => {
@@ -320,6 +384,46 @@ watch(
               placeholder=""
               :searchable="true"
               :options="items"
+            />
+          </VControl>
+        </VField>
+      </div>
+    </div>
+    <div class="columns is-multiline">
+      <!-- departments -->
+      <div class="column is-4">
+        <VField>
+          <label>Departman</label>
+          <VControl>
+            <Multiselect
+              v-model="filterModel.departmentId"
+              mode="tags"
+              class="is-stacked"
+              :value-prop="'id'"
+              :label="'departmentName'"
+              placeholder=""
+              :searchable="true"
+              :options="departments"
+              @change="onChangeDepartment"
+            />
+          </VControl>
+        </VField>
+      </div>
+
+      <!-- employees -->
+      <div class="column is-4">
+        <VField>
+          <label>Personel</label>
+          <VControl>
+            <Multiselect
+              v-model="filterModel.employeeId"
+              mode="tags"
+              class="is-stacked"
+              :value-prop="'id'"
+              :label="'employeeName'"
+              placeholder=""
+              :searchable="true"
+              :options="employees"
             />
           </VControl>
         </VField>

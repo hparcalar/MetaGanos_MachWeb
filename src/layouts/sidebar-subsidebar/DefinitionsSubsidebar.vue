@@ -91,9 +91,9 @@ const { hasAuth, isDealer } = userSession
           >
             <span>{{ userSession.getExpression('ItemGroups') }}</span>
           </RouterLink>
-          <RouterLink :to="{ name: 'unit' }" class="is-submenu">
+          <!-- <RouterLink :to="{ name: 'unit' }" class="is-submenu">
             <span>{{ userSession.getExpression('Units') }}</span>
-          </RouterLink>
+          </RouterLink> -->
         </VCollapseLinks>
 
         <li>

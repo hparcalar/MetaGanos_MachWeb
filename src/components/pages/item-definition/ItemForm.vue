@@ -237,7 +237,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-12">
+                <!-- <div class="column is-12">
                   <VField>
                     <label>{{ getExpression('Unit') }}</label>
                     <VControl>
@@ -251,7 +251,7 @@ const isStuck = computed(() => {
                       />
                     </VControl>
                   </VField>
-                </div>
+                </div> -->
                 <div class="column is-12">
                   <VField>
                     <label>{{ getExpression('Explanation') }}</label>

@@ -4,6 +4,7 @@ import type { PropType, Ref } from 'vue'
 import { useApi } from '/@src/composable/useApi'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
+import Login from '/@src/pages/auth/login.vue'
 
 export type EditConsumeParams = {
   id: number
@@ -43,6 +44,7 @@ const modelIsBinding = ref(false)
 const itemCategories: Ref<any[]> = ref([])
 const itemGroups: Ref<any[]> = ref([])
 const items: Ref<any[]> = ref([])
+const confirmDialogOpen = ref(false)
 
 const bindConsumeModel = async () => {
   modelIsBinding.value = true
@@ -107,6 +109,7 @@ const saveConsumeModel = async () => {
 
 const deleteConsumeModel = async () => {
   try {
+    confirmDialogOpen.value = false
     modelObject.value.makeDelete = 1
     const postResult = (await api.post('Employee/EditConsume', modelObject.value)).data
 
@@ -118,6 +121,10 @@ const deleteConsumeModel = async () => {
   } catch (error: any) {
     notif.error(error?.message)
   }
+}
+
+const showDeleteApproval = async () => {
+  confirmDialogOpen.value = true
 }
 
 /* WATCHERS */
@@ -145,7 +152,7 @@ watch(
                 color="danger"
                 icon="feather:trash"
                 raised
-                @click="deleteConsumeModel"
+                @click="showDeleteApproval"
               >
                 Sil
               </VButton>
@@ -256,6 +263,23 @@ watch(
           </div>
         </div>
       </div>
+
+      <VModal
+        :open="confirmDialogOpen"
+        :title="'Kullanıcı Onayı'"
+        size="small"
+        style="height: 200px"
+        actions="right"
+        :cancel-label="'Vazgeç'"
+        @close="confirmDialogOpen = false"
+      >
+        <template #content>
+          <Login :is-confirmation="true" @submit="deleteConsumeModel" />
+        </template>
+        <template #action>
+          <span />
+        </template>
+      </VModal>
     </div>
   </form>
 </template>
