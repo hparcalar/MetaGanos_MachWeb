@@ -27,6 +27,7 @@ const modelObject = ref({
   dealerId: null,
   plantLogo: '',
   last4CharForCardRead: false,
+  autoSpiralLoading: false,
 })
 const printFiles = ref([])
 const dealers = ref([])
@@ -286,6 +287,17 @@ const isStuck = computed(() => {
                       v-model="modelObject.last4CharForCardRead"
                       class="ml-2"
                       :label="userSession.getExpression('CardReaderLast4Char')"
+                      color="success"
+                    />
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label></label>
+                    <VSwitchBlock
+                      v-model="modelObject.autoSpiralLoading"
+                      class="ml-2"
+                      :label="'Otomatik Spiral Dolumu'"
                       color="success"
                     />
                   </VField>

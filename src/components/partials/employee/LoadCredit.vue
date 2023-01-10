@@ -217,6 +217,9 @@ const saveCreditModel = async () => {
       modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
       modelObject.value.activeCredit = modelObject.value.creditByRange
 
+      const mmDate = moment(modelObject.value.creditLoadDate)
+      modelObject.value.creditLoadDate = mmDate.format('YYYY-MM-DD') + 'T00:00:00'
+
       const postResult: any = (await api.post('Employee/BulkLoad', modelObject.value))
         .data
       if (postResult && postResult.result) {
@@ -227,6 +230,10 @@ const saveCreditModel = async () => {
       modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
       modelObject.value.activeCredit = modelObject.value.creditByRange
 
+      const mmDate = moment(modelObject.value.creditLoadDate)
+      modelObject.value.creditLoadDate = mmDate.format('YYYY-MM-DD') + 'T00:00:00'
+
+      console.log(modelObject.value)
       let postResult: any = null
       if (modelObject.value.id > 0)
         postResult = (await api.post('Employee/EditCredit', modelObject.value)).data
@@ -306,6 +313,7 @@ const removeTime = (date: Date) => {
 }
 
 const onDayClick = (dayInfo: any) => {
+  console.log(dayInfo)
   if (dayInfo && dayInfo.date) {
     if (
       schedulerDates.value.some(

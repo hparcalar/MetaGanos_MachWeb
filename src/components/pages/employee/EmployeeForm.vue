@@ -368,7 +368,13 @@ const isStuck = computed(() => {
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton
+                v-if="hasAuth('Employees', 'Delete')"
+                color="danger"
+                icon="feather:trash"
+                raised
+                @click="deleteModel"
+              >
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -496,7 +502,7 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
+                <div v-if="hasAuth('Employees', 'Delete')" class="column is-6">
                   <VField>
                     <label>Durumu</label>
                     <VControl>

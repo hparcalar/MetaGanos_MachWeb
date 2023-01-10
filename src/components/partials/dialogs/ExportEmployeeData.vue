@@ -49,26 +49,45 @@ const bindModel = async () => {
   } catch (error) {}
 }
 
-const onFileSelected = async (event: any) => {
-  if (event.target.files && event.target.files.length > 0) {
-    modelObject.value.selectedFile = event.target.files[0]
-  }
-}
-
-const makeUpload = async () => {
+const makeExport = async () => {
   try {
     const formData = new FormData()
     formData.append('plantId', modelObject.value.plantId.toString())
     formData.append('file', modelObject.value.selectedFile)
 
-    const postResult = await api.post('Employee/Upload', formData)
-    if (postResult && postResult.data.result) {
-      notif.success('Transfer başarıyla gerçekleştirildi: ' + postResult.data.infoMessage)
+    const postResult = await api.get('Employee/Export/' + modelObject.value.plantId)
+    if (postResult && postResult.data) {
+      const bs64Str = postResult.data
+      downloadFile(bs64Str)
       emit('fileSaved', true)
     } else notif.error(postResult.data.errorMessage)
   } catch (error: any) {
     notif.error(error?.message)
   }
+}
+
+const downloadFile = function (base64: any) {
+  let bytes = base64ToByteArray(base64)
+
+  let blob = new Blob([bytes], { type: 'application/octet-stream' })
+  let link = document.createElement('a')
+  link.href = window.URL.createObjectURL(blob)
+
+  let fileName = 'personel_istihkak.xlsx'
+  link.download = fileName
+  link.click()
+}
+
+const base64ToByteArray = function (base64: any) {
+  let binaryString = window.atob(base64)
+  let len = binaryString.length
+
+  let bytes = new Uint8Array(len)
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return bytes.buffer
 }
 
 watch(
@@ -84,7 +103,7 @@ watch(
 <template>
   <VModal
     :open="props.visible"
-    title="Personel Dosyası Yükleme"
+    title="Personel Dosyası Aktarma"
     size="large"
     actions="right"
     :cancel-label="'Vazgeç'"
@@ -93,38 +112,7 @@ watch(
     <template #content>
       <form class="modal-form py-0">
         <div class="columns is-multiline">
-          <div class="column is-12">
-            <VMessage color="info">
-              <i class="iconify" data-icon="feather:info" aria-hidden="true"></i>
-              <span class="ml-2"
-                >Transfer formatı aşağıdaki sütun sıralamaları ile olmalıdır.</span
-              >
-            </VMessage>
-            <div class="tab-content is-active mt-5">
-              <div class="flex-table is-rounded">
-                <div
-                  class="flex-table-header is-rounded"
-                  style="
-                    background-color: var(--green);
-                    color: #fff !important;
-                    padding: 3px;
-                  "
-                >
-                  <span class="cell-center transfer-template-heading">Kodu</span
-                  ><span class="cell-center transfer-template-heading">Adı</span
-                  ><span class="cell-center transfer-template-heading">Departman</span
-                  ><span class="cell-center transfer-template-heading">Kart No</span>
-                  <span class="cell-center transfer-template-heading"
-                    >İstihkak (Stok kodu ile)</span
-                  >
-                  <!-- <span class="cell-center transfer-template-heading">Gsm</span>
-                  <span class="cell-center transfer-template-heading">E-Posta</span> -->
-                </div>
-              </div>
-              <!--Table Pagination--><!--v-if-->
-            </div>
-          </div>
-          <div class="column is-12">
+          <div class="column is-12" style="margin-bottom: 120px">
             <VField>
               <label>Fabrika</label>
               <VControl>
@@ -139,25 +127,11 @@ watch(
               </VControl>
             </VField>
           </div>
-          <div class="column is-12">
-            <VField>
-              <label>Excel Dosyası</label>
-              <VControl icon="feather:terminal">
-                <input
-                  type="file"
-                  class="input"
-                  placeholder=""
-                  autocomplete=""
-                  @change="onFileSelected"
-                />
-              </VControl>
-            </VField>
-          </div>
         </div>
       </form>
     </template>
     <template #action>
-      <VButton color="primary" raised @click="makeUpload()">Yükle</VButton>
+      <VButton color="primary" raised @click="makeExport()">Dışarı Aktar</VButton>
     </template>
   </VModal>
 </template>

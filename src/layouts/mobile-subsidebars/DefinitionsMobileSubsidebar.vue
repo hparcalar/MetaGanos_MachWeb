@@ -34,6 +34,11 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('Employees') }}
           </RouterLink>
         </li>
+        <li v-if="hasAuth('Employees', 'Delete')">
+          <RouterLink :to="{ name: 'employee-non-active' }">
+            Ayrılan Personeller
+          </RouterLink>
+        </li>
         <li>
           <RouterLink :to="{ name: 'warehouse' }">
             {{ userSession.getExpression('Warehouses') }}

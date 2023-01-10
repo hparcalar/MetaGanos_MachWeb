@@ -45,7 +45,7 @@ const handleLogin = async () => {
     try {
       let loginResult: any = null
 
-      loginResult = await api.post('User/LoginPanelUser', {
+      loginResult = await api.post('/User/LoginPanelUser', {
         DealerCode: loginModel.value.DealerCode,
         Login: loginModel.value.Login,
         Password: loginModel.value.Password,
@@ -69,6 +69,7 @@ const handleLogin = async () => {
         }
       }
     } catch (error) {
+      console.error(error)
       notif.error('Hatalı giriş')
     }
 

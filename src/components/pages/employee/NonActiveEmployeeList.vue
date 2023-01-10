@@ -7,11 +7,27 @@ import { useUserSession } from '/@src/stores/userSession'
 const { getExpression, isDealer, hasAuth } = useUserSession()
 const api = useApi()
 const router = useRouter()
-const currentPage = ref(0)
 
 const filters = ref('')
 const employees = ref([])
-const pagedData = ref({ currentPage: 0, totalPages: 0, totalRecords: 0, data: [] })
+
+const filteredData = computed(() => {
+  if (!filters.value) {
+    return employees.value
+  } else {
+    const filterRe = new RegExp(filters.value, 'i')
+
+    return employees.value.filter((item) => {
+      return (
+        item.employeeCode?.match(filterRe) ||
+        item.employeeName?.match(filterRe) ||
+        item.plantName?.match(filterRe) ||
+        item.departmentName?.match(filterRe) ||
+        item.employeeCardCode?.match(filterRe)
+      )
+    })
+  }
+})
 
 const openDetail = (id: number) => {
   router.push({
@@ -23,16 +39,9 @@ const openDetail = (id: number) => {
 }
 
 const isFileDialogVisible = ref(false)
-const isExportDialogVisible = ref(false)
-
 const openFileDialog = () => {
   isFileDialogVisible.value = true
 }
-
-const openExportDialog = () => {
-  isExportDialogVisible.value = true
-}
-
 const onUploadSucceed = async (result: Boolean) => {
   if (result) {
     isFileDialogVisible.value = false
@@ -40,18 +49,8 @@ const onUploadSucceed = async (result: Boolean) => {
   }
 }
 
-const onExportSucceed = async (result: Boolean) => {
-  if (result) {
-    isExportDialogVisible.value = false
-  }
-}
-
 const bindList = async () => {
-  pagedData.value = (
-    await api.get('Employee/ListByPage/' + currentPage.value + '?search=' + filters.value)
-  ).data
-
-  employees.value = pagedData.value.data
+  employees.value = (await api.get('Employee/NonActive')).data
 }
 
 onMounted(async () => {
@@ -61,17 +60,6 @@ onMounted(async () => {
     await bindList()
   } catch (error) {}
 })
-
-const onFilterChanged = async (event: any) => {
-  filters.value = event.target.value
-  currentPage.value = 0
-  await bindList()
-}
-
-const onPageChanged = async (page: any) => {
-  currentPage.value = page - 1
-  await bindList()
-}
 
 const columns = {
   employeeCode: getExpression('EmployeeCode'),
@@ -94,27 +82,8 @@ const columns = {
           v-model="filters"
           class="input custom-text-filter"
           :placeholder="getExpression('Search')"
-          @change="onFilterChanged"
         />
       </VControl>
-
-      <VButton
-        class="ml-5"
-        :color="'success'"
-        :raised="true"
-        icon="feather:upload"
-        @click="openFileDialog"
-        >{{ getExpression('ImportFromFile') }}</VButton
-      >
-
-      <VButton
-        class="ml-5"
-        :color="'info'"
-        :raised="true"
-        icon="feather:upload"
-        @click="openExportDialog"
-        >Dışarı Aktar</VButton
-      >
 
       <VButton
         :color="'info'"
@@ -128,7 +97,7 @@ const columns = {
     <div class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
-        v-if="!employees.length"
+        v-if="!filteredData.length"
         :title="getExpression('AnyDataDoesntExists')"
         subtitle=""
         larger
@@ -136,12 +105,12 @@ const columns = {
       </VPlaceholderPage>
 
       <!--Active Tab-->
-      <div v-else-if="employees.length" class="tab-content is-active">
-        <VFlexTable :data="employees" :columns="columns" clickable compact separators>
+      <div v-else-if="filteredData.length" class="tab-content is-active">
+        <VFlexTable :data="filteredData" :columns="columns" clickable compact separators>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">
               <!--Table item-->
-              <div v-for="item in employees" :key="item.id" class="flex-table-item">
+              <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
                 <VFlexTableCell>
                   <span class="">{{ item.employeeCode }}</span>
                 </VFlexTableCell>
@@ -170,21 +139,10 @@ const columns = {
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
-        <VFlexPagination
-          v-if="pagedData.totalRecords > 10"
-          :item-per-page="10"
-          :total-items="pagedData.totalRecords"
-          :current-page="currentPage + 1"
-          :max-links-displayed="10"
-          :no-router="true"
-          @update:current-page="onPageChanged"
-        />
-
         <VFlex class="mt-5">
           <VCard class="p-1">
             <VSnack
-              :title="'Toplam: ' + pagedData.totalRecords + ' kayıt'"
+              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
               size="small"
               solid
               class="mt-2 ml-2"
@@ -202,12 +160,6 @@ const columns = {
     :visible="isFileDialogVisible"
     @file-saved="onUploadSucceed"
     @close="isFileDialogVisible = false"
-  />
-
-  <ExportEmployeeData
-    :visible="isExportDialogVisible"
-    @file-saved="onExportSucceed"
-    @close="isExportDialogVisible = false"
   />
 </template>
 
