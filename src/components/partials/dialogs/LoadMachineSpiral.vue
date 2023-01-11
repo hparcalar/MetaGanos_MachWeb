@@ -47,10 +47,15 @@ const items = ref([])
 
 const bindModel = async () => {
   try {
-    if (props.itemCategory && props.itemCategory.itemId)
+    if (props.itemCategory && props.itemCategory.itemId) {
       modelObject.value.itemId = props.itemCategory.itemId
-
-    if (props.itemCategory && props.itemCategory.itemCategoryId) {
+      const itemData = (await api.get('Item/' + modelObject.value.itemId)).data
+      if (itemData && itemData.itemCategoryId) {
+        items.value = (
+          await api.get('ItemCategory/' + itemData.itemCategoryId + '/Items')
+        ).data
+      }
+    } else if (props.itemCategory && props.itemCategory.itemCategoryId) {
       items.value = (
         await api.get('ItemCategory/' + props.itemCategory.itemCategoryId + '/Items')
       ).data
@@ -86,6 +91,14 @@ watch(
       await bindModel()
     }
   }
+)
+
+watch(
+  () => props.itemCategory,
+  async () => {
+    await bindModel()
+  },
+  { deep: true }
 )
 </script>
 

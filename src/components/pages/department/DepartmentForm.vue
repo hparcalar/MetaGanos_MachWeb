@@ -4,7 +4,10 @@ import type { Ref } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
+import { dateToStr, dateIsLtFromNow } from '/@src/composable/useHelpers'
 import { useUserSession } from '/@src/stores/userSession'
+import { creditRangeOption } from '/@src/shared-types'
+import type { CreditRangeType } from '/@src/shared-types'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -22,6 +25,8 @@ const userSession = useUserSession()
 const { getExpression } = useUserSession()
 const { isDealer } = userSession
 
+const rangeTypes = ref(creditRangeOption)
+
 const modelObject = ref({
   id: 0,
   departmentCode: '',
@@ -29,7 +34,15 @@ const modelObject = ref({
   plantId: null,
   isActive: true,
   plantPrintFileId: null,
+  credits: [],
 })
+
+const departmentCreditModel = ref({
+  creditId: 0,
+  itemCategoryId: 0,
+  departmentId: 0,
+})
+
 const machineModel = ref({
   machineId: null,
   departmentId: null,
@@ -41,6 +54,7 @@ const plantFiles = ref([])
 const departmentMachines: Ref<any[]> = ref([])
 const filters = ref('')
 const isMachineSelectionVisible: Ref<boolean> = ref(false)
+const isDepCreditFormVisible = ref(false)
 const isLoadCreditFormVisible = ref(false)
 
 onMounted(async () => {
@@ -61,6 +75,7 @@ const bindModel = async () => {
         plantId: null,
         isActive: true,
         plantPrintFileId: null,
+        credits: [],
       }
 
     plants.value = (await api.get('Plant')).data
@@ -69,8 +84,6 @@ const bindModel = async () => {
       modelObject.value.plantId = plants.value[0].id
     else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
       modelObject.value.plantId = userSession.user.FactoryId
-
-    console.log(modelObject.value.plantId)
 
     if (modelObject.value.plantId)
       machines.value = (
@@ -121,6 +134,16 @@ const filteredData = computed(() => {
 
 const columns = {
   machineName: getExpression('Automat'),
+  actions: {
+    label: '#',
+    align: 'center',
+  },
+} as const
+
+const depCreditColumns = {
+  itemCategoryName: getExpression('Item'),
+  rangeType: getExpression('Period'),
+  creditByRange: 'Kredi',
   actions: {
     label: '#',
     align: 'center',
@@ -228,6 +251,59 @@ const showLoadCreditForm = () => {
   isLoadCreditFormVisible.value = true
 }
 
+const getRangeStr = (item: any) => {
+  try {
+    var rgType = rangeTypes.value.find((d) => d.key === item.rangeType)
+    if (rgType) {
+      if (item.rangeLength && item.rangeLength > 1)
+        return item.rangeLength + ' ' + rgType.value
+      return rgType.value
+    }
+  } catch (error) {}
+
+  return item.rangeType
+}
+
+const openDepCreditForm = (creditId: number | null) => {
+  departmentCreditModel.value.departmentId = modelObject.value.id
+  departmentCreditModel.value.creditId = creditId
+  isDepCreditFormVisible.value = true
+}
+
+const deleteDepCredit = async (creditId: number) => {
+  if (confirm('Bu kredi tanımını silmek istediğinizden emin misiniz?')) {
+    try {
+      const postResult = (
+        await api.delete('Department/DeleteCredit?creditId=' + creditId)
+      ).data
+      if (postResult && postResult.result) {
+        notif.success('Kredi başarıyla silindi.')
+        await bindModel()
+      } else notif.error(postResult.errorMessage)
+    } catch (error) {}
+  }
+}
+
+const onDepCreditSubmit = async () => {
+  isDepCreditFormVisible.value = false
+  await bindModel()
+}
+
+const applyToEveryone = async () => {
+  if (
+    confirm(
+      'Bu departmandaki kredi şablonunu departmana bağlı tüm personele uygulamak istediğinizden emin misiniz?'
+    )
+  ) {
+    const getResult = (
+      await api.get('Department/ApplyCreditsForEveryone/' + modelObject.value.id)
+    ).data
+    if (getResult && getResult.result == true) {
+      notif.success('Tüm personel istihkakları başarıyla güncellendi.')
+    } else notif.error('Bir hata oluştu.')
+  }
+}
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
@@ -245,6 +321,14 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
+              <VButton
+                color="primary"
+                icon="feather:users"
+                raised
+                @click="applyToEveryone"
+              >
+                Tüm Personele Uygula
+              </VButton>
               <VButton
                 icon="feather:upload"
                 color="info"
@@ -341,6 +425,104 @@ const isStuck = computed(() => {
                     </VControl>
                   </VField>
                 </div> -->
+
+                <div class="column is-12">
+                  <div class="form-fieldset">
+                    <div class="fieldset-heading">
+                      <h4>Kredi Bilgileri</h4>
+                      <p></p>
+                    </div>
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="list-flex-toolbar is-reversed">
+                          <VButton
+                            v-if="modelObject && modelObject.id > 0"
+                            :color="'info'"
+                            :raised="true"
+                            icon="feather:plus"
+                            @click="openDepCreditForm(null)"
+                            >Yeni Kredi</VButton
+                          >
+                        </div>
+                        <div class="flex-list-wrapper flex-list-v3">
+                          <!--List Empty Search Placeholder -->
+                          <VPlaceholderPage
+                            v-if="!modelObject.credits"
+                            :title="getExpression('AnyDataDoesntExists')"
+                            subtitle=""
+                            larger
+                          >
+                          </VPlaceholderPage>
+
+                          <!--Active Tab-->
+                          <div
+                            v-else-if="modelObject.credits"
+                            class="tab-content is-active"
+                          >
+                            <VFlexTable
+                              :data="modelObject.credits"
+                              :columns="depCreditColumns"
+                              clickable
+                              compact
+                              separators
+                            >
+                              <template #body>
+                                <!--Table item-->
+                                <div
+                                  v-for="item in modelObject.credits"
+                                  :key="item.id"
+                                  class="flex-table-item"
+                                  :class="{
+                                    'past-credit':
+                                      item.creditEndDate &&
+                                      dateIsLtFromNow(item.creditEndDate),
+                                  }"
+                                >
+                                  <VFlexTableCell>
+                                    <span class=""
+                                      ><small>{{
+                                        item.itemName && item.itemName.length > 0
+                                          ? item.itemName
+                                          : item.itemGroupName &&
+                                            item.itemGroupName.length > 0
+                                          ? item.itemGroupName
+                                          : item.itemCategoryName
+                                      }}</small></span
+                                    >
+                                  </VFlexTableCell>
+                                  <VFlexTableCell>
+                                    <span class=""
+                                      ><small>{{ getRangeStr(item) }}</small></span
+                                    >
+                                  </VFlexTableCell>
+                                  <VFlexTableCell>
+                                    <span class=""
+                                      ><small>{{ item.creditByRange }}</small></span
+                                    >
+                                  </VFlexTableCell>
+                                  <VFlexTableCell :columns="{ align: 'end' }">
+                                    <button
+                                      class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
+                                      @click="openDepCreditForm(item.id)"
+                                    >
+                                      <i aria-hidden="true" class="fas fa-edit dot"></i>
+                                    </button>
+                                    <button
+                                      class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
+                                      @click="deleteDepCredit(item.id)"
+                                    >
+                                      <i aria-hidden="true" class="fas fa-trash dot"></i>
+                                    </button>
+                                  </VFlexTableCell>
+                                </div>
+                              </template>
+                            </VFlexTable>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -486,6 +668,22 @@ const isStuck = computed(() => {
     @close="isLoadCreditFormVisible = false"
     @saved="isLoadCreditFormVisible = false"
   />
+
+  <VModal
+    :open="isDepCreditFormVisible"
+    :title="'Departman Kredi Bilgileri'"
+    size="big"
+    actions="right"
+    :cancel-label="'Vazgeç'"
+    @close="isDepCreditFormVisible = false"
+  >
+    <template #content>
+      <DepartmentCredit :params="departmentCreditModel" @submit="onDepCreditSubmit" />
+    </template>
+    <template #action>
+      <span />
+    </template>
+  </VModal>
 </template>
 
 <style lang="scss">

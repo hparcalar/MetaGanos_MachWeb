@@ -16,6 +16,10 @@ const { hasAuth, isDealer, user, getExpression } = useUserSession()
 const api = useApi()
 const notif = useNotyf()
 
+const spiralDialog = ref()
+const spiralDialogX = ref(0)
+const spiralDialogY = ref(0)
+
 const modelObject = ref({
   id: 0,
   machineCode: '',
@@ -56,6 +60,7 @@ const liveVideoStream = ref(null)
 
 const plants = ref([])
 const itemCategories = ref([])
+const items = ref([])
 const isSpiralDetailVisible = ref(false)
 const isSpiralLoadVisible = ref(false)
 const selectedSpiralNo = ref(-1)
@@ -123,6 +128,8 @@ const bindCategories = async () => {
     itemCategories.value = (
       await api.get('Plant/' + modelObject.value.plantId + '/ItemCategories')
     ).data
+
+    items.value = (await api.get('Item')).data
   } catch (error) {}
 }
 
@@ -163,7 +170,26 @@ const saveModel = async () => {
   }
 }
 
-const showSpiralDetail = (spiralNo: number) => {
+const showSpiralDetail = (event: any, spiralNo: number) => {
+  if (event.target) {
+    const currentRow = parseInt(Math.floor(spiralNo / 10))
+
+    if (currentRow > Math.ceil(modelObject.value.rows / 2)) {
+      spiralDialogY.value = 40
+    } else {
+      spiralDialogY.value = -320
+    }
+
+    const currentCol = parseInt(spiralNo % 10)
+    if (currentCol >= modelObject.value.cols / 2) {
+      spiralDialogX.value = -420
+    } else {
+      spiralDialogX.value = 40
+    }
+
+    event.target.style.position = 'relative'
+  }
+
   selectedSpiralNo.value = spiralNo
   isSpiralDetailVisible.value = true
 
@@ -177,6 +203,8 @@ const showSpiralDetail = (spiralNo: number) => {
     activeQuantity: 0,
     isEnabled: true,
   }
+
+  // event.target.appendChild(spiralDialog.value)
 }
 
 const isSpiralEnabled = (spiralNo: number) => {
@@ -254,8 +282,11 @@ const onChangePlant = async (plantId: any) => {
 
 // #region SPIRAL LOADING FUNCTIONS
 const showSpiralLoadDialog = () => {
-  if (!spiralModel.value || !spiralModel.value.itemCategoryId) {
-    notif.warning('Yükleme yapabilmek için bir stok kategorisi seçmelisiniz.')
+  if (
+    !spiralModel.value ||
+    (!spiralModel.value.itemId && !spiralModel.value.itemCategoryId)
+  ) {
+    notif.warning('Yükleme yapabilmek için bir stok seçmelisiniz.')
     return
   }
   if (selectedSpiralNo.value > 0) {
@@ -380,6 +411,25 @@ const reversedRows = computed(() =>
     .reverse()
 )
 
+const onFormMouseDown = (event: any) => {
+  if (isSpiralDetailVisible.value) {
+    const dialogId = 'spiralDialogForm'
+    let inSpiralDialog = false
+    let pNode = event.target.parentNode
+    while (pNode) {
+      if (pNode.id == dialogId) {
+        inSpiralDialog = true
+        break
+      }
+      pNode = pNode.parentNode
+    }
+
+    if (!inSpiralDialog) {
+      isSpiralDetailVisible.value = false
+    }
+  }
+}
+
 watch(
   () => modelObject.value.rows,
   () => {
@@ -412,7 +462,7 @@ const isStuck = computed(() => {
 </script>
 
 <template>
-  <form class="form-layout" @submit.prevent>
+  <form class="form-layout" @submit.prevent @mousedown="onFormMouseDown">
     <div class="form-outer">
       <div :class="[isStuck && 'is-stuck']" class="form-header stuck-header">
         <div class="form-header-inner">
@@ -703,10 +753,7 @@ const isStuck = computed(() => {
                 "
               >
                 <Transition name="slide-up" mode="out-in">
-                  <div
-                    v-if="!isSpiralDetailVisible"
-                    class="form-fieldset hk-slide-content"
-                  >
+                  <div class="form-fieldset hk-slide-content">
                     <div class="fieldset-heading">
                       <h4>{{ getExpression('SpiralInformation') }}</h4>
                       <p></p>
@@ -745,109 +792,6 @@ const isStuck = computed(() => {
                       </div>
                     </div>
                   </div>
-
-                  <div
-                    v-else-if="isSpiralDetailVisible"
-                    class="form-fieldset hk-slide-content"
-                  >
-                    <div class="fieldset-heading">
-                      <h4 class="spiral-header">Spiral: {{ selectedSpiralNo }}</h4>
-                      <h4
-                        v-if="
-                          spiralModel.activeQuantity && spiralModel.activeQuantity > 0
-                        "
-                        class="spiral-header mt-2 mb-2"
-                        style="background-color: var(--placeholder); color: var(--dark)"
-                      >
-                        {{ spiralModel.itemName }}: {{ spiralModel.activeQuantity }} adet
-                      </h4>
-                      <p></p>
-                    </div>
-
-                    <div class="columns is-multiline">
-                      <div class="column is-12">
-                        <VField>
-                          <label>{{ getExpression('Category') }}</label>
-                          <VControl>
-                            <Multiselect
-                              v-model="spiralModel.itemCategoryId"
-                              :value-prop="'id'"
-                              :label="'itemCategoryName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="itemCategories"
-                            />
-                          </VControl>
-                        </VField>
-                      </div>
-                      <div class="column is-12">
-                        <VField>
-                          <label>{{ getExpression('Capacity') }}</label>
-                          <VControl icon="feather:terminal">
-                            <input
-                              v-model="spiralModel.capacity"
-                              type="number"
-                              class="input"
-                              placeholder=""
-                              autocomplete=""
-                            />
-                          </VControl>
-                        </VField>
-                      </div>
-                      <div class="column is-12">
-                        <div class="buttons">
-                          <VButton
-                            icon="lnir lnir-arrow-left rem-100"
-                            light
-                            dark-outlined
-                            @click="isSpiralDetailVisible = false"
-                          >
-                            {{ getExpression('Back') }}
-                          </VButton>
-                          <VButton
-                            v-if="hasAuth('LoadMachine', 'Write')"
-                            color="primary"
-                            icon="feather:upload"
-                            raised
-                            @click="showSpiralLoadDialog()"
-                          >
-                            {{ getExpression('LoadMachine') }}
-                          </VButton>
-                          <VButton
-                            v-if="hasAuth('LoadMachine', 'Write')"
-                            color="danger"
-                            icon="feather:trash"
-                            raised
-                            @click="emptySpiral()"
-                          >
-                            {{ getExpression('Empty') }}
-                          </VButton>
-                          <!-- <VButton
-                            color="dark"
-                            icon="feather:list"
-                            raised
-                            @click="showSpiralConsumeDialog()"
-                          >
-                            {{ getExpression('Consumptions') }}
-                          </VButton> -->
-                          <VSwitchBlock
-                            v-if="hasAuth('Machines', 'Write')"
-                            v-model="spiralModel.isEnabled"
-                            class="ml-2"
-                            :label="getExpression('Active')"
-                            color="success"
-                          />
-                          <VSwitchBlock
-                            v-if="hasAuth('Machines', 'Write')"
-                            v-model="spiralModel.isInFault"
-                            class="ml-2"
-                            :label="getExpression('Faulty')"
-                            color="warning"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </Transition>
               </div>
             </div>
@@ -877,12 +821,117 @@ const isStuck = computed(() => {
                 :bold="true"
                 :fullwidth="true"
                 raised
-                @click="showSpiralDetail(getSpiralNo(r, c))"
+                @click="showSpiralDetail($event, getSpiralNo(r, c))"
               >
                 {{ getSpiralNo(r, c) }}
                 <p class="spiral-quantity-info">
                   {{ getSpiralQuantityInfo(getSpiralNo(r, c)) }}
                 </p>
+                <div
+                  v-if="isSpiralDetailVisible && getSpiralNo(r, c) == selectedSpiralNo"
+                  id="spiralDialogForm"
+                  ref="spiralDialog"
+                  class="form-fieldset spiral-dialog-container"
+                  :style="{ left: spiralDialogX + 'px', top: spiralDialogY + 'px' }"
+                >
+                  <div class="fieldset-heading">
+                    <h4 class="spiral-header">Spiral: {{ selectedSpiralNo }}</h4>
+                    <h4
+                      v-show="
+                        spiralModel.activeQuantity && spiralModel.activeQuantity > 0
+                      "
+                      class="spiral-header mt-2 mb-2"
+                      style="background-color: var(--placeholder); color: var(--dark)"
+                    >
+                      {{ spiralModel.itemName }}: {{ spiralModel.activeQuantity }} adet
+                    </h4>
+                    <p></p>
+                  </div>
+
+                  <div class="columns is-multiline">
+                    <div class="column is-12">
+                      <VField>
+                        <label>Stok</label>
+                        <VControl>
+                          <Multiselect
+                            v-model="spiralModel.itemId"
+                            :value-prop="'id'"
+                            :label="'itemName'"
+                            placeholder=""
+                            :searchable="true"
+                            :options="items"
+                          />
+                        </VControl>
+                      </VField>
+                    </div>
+                    <div class="column is-12">
+                      <VField>
+                        <label>{{ getExpression('Capacity') }}</label>
+                        <VControl icon="feather:terminal">
+                          <input
+                            v-model="spiralModel.capacity"
+                            type="number"
+                            class="input"
+                            placeholder=""
+                            autocomplete=""
+                          />
+                        </VControl>
+                      </VField>
+                    </div>
+                    <div class="column is-12">
+                      <div class="buttons">
+                        <VButton
+                          icon="lnir lnir-arrow-left rem-100"
+                          light
+                          dark-outlined
+                          @click="isSpiralDetailVisible = false"
+                        >
+                          {{ getExpression('Back') }}
+                        </VButton>
+                        <VButton
+                          v-show="hasAuth('LoadMachine', 'Write')"
+                          color="primary"
+                          icon="feather:upload"
+                          raised
+                          @click="showSpiralLoadDialog()"
+                        >
+                          {{ getExpression('LoadMachine') }}
+                        </VButton>
+                        <VButton
+                          v-show="hasAuth('LoadMachine', 'Write')"
+                          color="danger"
+                          icon="feather:trash"
+                          raised
+                          @click="emptySpiral()"
+                        >
+                          {{ getExpression('Empty') }}
+                        </VButton>
+                        <!-- <VButton
+                            color="dark"
+                            icon="feather:list"
+                            raised
+                            @click="showSpiralConsumeDialog()"
+                          >
+                            {{ getExpression('Consumptions') }}
+                          </VButton> -->
+                        <VSwitchBlock
+                          v-show="hasAuth('Machines', 'Write')"
+                          v-model="spiralModel.isEnabled"
+                          class="ml-2"
+                          :label="getExpression('Active')"
+                          color="success"
+                        />
+                        <VSwitchBlock
+                          v-show="hasAuth('Machines', 'Write')"
+                          v-model="spiralModel.isInFault"
+                          class="ml-2"
+                          :label="getExpression('Faulty')"
+                          color="warning"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </VButton>
             </div>
           </div>
@@ -894,6 +943,7 @@ const isStuck = computed(() => {
   <LoadMachineSpiral
     :item-category="{
       itemCategoryId: spiralModel.itemCategoryId,
+      itemId: spiralModel.itemId,
       itemName: spiralModel.itemName,
       spiralNo: selectedSpiralNo,
       activeQuantity: spiralModel.activeQuantity,
@@ -911,6 +961,18 @@ const isStuck = computed(() => {
   .form-layout {
     margin-top: 30px;
   }
+}
+
+.spiral-dialog-container {
+  position: absolute;
+  background-color: #efefef;
+  width: 400px;
+  z-index: 9 !important;
+  border-radius: 5px;
+  padding: 10px;
+  -webkit-box-shadow: 0px 0px 7px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 0px 0px 7px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 0px 0px 7px 0px rgba(0, 0, 0, 0.75);
 }
 
 .spiral-header {

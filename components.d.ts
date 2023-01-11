@@ -14,6 +14,7 @@ declare module 'vue' {
     ContactWidget: typeof import('./src/components/partials/widgets/ui-creative/ContactWidget.vue')['default']
     DefinitionsMobileSubsidebar: typeof import('./src/layouts/mobile-subsidebars/DefinitionsMobileSubsidebar.vue')['default']
     DefinitionsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DefinitionsSubsidebar.vue')['default']
+    DepartmentCredit: typeof import('./src/components/partials/department/DepartmentCredit.vue')['default']
     DepartmentForm: typeof import('./src/components/pages/department/DepartmentForm.vue')['default']
     DepartmentList: typeof import('./src/components/pages/department/DepartmentList.vue')['default']
     EditConsume: typeof import('./src/components/partials/employee/EditConsume.vue')['default']

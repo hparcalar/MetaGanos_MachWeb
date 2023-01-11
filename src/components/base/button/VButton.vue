@@ -312,7 +312,7 @@ export default defineComponent({
 
     &.is-primary {
       &.is-raised:hover {
-        opacity: 0.9;
+        opacity: 1;
         box-shadow: var(--primary-box-shadow);
       }
 
@@ -323,7 +323,7 @@ export default defineComponent({
 
     &.is-success {
       &.is-raised:hover {
-        opacity: 0.9;
+        opacity: 1;
         box-shadow: var(--success-box-shadow);
       }
 
@@ -334,7 +334,7 @@ export default defineComponent({
 
     &.is-info {
       &.is-raised:hover {
-        opacity: 0.9;
+        opacity: 1;
         box-shadow: var(--info-box-shadow);
       }
 
@@ -345,7 +345,7 @@ export default defineComponent({
 
     &.is-warning {
       &.is-raised:hover {
-        opacity: 0.9;
+        opacity: 1;
         box-shadow: var(--warning-box-shadow);
       }
 
@@ -356,7 +356,7 @@ export default defineComponent({
 
     &.is-danger {
       &.is-raised:hover {
-        opacity: 0.9;
+        opacity: 1;
         box-shadow: var(--danger-box-shadow);
       }
 
@@ -396,7 +396,7 @@ export default defineComponent({
 
       &:hover,
       &:focus {
-        opacity: 0.95;
+        opacity: 1;
         box-shadow: var(--primary-box-shadow);
         color: var(--smoke-white) !important;
       }

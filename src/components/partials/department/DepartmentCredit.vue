@@ -8,9 +8,9 @@ import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
 import moment from 'moment'
 
-export type LoadCreditParams = {
+export type DepartmentCreditParams = {
   creditId: number
-  employeeId: number
+  departmentId: number
   itemCategoryId: number
   itemGroupId: number | null
   itemId: number | null
@@ -19,12 +19,8 @@ export type LoadCreditParams = {
 
 const props = defineProps({
   params: {
-    type: Object as PropType<LoadCreditParams>,
+    type: Object as PropType<DepartmentCreditParams>,
     required: true,
-  },
-  isBulk: {
-    type: Boolean,
-    default: false,
   },
   showHeaders: {
     type: Boolean,
@@ -54,7 +50,7 @@ onMounted(async () => {
 
 const modelDefaults: Ref<any> = ref({
   id: 0,
-  employeeId: 0,
+  departmentId: 0,
   itemCategoryId: props?.params?.itemCategoryId,
   itemGroupId: props?.params?.itemGroupId,
   itemId: props?.params?.itemId,
@@ -97,10 +93,12 @@ const bindCreditModel = async () => {
   if (modelObject.value.id == 0 && props.params.creditId > 0)
     modelObject.value.id = props.params.creditId
 
-  if (props.params.employeeId > 0 || props.params.employees?.length > 0) {
+  if (props.params.departmentId > 0 || props.params.employees?.length > 0) {
     const empId =
-      props.params.employeeId > 0 ? props.params.employeeId : props.params?.employees[0]
-    const empData = (await api.get('Employee/' + empId)).data
+      props.params.departmentId > 0
+        ? props.params.departmentId
+        : props.params?.employees[0]
+    const empData = (await api.get('Department/' + empId)).data
     if (empData) {
       itemCategories.value = (
         await api.get('Plant/' + empData.plantId + '/ItemCategories')
@@ -111,7 +109,7 @@ const bindCreditModel = async () => {
   if (modelObject.value.id > 0) {
     const existingData = (
       await api.get(
-        'Employee/' + props.params.employeeId + '/Credits/' + modelObject.value.id
+        'Department/' + props.params.departmentId + '/Credits/' + modelObject.value.id
       )
     ).data
     if (existingData) {
@@ -121,27 +119,7 @@ const bindCreditModel = async () => {
       modelObject.value.itemCategoryId = props.params.itemCategoryId
       modelObject.value.itemGroupId = props.params.itemGroupId
       modelObject.value.itemId = props.params.itemId
-      modelObject.value.employeeId = props.params.employeeId
-    }
-  } else if (
-    props.isBulk &&
-    props.params.employees &&
-    props.params.employees.length > 0
-  ) {
-    const properBulkData = (
-      await api.post('Employee/BulkLoadInfo', {
-        employees: props.params.employees,
-        itemCategoryId: props.params.itemCategoryId,
-        itemGroupId: props.params.itemGroupId,
-        itemId: props.params.itemId,
-      })
-    ).data
-    if (properBulkData) modelObject.value = properBulkData
-    else {
-      modelObject.value = { ...modelDefaults.value }
-      modelObject.value.itemCategoryId = props.params.itemCategoryId
-      modelObject.value.itemGroupId = props.params.itemGroupId
-      modelObject.value.itemId = props.params.itemId
+      modelObject.value.departmentId = props.params.departmentId
     }
   } else {
     modelObject.value = {
@@ -150,7 +128,7 @@ const bindCreditModel = async () => {
     modelObject.value.itemCategoryId = props.params.itemCategoryId
     modelObject.value.itemGroupId = props.params.itemGroupId
     modelObject.value.itemId = props.params.itemId
-    modelObject.value.employeeId = props.params.employeeId
+    modelObject.value.departmentId = props.params.departmentId
 
     // if (props.params.itemCategoryId > 0) bindCategoryDefaults(props.params.itemCategoryId)
   }
@@ -179,17 +157,6 @@ const updateGroupList = async (categoryId: any) => {
   } else itemGroups.value = []
 }
 
-const bindCategoryDefaults = (categoryId: number | null) => {
-  if (categoryId) {
-    const catObj = itemCategories.value.find((d) => d.id === categoryId)
-    if (catObj) {
-      modelObject.value.creditByRange = catObj.creditByRange
-      modelObject.value.rangeType = catObj.creditRangeType
-      modelObject.value.rangeLength = catObj.creditRangeLength
-    }
-  }
-}
-
 const onChangeItemCategory = async (categoryId: any) => {
   // bindCategoryDefaults(categoryId)
   modelObject.value.itemGroupId = null
@@ -212,40 +179,23 @@ const updateItems = async () => {
 
 const saveCreditModel = async () => {
   try {
-    if (props.isBulk) {
-      modelObject.value.bulkList = props.params.employees
-      modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
-      modelObject.value.activeCredit = modelObject.value.creditByRange
+    modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
+    modelObject.value.activeCredit = modelObject.value.creditByRange
 
-      const mmDate = moment(modelObject.value.creditLoadDate)
-      modelObject.value.creditLoadDate = mmDate.format('YYYY-MM-DD') + 'T00:00:00'
+    const mmDate = moment(modelObject.value.creditLoadDate)
+    modelObject.value.creditLoadDate = mmDate.format('YYYY-MM-DD') + 'T00:00:00'
 
-      const postResult: any = (await api.post('Employee/BulkLoad', modelObject.value))
-        .data
-      if (postResult && postResult.result) {
-        notif.success(postResult.infoMessage)
-        emit('submit')
-      } else throw postResult ? postResult.errorMessage : 'İşlem başarısız oldu'
-    } else {
-      modelObject.value.specificRangeDates = JSON.stringify(schedulerDates.value)
-      modelObject.value.activeCredit = modelObject.value.creditByRange
+    let postResult: any = null
+    if (modelObject.value.id > 0)
+      postResult = (await api.post('Department/EditCredit', modelObject.value)).data
+    else postResult = (await api.post('Department/LoadCredit', modelObject.value)).data
 
-      const mmDate = moment(modelObject.value.creditLoadDate)
-      modelObject.value.creditLoadDate = mmDate.format('YYYY-MM-DD') + 'T00:00:00'
-
-      console.log(modelObject.value)
-      let postResult: any = null
-      if (modelObject.value.id > 0)
-        postResult = (await api.post('Employee/EditCredit', modelObject.value)).data
-      else postResult = (await api.post('Employee/LoadCredit', modelObject.value)).data
-
-      if (postResult && postResult.result) {
-        notif.success('İşlem başarılı')
-        modelObject.value.id = postResult.recordId
-        await bindCreditModel()
-        emit('submit')
-      } else throw postResult ? postResult.errorMessage : 'İşlem başarısız oldu'
-    }
+    if (postResult && postResult.result) {
+      notif.success('İşlem başarılı')
+      modelObject.value.id = postResult.recordId
+      await bindCreditModel()
+      emit('submit')
+    } else throw postResult ? postResult.errorMessage : 'İşlem başarısız oldu'
   } catch (error: any) {
     notif.error(error?.message)
   }
@@ -313,7 +263,6 @@ const removeTime = (date: Date) => {
 }
 
 const onDayClick = (dayInfo: any) => {
-  console.log(dayInfo)
   if (dayInfo && dayInfo.date) {
     if (
       schedulerDates.value.some(
@@ -363,7 +312,7 @@ const onRangeTypeChanged = (rangeType: number) => {
 
 /* WATCHERS */
 watch(
-  () => props.params.employeeId,
+  () => props.params.departmentId,
   async () => {
     await bindCreditModel()
   },
@@ -374,38 +323,6 @@ watch(
   () => props.params.creditId,
   async () => {
     await bindCreditModel()
-  },
-  { deep: true }
-)
-
-watch(
-  () => props.params.itemCategoryId,
-  async () => {
-    if (props.isBulk) await bindCreditModel()
-  },
-  { deep: true }
-)
-
-watch(
-  () => props.params.itemGroupId,
-  async () => {
-    if (props.isBulk) await bindCreditModel()
-  },
-  { deep: true }
-)
-
-watch(
-  () => props.params.itemId,
-  async () => {
-    if (props.isBulk) await bindCreditModel()
-  },
-  { deep: true }
-)
-
-watch(
-  () => props.params.employees,
-  async () => {
-    if (props.isBulk) await bindCreditModel()
   },
   { deep: true }
 )
@@ -478,7 +395,7 @@ watch(
             <!--Fieldset-->
             <div class="form-fieldset">
               <div v-if="props.showHeaders" class="fieldset-heading">
-                <h4>Yükleme bilgileri</h4>
+                <h4>Kredi bilgileri</h4>
                 <p></p>
               </div>
 
@@ -618,7 +535,7 @@ watch(
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-12">
+                <!-- <div class="column is-12">
                   <VField>
                     <VDatePicker
                       v-model="modelObject.creditLoadDate"
@@ -641,8 +558,8 @@ watch(
                       </template>
                     </VDatePicker>
                   </VField>
-                </div>
-                <div class="column is-12">
+                </div> -->
+                <!-- <div class="column is-12">
                   <VField>
                     <label>Çalışma takvimi</label>
                     <VControl>
@@ -658,7 +575,7 @@ watch(
                       />
                     </VControl>
                   </VField>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>

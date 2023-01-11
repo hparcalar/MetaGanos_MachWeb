@@ -45,6 +45,7 @@ const statusTypes = ref([
   { id: 2, text: 'İşten Ayrıldı' },
 ])
 
+const currentCreditPage = ref(1)
 const rangeTypes = ref(creditRangeOption)
 const plants: Ref<any[]> = ref([])
 const departments = ref([])
@@ -90,6 +91,8 @@ const bindModel = async () => {
       modelObject.value.plantId = plants.value[0].id
     else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
       modelObject.value.plantId = userSession.user.FactoryId
+
+    bindPageCredits()
 
     await updateDepartmentList(modelObject.value.plantId)
     await updateCardList(modelObject.value.plantId)
@@ -236,6 +239,7 @@ const openLoadDialog = (loadItem: any) => {
 
 const filters = ref('')
 const credits = ref([])
+const pageCredits = ref([])
 
 const filteredData = computed(() => {
   if (!filters.value) {
@@ -337,6 +341,18 @@ const { y } = useWindowScroll()
 const isStuck = computed(() => {
   return y.value > 30
 })
+
+const onPageChanged = async (page: any) => {
+  currentCreditPage.value = page
+  bindPageCredits()
+}
+
+const bindPageCredits = () => {
+  pageCredits.value = [...filteredData.value].slice(
+    (currentCreditPage.value - 1) * 5,
+    (currentCreditPage.value - 1) * 5 + 5
+  )
+}
 </script>
 
 <template>
@@ -525,195 +541,186 @@ const isStuck = computed(() => {
             class="column is-6"
             style="display: flex; align-items: stretch; min-height: 400px"
           >
-            <Transition name="slide-up" mode="out-in">
-              <!--Fieldset-->
-              <div v-if="!isLoadDialogOpen" class="form-fieldset hk-slide-content">
-                <div class="fieldset-heading">
-                  <h4>{{ getExpression('CreditState') }}</h4>
-                  <p></p>
-                </div>
-                <div class="columns is-multiline">
-                  <div class="column is-12">
-                    <div class="list-flex-toolbar is-reversed">
-                      <VControl icon="feather:search">
-                        <input
-                          v-model="filters"
-                          class="input custom-text-filter"
-                          :placeholder="getExpression('Search')"
-                        />
-                      </VControl>
+            <!--Fieldset-->
+            <div v-if="!isLoadDialogOpen" class="form-fieldset hk-slide-content">
+              <div class="fieldset-heading">
+                <h4>{{ getExpression('CreditState') }}</h4>
+                <p></p>
+              </div>
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <div class="list-flex-toolbar is-reversed">
+                    <VControl icon="feather:search">
+                      <input
+                        v-model="filters"
+                        class="input custom-text-filter"
+                        :placeholder="getExpression('Search')"
+                      />
+                    </VControl>
 
-                      <VButton
-                        v-if="modelObject && modelObject.id > 0"
-                        :color="'info'"
-                        :raised="true"
-                        icon="feather:plus"
-                        @click="openLoadDialog(null)"
-                        >{{ getExpression('LoadMachine') }}</VButton
-                      >
-                    </div>
-                    <div class="flex-list-wrapper flex-list-v3">
-                      <!--List Empty Search Placeholder -->
-                      <VPlaceholderPage
-                        v-if="!filteredData || !filteredData.length"
-                        :title="getExpression('AnyDataDoesntExists')"
-                        subtitle=""
-                        larger
-                      >
-                      </VPlaceholderPage>
+                    <VButton
+                      v-if="modelObject && modelObject.id > 0"
+                      :color="'info'"
+                      :raised="true"
+                      icon="feather:plus"
+                      @click="openLoadDialog(null)"
+                      >{{ getExpression('LoadMachine') }}</VButton
+                    >
+                  </div>
+                  <div class="flex-list-wrapper flex-list-v3">
+                    <!--List Empty Search Placeholder -->
+                    <VPlaceholderPage
+                      v-if="!filteredData || !filteredData.length"
+                      :title="getExpression('AnyDataDoesntExists')"
+                      subtitle=""
+                      larger
+                    >
+                    </VPlaceholderPage>
 
-                      <!--Active Tab-->
-                      <div v-else-if="filteredData.length" class="tab-content is-active">
-                        <VFlexTable
-                          :data="filteredData"
-                          :columns="columns"
-                          clickable
-                          compact
-                          separators
-                        >
-                          <template #body>
-                            <TransitionGroup
-                              name="list"
-                              tag="div"
-                              class="flex-list-inner"
-                            >
-                              <!--Table item-->
-                              <div
-                                v-for="item in filteredData"
-                                :key="item.id"
-                                class="flex-table-item"
-                                :class="{
-                                  'past-credit':
-                                    item.creditEndDate &&
-                                    dateIsLtFromNow(item.creditEndDate),
-                                }"
+                    <!--Active Tab-->
+                    <div v-else-if="filteredData.length" class="tab-content is-active">
+                      <VFlexTable
+                        :data="pageCredits"
+                        :columns="columns"
+                        clickable
+                        compact
+                        separators
+                      >
+                        <template #body>
+                          <!--Table item-->
+                          <div
+                            v-for="item in pageCredits"
+                            :key="item.id"
+                            class="flex-table-item"
+                            :class="{
+                              'past-credit':
+                                item.creditEndDate && dateIsLtFromNow(item.creditEndDate),
+                            }"
+                          >
+                            <VFlexTableCell>
+                              <span class=""
+                                ><small>{{
+                                  item.itemName.length > 0
+                                    ? item.itemName
+                                    : item.itemGroupName.length > 0
+                                    ? item.itemGroupName
+                                    : item.itemCategoryName
+                                }}</small></span
                               >
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{
-                                      item.itemName.length > 0
-                                        ? item.itemName
-                                        : item.itemGroupName.length > 0
-                                        ? item.itemGroupName
-                                        : item.itemCategoryName
-                                    }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{
-                                      dateToStr(item.creditLoadDate)
-                                    }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{ getRangeStr(item) }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{ item.creditByRange }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell>
-                                  <span class=""
-                                    ><small>{{ item.rangeCredit }}</small></span
-                                  >
-                                </VFlexTableCell>
-                                <VFlexTableCell :columns="{ align: 'end' }">
-                                  <button
-                                    class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
-                                    @click="openLoadDialog(item)"
-                                  >
-                                    <i aria-hidden="true" class="fas fa-edit dot"></i>
-                                  </button>
-                                  <button
-                                    class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                    @click="deleteCredit(item.id)"
-                                  >
-                                    <i aria-hidden="true" class="fas fa-trash dot"></i>
-                                  </button>
-                                </VFlexTableCell>
-                              </div>
-                            </TransitionGroup>
-                          </template>
-                        </VFlexTable>
+                            </VFlexTableCell>
+                            <VFlexTableCell>
+                              <span class=""
+                                ><small>{{ dateToStr(item.creditLoadDate) }}</small></span
+                              >
+                            </VFlexTableCell>
+                            <VFlexTableCell>
+                              <span class=""
+                                ><small>{{ getRangeStr(item) }}</small></span
+                              >
+                            </VFlexTableCell>
+                            <VFlexTableCell>
+                              <span class=""
+                                ><small>{{ item.creditByRange }}</small></span
+                              >
+                            </VFlexTableCell>
+                            <VFlexTableCell>
+                              <span class=""
+                                ><small>{{ item.rangeCredit }}</small></span
+                              >
+                            </VFlexTableCell>
+                            <VFlexTableCell :columns="{ align: 'end' }">
+                              <button
+                                class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
+                                @click="openLoadDialog(item)"
+                              >
+                                <i aria-hidden="true" class="fas fa-edit dot"></i>
+                              </button>
+                              <button
+                                class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
+                                @click="deleteCredit(item.id)"
+                              >
+                                <i aria-hidden="true" class="fas fa-trash dot"></i>
+                              </button>
+                            </VFlexTableCell>
+                          </div>
+                        </template>
+                      </VFlexTable>
 
-                        <!--Table Pagination-->
-                        <VFlexPagination
-                          v-if="filteredData.length > 5"
-                          :item-per-page="10"
-                          :total-items="filteredData.length"
-                          :current-page="1"
-                          :max-links-displayed="10"
-                        />
-                      </div>
+                      <!--Table Pagination-->
+                      <VFlexPagination
+                        v-if="filteredData.length > 5"
+                        :item-per-page="5"
+                        :total-items="filteredData.length"
+                        :current-page="currentCreditPage"
+                        :max-links-displayed="5"
+                        :no-router="true"
+                        @update:current-page="onPageChanged"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div v-else-if="isLoadDialogOpen" class="form-fieldset hk-slide-content">
-                <div class="fieldset-heading">
-                  <h4>{{ getExpression('LoadCredit') }}</h4>
-                  <p></p>
+            <div v-else-if="isLoadDialogOpen" class="form-fieldset hk-slide-content">
+              <div class="fieldset-heading">
+                <h4>{{ getExpression('LoadCredit') }}</h4>
+                <p></p>
+              </div>
+              <div class="columns is-multiline">
+                <div class="column is-12">
+                  <VField>
+                    <label>{{ getExpression('Category') }}</label>
+                    <VControl>
+                      <Multiselect
+                        v-model="creditLoadModel.itemCategoryId"
+                        :value-prop="'id'"
+                        :label="'itemCategoryName'"
+                        placeholder=""
+                        :searchable="true"
+                        :options="itemCategories"
+                      />
+                    </VControl>
+                  </VField>
                 </div>
-                <div class="columns is-multiline">
-                  <div class="column is-12">
-                    <VField>
-                      <label>{{ getExpression('Category') }}</label>
-                      <VControl>
-                        <Multiselect
-                          v-model="creditLoadModel.itemCategoryId"
-                          :value-prop="'id'"
-                          :label="'itemCategoryName'"
-                          placeholder=""
-                          :searchable="true"
-                          :options="itemCategories"
-                        />
-                      </VControl>
-                    </VField>
-                  </div>
-                  <div class="column is-12">
-                    <VField>
-                      <label>{{ getExpression('Credit') }}</label>
-                      <VControl icon="feather:terminal">
-                        <input
-                          v-model="creditLoadModel.activeCredit"
-                          type="number"
-                          class="input"
-                          placeholder=""
-                          autocomplete=""
-                        />
-                      </VControl>
-                    </VField>
-                  </div>
-                  <div class="column is-12">
-                    <div class="right">
-                      <div class="buttons">
-                        <VButton
-                          icon="lnir lnir-arrow-left rem-100"
-                          light
-                          dark-outlined
-                          @click="isLoadDialogOpen = false"
-                        >
-                          {{ getExpression('Cancel') }}
-                        </VButton>
-                        <VButton
-                          color="primary"
-                          icon="feather:save"
-                          raised
-                          @click="loadCredit()"
-                        >
-                          {{ getExpression('Save') }}
-                        </VButton>
-                      </div>
+                <div class="column is-12">
+                  <VField>
+                    <label>{{ getExpression('Credit') }}</label>
+                    <VControl icon="feather:terminal">
+                      <input
+                        v-model="creditLoadModel.activeCredit"
+                        type="number"
+                        class="input"
+                        placeholder=""
+                        autocomplete=""
+                      />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <div class="right">
+                    <div class="buttons">
+                      <VButton
+                        icon="lnir lnir-arrow-left rem-100"
+                        light
+                        dark-outlined
+                        @click="isLoadDialogOpen = false"
+                      >
+                        {{ getExpression('Cancel') }}
+                      </VButton>
+                      <VButton
+                        color="primary"
+                        icon="feather:save"
+                        raised
+                        @click="loadCredit()"
+                      >
+                        {{ getExpression('Save') }}
+                      </VButton>
                     </div>
                   </div>
                 </div>
               </div>
-            </Transition>
+            </div>
           </div>
         </div>
       </div>
