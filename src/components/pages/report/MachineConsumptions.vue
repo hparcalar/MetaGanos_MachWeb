@@ -15,6 +15,7 @@ const filters = ref('')
 const reportData = ref([])
 const startDate: Ref<Date | null> = ref(null)
 const endDate: Ref<Date | null> = ref(null)
+const reportIsBeingFetched = ref(false)
 
 const isConsumeDialogOpen = ref(false)
 const consumeModel = ref({ id: 0 })
@@ -46,6 +47,7 @@ onMounted(async () => {
 })
 
 const getReportData = async (filterModel: ConsumptionSearchFilter | null = null) => {
+  reportIsBeingFetched.value = true
   try {
     if (!filterModel) {
       filterModel = {
@@ -73,8 +75,11 @@ const getReportData = async (filterModel: ConsumptionSearchFilter | null = null)
       endDate: moment(filterModel.endDate).format('yyyy-MM-DDTHH:mm:SS.000Z'),
     }
 
+    reportData.value.splice(0, reportData.value.length)
     reportData.value = (await api.post('Machine/ConsumeReport', filterPrm)).data
   } catch (error) {}
+
+  reportIsBeingFetched.value = false
 }
 
 const exportToExcel = async () => {
@@ -153,6 +158,7 @@ const columns = {
   itemName: getExpression('Item'),
   spiralNo: 'Spiral',
   totalConsumed: getExpression('Quantity'),
+  activeCredit: 'Bakiye',
   buttons: '#',
 } as const
 </script>
@@ -201,7 +207,15 @@ const columns = {
     <div class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
-        v-if="!filteredData.length"
+        v-if="reportIsBeingFetched"
+        :title="'Yükleniyor'"
+        subtitle=""
+        larger
+      >
+      </VPlaceholderPage>
+
+      <VPlaceholderPage
+        v-else-if="!filteredData.length"
         :title="getExpression('AnyDataDoesntExists')"
         subtitle=""
         larger
@@ -263,6 +277,9 @@ const columns = {
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <span class="">{{ item.totalConsumed }}</span>
+                </VFlexTableCell>
+                <VFlexTableCell>
+                  <span class="">{{ item.activeCredit }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
                   <VButton

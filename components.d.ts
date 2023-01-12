@@ -49,6 +49,8 @@ declare module 'vue' {
     MachineConsumptions: typeof import('./src/components/pages/report/MachineConsumptions.vue')['default']
     MachineForm: typeof import('./src/components/pages/machine/MachineForm.vue')['default']
     MachineList: typeof import('./src/components/pages/machine/MachineList.vue')['default']
+    MachineTemplateForm: typeof import('./src/components/pages/machine-template/MachineTemplateForm.vue')['default']
+    MachineTemplateList: typeof import('./src/components/pages/machine-template/MachineTemplateList.vue')['default']
     MarketingAbout: typeof import('./src/components/partials/marketing/MarketingAbout.vue')['default']
     MarketingFeaturesIcons: typeof import('./src/components/partials/marketing/MarketingFeaturesIcons.vue')['default']
     MarketingMockup: typeof import('./src/components/partials/marketing/MarketingMockup.vue')['default']

@@ -2,12 +2,13 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useApi } from '/@src/composable/useApi'
+import { routerKey } from 'vue-router'
 
 export type UserData = Record<string, any> | null
 
 export const useUserSession = defineStore('userSession', () => {
   // token, user is synced with local storage
-  const strToken = localStorage.getItem('token')
+  let strToken = localStorage.getItem('token')
   const strUser = localStorage.getItem('user')
   const strDict = localStorage.getItem('dict')
 
@@ -114,11 +115,14 @@ export const useUserSession = defineStore('userSession', () => {
     localStorage.removeItem('dict')
     token.value = ''
     user.value = null
+    window.location.reload()
   }
 
   async function checkToken() {
     // check token is alive
     if (strToken !== undefined && strToken != null && strToken !== '') {
+      strToken = localStorage.getItem('token')
+      token.value = strToken
       const api = useApi()
 
       try {
@@ -129,6 +133,8 @@ export const useUserSession = defineStore('userSession', () => {
       } catch (error) {
         logoutUser()
       }
+    } else {
+      logoutUser()
     }
   }
 

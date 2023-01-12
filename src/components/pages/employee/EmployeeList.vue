@@ -128,7 +128,7 @@ const columns = {
     <div class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
       <VPlaceholderPage
-        v-if="!employees.length"
+        v-if="!employees"
         :title="getExpression('AnyDataDoesntExists')"
         subtitle=""
         larger
@@ -136,7 +136,7 @@ const columns = {
       </VPlaceholderPage>
 
       <!--Active Tab-->
-      <div v-else-if="employees.length" class="tab-content is-active">
+      <div v-else-if="employees" class="tab-content is-active">
         <VFlexTable :data="employees" :columns="columns" clickable compact separators>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">

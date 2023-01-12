@@ -27,6 +27,9 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('Factories') }}
           </RouterLink>
         </li>
+        <li v-if="hasAuth('Machines', 'Write')">
+          <RouterLink :to="{ name: 'machine-template' }"> Makine Şablonları </RouterLink>
+        </li>
         <li v-if="hasAuth('Machines', 'Read')">
           <RouterLink :to="{ name: 'machine' }">
             {{ userSession.getExpression('Machines') }}

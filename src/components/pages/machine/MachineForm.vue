@@ -61,10 +61,12 @@ const liveVideoStream = ref(null)
 const plants = ref([])
 const itemCategories = ref([])
 const items = ref([])
+const machineTemplates = ref([])
 const isSpiralDetailVisible = ref(false)
 const isSpiralLoadVisible = ref(false)
 const selectedSpiralNo = ref(-1)
 const showOverallSaveInfo = ref(true)
+const selectedTemplateId = ref(0)
 
 onMounted(async () => {
   await bindModel()
@@ -112,6 +114,7 @@ const bindModel = async () => {
     } catch (error) {}
 
     await bindCategories()
+    await bindMachineTemplates()
 
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
       bindVideo()
@@ -130,6 +133,12 @@ const bindCategories = async () => {
     ).data
 
     items.value = (await api.get('Item')).data
+  } catch (error) {}
+}
+
+const bindMachineTemplates = async () => {
+  try {
+    machineTemplates.value = (await api.get('MachineTemplate')).data
   } catch (error) {}
 }
 
@@ -427,6 +436,32 @@ const onFormMouseDown = (event: any) => {
     if (!inSpiralDialog) {
       isSpiralDetailVisible.value = false
     }
+  }
+}
+
+const applyTemplateForMachine = async () => {
+  if (selectedTemplateId.value && selectedTemplateId.value > 0) {
+    if (
+      confirm(
+        'Yeni bir şablon uygulamak istediğinizden emin misiniz? Uygulandığında spiral tanımları ve içerisindeki stoklar sıfırlanacaktır!'
+      )
+    ) {
+      const macTemplate = machineTemplates.value.find(
+        (d) => d.id == selectedTemplateId.value
+      )
+      if (macTemplate) {
+        if (macTemplate.spiralConf && macTemplate.spiralConf.length > 0) {
+          modelObject.value.rows = macTemplate.rows
+          modelObject.value.cols = macTemplate.cols
+          modelObject.value.brandModel = macTemplate.brandModel
+          modelObject.value.spirals = JSON.parse(macTemplate.spiralConf)
+
+          await saveModel()
+        }
+      }
+    }
+  } else {
+    notif.error('Uygulamak için önce bir şablon seçmelisiniz.')
   }
 }
 
@@ -760,6 +795,33 @@ const isStuck = computed(() => {
                     </div>
 
                     <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <VField>
+                          <label>Otomat Şablonu</label>
+                          <VControl>
+                            <Multiselect
+                              v-model="selectedTemplateId"
+                              :value-prop="'id'"
+                              :label="'templateName'"
+                              placeholder=""
+                              :searchable="true"
+                              :options="machineTemplates"
+                            />
+                          </VControl>
+                        </VField>
+                      </div>
+                      <div class="column is-6">
+                        <VButton
+                          v-if="hasAuth('Machines', 'Write')"
+                          style="margin-top: 20px"
+                          color="info"
+                          icon="feather:check"
+                          raised
+                          @click="applyTemplateForMachine"
+                        >
+                          Şablon Uygula
+                        </VButton>
+                      </div>
                       <div class="column is-6">
                         <VField>
                           <label>{{ getExpression('Row') }}</label>

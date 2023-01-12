@@ -48,6 +48,7 @@ watchPostEffect(() => {
 watch(
   () => route.fullPath,
   () => {
+    checkToken()
     isMobileSidebarOpen.value = false
 
     if (props.closeOnChange && isDesktopSidebarOpen.value) {
