@@ -131,11 +131,12 @@ export const useUserSession = defineStore('userSession', () => {
           logoutUser()
         }
       } catch (error) {
-        logoutUser()
+        // logoutUser()
       }
-    } else {
-      logoutUser()
     }
+    // else {
+    //   logoutUser()
+    // }
   }
 
   const hasAuth = (section: string, actionType: string) => {

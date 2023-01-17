@@ -21,7 +21,7 @@ const { hasAuth, isDealer, getExpression } = useUserSession()
     </div>
     <div class="inner" data-simplebar>
       <ul>
-        <li v-if="hasAuth('Warehouse', 'Write')">
+        <li v-if="hasAuth('Warehouses', 'Write')">
           <RouterLink :to="{ name: 'wrmove' }"> Depo Giriş/Çıkış </RouterLink>
         </li>
         <li v-if="hasAuth('LoadMachine', 'Read')">

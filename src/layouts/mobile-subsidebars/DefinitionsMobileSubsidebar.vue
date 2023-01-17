@@ -42,12 +42,12 @@ const { hasAuth, isDealer } = userSession
             Ayrılan Personeller
           </RouterLink>
         </li>
-        <li>
+        <li v-if="hasAuth('Warehouses', 'Read')">
           <RouterLink :to="{ name: 'warehouse' }">
             {{ userSession.getExpression('Warehouses') }}
           </RouterLink>
         </li>
-        <li>
+        <li v-if="hasAuth('Firms', 'Read')">
           <RouterLink :to="{ name: 'firm' }"> Firmalar </RouterLink>
         </li>
 

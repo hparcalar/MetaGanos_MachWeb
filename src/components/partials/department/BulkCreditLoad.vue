@@ -162,6 +162,14 @@ const onSaveComplete = () => {
   emit('saved', true)
 }
 
+const toggleEmployeeSelection = () => {
+  if (selectedEmployees.value.length > 0) {
+    selectedEmployees.value.splice(0, selectedEmployees.value.length)
+  } else {
+    selectedEmployees.value = [...employees.value]
+  }
+}
+
 watch(
   () => props.visible,
   async () => {
@@ -204,6 +212,15 @@ watch(
                   placeholder="Arama..."
                 />
               </VControl>
+              <VButton
+                icon="feather:check"
+                class="mt-1 mr-2"
+                color="info"
+                raised
+                @click="toggleEmployeeSelection()"
+              >
+                Tümünü Seç / Kaldır
+              </VButton>
             </div>
 
             <div v-show="loadStep == 0" class="flex-list-wrapper flex-list-v3">

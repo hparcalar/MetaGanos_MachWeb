@@ -48,7 +48,7 @@ watchPostEffect(() => {
 watch(
   () => route.fullPath,
   () => {
-    checkToken()
+    // checkToken()
     isMobileSidebarOpen.value = false
 
     if (props.closeOnChange && isDesktopSidebarOpen.value) {
@@ -140,7 +140,7 @@ watch(
       />
     </Transition>
 
-    <Sidebar :theme="props.theme" :is-open="isDesktopSidebarOpen">
+    <Sidebar :theme="props.theme" :is-open="isDesktopSidebarOpen" class="no-print">
       <template #links>
         <!-- Dashboards -->
         <li>

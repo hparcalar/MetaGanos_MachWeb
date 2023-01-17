@@ -14,7 +14,7 @@ const { hasAuth, isDealer } = userSession
       </div>
 
       <ul class="submenu" data-simplebar>
-        <li v-if="hasAuth('Warehouse', 'Write')">
+        <li v-if="hasAuth('Warehouses', 'Write')">
           <RouterLink :to="{ name: 'wrmove' }"> Depo Giriş/Çıkış </RouterLink>
         </li>
         <li v-if="hasAuth('LoadMachine', 'Read')">

@@ -20,6 +20,9 @@ const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 
+const dialogItemCategory = ref(false)
+const dialogItemGroup = ref(false)
+
 const modelObject = ref({
   id: 0,
   itemCode: '',
@@ -83,6 +86,10 @@ const bindModel = async () => {
   } catch (error) {}
 }
 
+const updateCategoryList = async () => {
+  categories.value = (await api.get('ItemCategory')).data
+}
+
 const deleteModel = async () => {
   try {
     const delResult = await api.delete('Item/' + modelObject.value.id)
@@ -132,11 +139,43 @@ const saveModel = async () => {
   }
 }
 
+const newItemCategory = () => {
+  dialogItemCategory.value = true
+}
+const newItemGroup = () => {
+  if (!modelObject.value.itemCategoryId || modelObject.value.itemCategoryId == 0) {
+    notif.error('Önce kategoriyi seçmelisiniz.')
+    return
+  }
+
+  dialogItemGroup.value = true
+}
+
 const { y } = useWindowScroll()
 
 const isStuck = computed(() => {
   return y.value > 30
 })
+
+const dlgItemCategoryClosed = () => {
+  dialogItemCategory.value = false
+}
+
+const dlgItemCategorySaved = async (categoryId: any) => {
+  dialogItemCategory.value = false
+  modelObject.value.itemCategoryId = categoryId
+  await updateCategoryList()
+}
+
+const dlgItemGroupClosed = () => {
+  dialogItemGroup.value = false
+}
+
+const dlgItemGroupSaved = async (itemGroupId) => {
+  dialogItemGroup.value = false
+  modelObject.value.itemGroupId = itemGroupId
+  await updateGroupList(modelObject.value.itemCategoryId)
+}
 </script>
 
 <template>
@@ -207,33 +246,45 @@ const isStuck = computed(() => {
                   </VField>
                 </div>
                 <div class="column is-6">
-                  <VField>
-                    <label>{{ getExpression('Category') }}</label>
+                  <label class="expanded-label">{{ getExpression('Category') }}</label>
+                  <VField addons>
+                    <Multiselect
+                      v-model="modelObject.itemCategoryId"
+                      :value-prop="'id'"
+                      :label="'itemCategoryName'"
+                      placeholder=""
+                      :searchable="true"
+                      :options="categories"
+                      @change="onChangeCategory"
+                    />
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.itemCategoryId"
-                        :value-prop="'id'"
-                        :label="'itemCategoryName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="categories"
-                        @change="onChangeCategory"
-                      />
+                      <VButton
+                        :color="'info'"
+                        :raised="true"
+                        icon="feather:plus"
+                        @click="newItemCategory"
+                      ></VButton>
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-6">
-                  <VField>
-                    <label>{{ getExpression('Group') }}</label>
+                  <label class="expanded-label">{{ getExpression('Group') }}</label>
+                  <VField addons>
+                    <Multiselect
+                      v-model="modelObject.itemGroupId"
+                      :value-prop="'id'"
+                      :label="'itemGroupName'"
+                      placeholder=""
+                      :searchable="true"
+                      :options="groups"
+                    />
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.itemGroupId"
-                        :value-prop="'id'"
-                        :label="'itemGroupName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="groups"
-                      />
+                      <VButton
+                        :color="'info'"
+                        :raised="true"
+                        icon="feather:plus"
+                        @click="newItemGroup"
+                      ></VButton>
                     </VControl>
                   </VField>
                 </div>
@@ -401,6 +452,22 @@ const isStuck = computed(() => {
       </div>
     </div>
   </form>
+
+  <ItemCategoryDialog
+    v-if="dialogItemCategory"
+    :id="0"
+    :visible="dialogItemCategory"
+    @close="dlgItemCategoryClosed"
+    @on-saved="dlgItemCategorySaved"
+  />
+  <ItemGroupDialog
+    v-if="dialogItemGroup"
+    :id="0"
+    :category-id="modelObject.itemCategoryId ?? 0"
+    :visible="dialogItemGroup"
+    @close="dlgItemGroupClosed"
+    @on-saved="dlgItemGroupSaved"
+  />
 </template>
 
 <style lang="scss">

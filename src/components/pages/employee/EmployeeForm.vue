@@ -348,10 +348,12 @@ const onPageChanged = async (page: any) => {
 }
 
 const bindPageCredits = () => {
-  pageCredits.value = [...filteredData.value].slice(
-    (currentCreditPage.value - 1) * 5,
-    (currentCreditPage.value - 1) * 5 + 5
-  )
+  if (filteredData.value) {
+    pageCredits.value = [...filteredData.value].slice(
+      (currentCreditPage.value - 1) * 5,
+      (currentCreditPage.value - 1) * 5 + 5
+    )
+  }
 }
 </script>
 
