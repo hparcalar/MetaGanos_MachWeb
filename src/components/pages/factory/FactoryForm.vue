@@ -28,6 +28,8 @@ const modelObject = ref({
   plantLogo: '',
   last4CharForCardRead: false,
   autoSpiralLoading: false,
+  isActive: true,
+  isCreditsVisible: true,
 })
 const printFiles = ref([])
 const dealers = ref([])
@@ -284,6 +286,17 @@ const isStuck = computed(() => {
                   <VField>
                     <label></label>
                     <VSwitchBlock
+                      v-model="modelObject.isActive"
+                      class="ml-2"
+                      :label="'Aktif'"
+                      color="success"
+                    />
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label></label>
+                    <VSwitchBlock
                       v-model="modelObject.last4CharForCardRead"
                       class="ml-2"
                       :label="userSession.getExpression('CardReaderLast4Char')"
@@ -298,6 +311,17 @@ const isStuck = computed(() => {
                       v-model="modelObject.autoSpiralLoading"
                       class="ml-2"
                       :label="'Otomatik Spiral Dolumu'"
+                      color="success"
+                    />
+                  </VField>
+                </div>
+                <div class="column is-12">
+                  <VField>
+                    <label></label>
+                    <VSwitchBlock
+                      v-model="modelObject.isCreditsVisible"
+                      class="ml-2"
+                      :label="'Otomatta Periyodik İstihkak Göster'"
                       color="success"
                     />
                   </VField>

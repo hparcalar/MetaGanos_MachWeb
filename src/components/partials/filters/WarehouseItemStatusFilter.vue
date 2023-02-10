@@ -42,8 +42,10 @@ const bindFilterModel = async () => {
 
     if (plants.value.length == 1) filterModel.value.plantId = [plants.value[0].id]
 
-    categories.value = (await api.get('ItemCategory')).data
-    warehouses.value = (await api.get('Warehouse')).data
+    if (isDealer == false) {
+      categories.value = (await api.get('ItemCategory')).data
+      warehouses.value = (await api.get('Warehouse')).data
+    }
   } catch (error) {}
 }
 
@@ -89,7 +91,19 @@ const onChangePlant = async (plantId: any) => {
   filterModel.value.machineId = null
   filterModel.value.plantId = plantId
 
-  categories.value = (await api.get('ItemCategory')).data
+  categories.value = (await api.get('ItemCategory')).data.filter(
+    (d: any) => d.plantId == plantId
+  )
+
+  warehouses.value = (await api.get('Warehouse')).data.filter(
+    (d: any) => d.plantId == plantId
+  )
+
+  filterModel.value.categoryId = null
+  filterModel.value.groupId = null
+  filterModel.value.itemId = null
+  filterModel.value.warehouseId = null
+  await bindGroups()
 }
 
 const onChangeCategory = async (categoryId: any) => {
@@ -138,7 +152,7 @@ const triggerForSearch = () => {
       </div>
 
       <!-- warehouse -->
-      <!-- <div class="column is-4">
+      <div class="column is-4">
         <VField>
           <label>Depo</label>
           <VControl>
@@ -150,11 +164,10 @@ const triggerForSearch = () => {
               placeholder=""
               :searchable="true"
               :options="warehouses"
-              @change="triggerForSearch"
             />
           </VControl>
         </VField>
-      </div> -->
+      </div>
       <!-- search button -->
       <div class="column is-4">
         <VButton

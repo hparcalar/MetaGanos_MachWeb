@@ -50,6 +50,11 @@ onMounted(async () => {
   await bindModel()
 })
 
+const onChangePlant = async (plantId: any) => {
+  modelObject.value.plantId = plantId
+  await updateSelectables()
+}
+
 const bindModel = async () => {
   try {
     plants.value = (await api.get('Plant')).data
@@ -105,9 +110,21 @@ const saveModel = async () => {
 
 const updateSelectables = async () => {
   try {
-    items.value = (await api.get('Item')).data
-    firms.value = (await api.get('Firm')).data
-    warehouses.value = (await api.get('Warehouse')).data
+    if (isDealer == true) {
+      items.value = (await api.get('Item')).data.filter(
+        (d: any) => d.plantId == modelObject.value.plantId
+      )
+      firms.value = (await api.get('Firm')).data.filter(
+        (d: any) => d.plantId == modelObject.value.plantId
+      )
+      warehouses.value = (await api.get('Warehouse')).data.filter(
+        (d: any) => d.plantId == modelObject.value.plantId
+      )
+    } else {
+      items.value = (await api.get('Item')).data
+      firms.value = (await api.get('Firm')).data
+      warehouses.value = (await api.get('Warehouse')).data
+    }
   } catch (error) {}
 }
 
@@ -287,6 +304,7 @@ const isStuck = computed(() => {
                         placeholder=""
                         :searchable="true"
                         :options="plants"
+                        @change="onChangePlant"
                       />
                     </VControl>
                   </VField>

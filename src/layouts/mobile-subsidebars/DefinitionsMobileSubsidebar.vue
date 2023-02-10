@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useUserSession } from '/@src/stores/userSession'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const userSession = useUserSession()
 const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer } = userSession
+const isRoot = computed(() => isDealer && userSession.user.Username == 'MetaGanos')
 </script>
 <template>
   <div class="mobile-subsidebar">
@@ -18,6 +19,12 @@ const { hasAuth, isDealer } = userSession
           <RouterLink :to="{ name: 'plant' }">
             {{ userSession.getExpression('Factories') }}
           </RouterLink>
+        </li>
+        <li v-if="isRoot">
+          <RouterLink :to="{ name: 'license' }"> Lisanslar </RouterLink>
+        </li>
+        <li v-if="isDealer">
+          <RouterLink :to="{ name: 'dealer' }"> Bayiler </RouterLink>
         </li>
         <li v-if="hasAuth('Machines', 'Write')">
           <RouterLink :to="{ name: 'machine-template' }"> Makine Şablonları </RouterLink>

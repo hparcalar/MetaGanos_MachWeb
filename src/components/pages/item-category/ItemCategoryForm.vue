@@ -92,6 +92,8 @@ const bindModel = async () => {
 
 const saveModel = async () => {
   try {
+    if (!modelObject.value.viewOrder) modelObject.value.viewOrder = 0
+
     const postResult = await api.post('ItemCategory', modelObject.value)
     if (postResult.data.result) {
       notif.success(getExpression('SaveSuccess'))
