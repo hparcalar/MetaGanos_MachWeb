@@ -141,7 +141,7 @@ useHead({
             <div class="columns">
               <div class="column is-12">
                 <div v-if="!isConfirmation" class="auth-content">
-                  <h2 style="text-align: center">Otomat Yönetim Sistemi</h2>
+                  <h2 style="text-align: center">Ürün Takip Sistemi</h2>
                   <p></p>
                   <!-- <RouterLink :to="{ name: 'auth-signup' }">
                     I do not have an account yet

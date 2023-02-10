@@ -4,7 +4,7 @@ import { useUserSession } from '/@src/stores/userSession'
 import { useViewWrapper } from '/@src/stores/viewWrapper'
 
 const viewWrapper = useViewWrapper()
-viewWrapper.setPageTitle('Meta Ganos | Otomat Yönetim Sistemi')
+viewWrapper.setPageTitle('Meta Ganos | Ürün Takip Sistemi')
 
 const userSession = useUserSession()
 
