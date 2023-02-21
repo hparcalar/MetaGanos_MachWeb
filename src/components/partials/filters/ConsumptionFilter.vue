@@ -65,7 +65,7 @@ const bindFilterModel = async () => {
     await bindCategories()
     await bindDepartments()
     await bindEmployees()
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindMachines = async () => {
@@ -76,7 +76,7 @@ const bindMachines = async () => {
         const plantMachines = (await api.get('Plant/' + d + '/Machines')).data
         if (plantMachines) machines.value = machines.value.concat(plantMachines)
       })
-    } catch (error) {}
+    } catch (error) { }
   }
 }
 
@@ -89,7 +89,7 @@ const bindDepartments = async () => {
         if (plantDeps) departments.value = departments.value.concat(plantDeps)
       })
     } else departments.value = []
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindEmployees = async () => {
@@ -117,13 +117,13 @@ const bindEmployees = async () => {
 
       employees.value = empData
     } else employees.value = []
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindCategories = async () => {
   try {
     categories.value = (await api.get('ItemCategory')).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindGroups = async () => {
@@ -136,7 +136,7 @@ const bindGroups = async () => {
       })
 
       await bindItems()
-    } catch (error) {}
+    } catch (error) { }
   }
 }
 
@@ -160,7 +160,7 @@ const bindItems = async () => {
           }
         }
       })
-    } catch (error) {}
+    } catch (error) { }
   }
 }
 
@@ -224,24 +224,13 @@ watch(
       <!-- start date -->
       <div class="column is-4">
         <VField>
-          <VDatePicker
-            v-model="filterModel.startDate"
-            mode="dateTime"
-            is24hr
-            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }"
-            trim-weeks
-          >
+          <VDatePicker v-model="filterModel.startDate" mode="dateTime" is24hr
+            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }" trim-weeks>
             <template #default="{ inputValue, inputEvents }">
               <VField>
                 <label>{{ getExpression('StartDate') }}</label>
                 <VControl icon="feather:calendar">
-                  <input
-                    class="input"
-                    type="text"
-                    placeholder=""
-                    :value="inputValue"
-                    v-on="inputEvents"
-                  />
+                  <input class="input" type="text" placeholder="" :value="inputValue" v-on="inputEvents" />
                 </VControl>
               </VField>
             </template>
@@ -252,24 +241,13 @@ watch(
       <!-- end date -->
       <div class="column is-4">
         <VField>
-          <VDatePicker
-            v-model="filterModel.endDate"
-            mode="dateTime"
-            is24hr
-            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }"
-            trim-weeks
-          >
+          <VDatePicker v-model="filterModel.endDate" mode="dateTime" is24hr
+            :masks="{ inputDateTime24hr: 'DD.MM.YYYY HH:mm' }" trim-weeks>
             <template #default="{ inputValue, inputEvents }">
               <VField>
                 <label>{{ getExpression('EndDate') }}</label>
                 <VControl icon="feather:calendar">
-                  <input
-                    class="input"
-                    type="text"
-                    placeholder=""
-                    :value="inputValue"
-                    v-on="inputEvents"
-                  />
+                  <input class="input" type="text" placeholder="" :value="inputValue" v-on="inputEvents" />
                 </VControl>
               </VField>
             </template>
@@ -279,13 +257,7 @@ watch(
 
       <!-- search button -->
       <div class="column is-4">
-        <VButton
-          color="primary"
-          class="mt-5"
-          icon="feather:search"
-          raised
-          @click="triggerForSearch"
-        >
+        <VButton color="primary" class="mt-5" icon="feather:search" raised @click="triggerForSearch">
           {{ getExpression('Search') }}
         </VButton>
       </div>
@@ -295,17 +267,8 @@ watch(
         <VField>
           <label>{{ getExpression('Factory') }}</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.plantId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'plantName'"
-              placeholder=""
-              :searchable="true"
-              :options="plants"
-              @change="onChangePlant"
-            />
+            <Multiselect v-model="filterModel.plantId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'plantName'" placeholder="" :searchable="true" :options="plants" @change="onChangePlant" />
           </VControl>
         </VField>
       </div>
@@ -315,16 +278,8 @@ watch(
         <VField>
           <label>{{ getExpression('Automat') }}</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.machineId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'machineName'"
-              placeholder=""
-              :searchable="true"
-              :options="machines"
-            />
+            <Multiselect v-model="filterModel.machineId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'machineName'" placeholder="" :searchable="true" :options="machines" />
           </VControl>
         </VField>
       </div>
@@ -335,17 +290,9 @@ watch(
         <VField>
           <label>{{ getExpression('Category') }}</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.categoryId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'itemCategoryName'"
-              placeholder=""
-              :searchable="true"
-              :options="categories"
-              @change="onChangeCategory"
-            />
+            <Multiselect v-model="filterModel.categoryId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'itemCategoryName'" placeholder="" :searchable="true" :options="categories"
+              @change="onChangeCategory" />
           </VControl>
         </VField>
       </div>
@@ -355,17 +302,8 @@ watch(
         <VField>
           <label>{{ getExpression('Group') }}</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.groupId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'itemGroupName'"
-              placeholder=""
-              :searchable="true"
-              :options="groups"
-              @change="onChangeGroup"
-            />
+            <Multiselect v-model="filterModel.groupId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'itemGroupName'" placeholder="" :searchable="true" :options="groups" @change="onChangeGroup" />
           </VControl>
         </VField>
       </div>
@@ -375,16 +313,8 @@ watch(
         <VField>
           <label>{{ getExpression('Item') }}</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.itemId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'itemName'"
-              placeholder=""
-              :searchable="true"
-              :options="items"
-            />
+            <Multiselect v-model="filterModel.itemId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'itemName'" placeholder="" :searchable="true" :options="items" />
           </VControl>
         </VField>
       </div>
@@ -395,17 +325,9 @@ watch(
         <VField>
           <label>Departman</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.departmentId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'departmentName'"
-              placeholder=""
-              :searchable="true"
-              :options="departments"
-              @change="onChangeDepartment"
-            />
+            <Multiselect v-model="filterModel.departmentId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'departmentName'" placeholder="" :searchable="true" :options="departments"
+              @change="onChangeDepartment" />
           </VControl>
         </VField>
       </div>
@@ -415,16 +337,8 @@ watch(
         <VField>
           <label>Personel</label>
           <VControl>
-            <Multiselect
-              v-model="filterModel.employeeId"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'employeeName'"
-              placeholder=""
-              :searchable="true"
-              :options="employees"
-            />
+            <Multiselect v-model="filterModel.employeeId" mode="tags" class="is-stacked" :value-prop="'id'"
+              :label="'employeeName'" placeholder="" :searchable="true" :options="employees" />
           </VControl>
         </VField>
       </div>

@@ -77,7 +77,7 @@ const getReportData = async (filterModel: ConsumptionSearchFilter | null = null)
 
     reportData.value.splice(0, reportData.value.length)
     reportData.value = (await api.post('Machine/ConsumeReport', filterPrm)).data
-  } catch (error) {}
+  } catch (error) { }
 
   reportIsBeingFetched.value = false
 }
@@ -167,77 +167,51 @@ const columns = {
   <div>
     <div>
       <h1 class="title is-narrow mb-5">{{ getExpression('ConsumptionReport') }}</h1>
-      <ConsumptionFilter
-        class="mb-5"
-        :start-date="startDate"
-        :end-date="endDate"
-        @search-triggered="getReportData"
-      />
+      <ConsumptionFilter class="mb-5" :start-date="startDate" :end-date="endDate" @search-triggered="getReportData" />
     </div>
     <div class="list-flex-toolbar is-reversed">
       <VControl icon="feather:search">
-        <input
-          v-model="filters"
-          class="input custom-text-filter"
-          :placeholder="getExpression('Search')"
-        />
+        <input v-model="filters" class="input custom-text-filter" :placeholder="getExpression('Search')" />
       </VControl>
 
       <VButton color="success" icon="feather:download" raised @click="exportToExcel">
         {{ getExpression('Export') }}
         <!-- <vue3-json-excel
-          :json-data="reportData"
-          :fields="{
-            Tarih: 'consumedDate',
-            Saat: 'consumedDate',
-            Personel: 'employeeName',
-            Otomat: 'machineName',
-            Kategori: 'itemCategoryName',
-            Stok: 'itemName',
-            Miktar: 'totalConsumed',
-          }"
-          type="xls"
-          name="tuketim-raporu.xls"
-          header="Tüketim Raporu"
-          >Dışarı Aktar</vue3-json-excel -->
+                    :json-data="reportData"
+                    :fields="{
+                      Tarih: 'consumedDate',
+                      Saat: 'consumedDate',
+                      Personel: 'employeeName',
+                      Otomat: 'machineName',
+                      Kategori: 'itemCategoryName',
+                      Stok: 'itemName',
+                      Miktar: 'totalConsumed',
+                    }"
+                    type="xls"
+                    name="tuketim-raporu.xls"
+                    header="Tüketim Raporu"
+                    >Dışarı Aktar</vue3-json-excel -->
         <!-- > -->
+      </VButton>
+      <VButton color="danger" icon="feather:download" raised :style="{ 'margin-right': '5px' }" @click="exportToPdf">
+        <!-- {{ getExpression('ExportPDF') }} -->
+        PDF Aktar
       </VButton>
     </div>
 
-    <div class="flex-list-wrapper flex-list-v3">
+    <div id="divToPrint" class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
-      <VPlaceholderPage
-        v-if="reportIsBeingFetched"
-        :title="'Yükleniyor'"
-        subtitle=""
-        larger
-      >
+      <VPlaceholderPage v-if="reportIsBeingFetched" :title="'Yükleniyor'" subtitle="" larger>
       </VPlaceholderPage>
 
-      <VPlaceholderPage
-        v-else-if="!filteredData.length"
-        :title="getExpression('AnyDataDoesntExists')"
-        subtitle=""
-        larger
-      >
+      <VPlaceholderPage v-else-if="!filteredData.length" :title="getExpression('AnyDataDoesntExists')" subtitle="" larger>
       </VPlaceholderPage>
 
       <!--Active Tab-->
       <div v-else-if="filteredData.length" class="tab-content is-active">
-        <VFlexTable
-          id="reportTable"
-          :data="filteredData"
-          :columns="columns"
-          clickable
-          compact
-          separators
-        >
+        <VFlexTable id="reportTable" :data="filteredData" :columns="columns" clickable compact separators>
           <template #body>
-            <TransitionGroup
-              name="list"
-              tag="div"
-              class="flex-list-inner flex-list-small"
-            >
+            <TransitionGroup name="list" tag="div" class="flex-list-inner flex-list-small">
               <!--Table item-->
               <div v-for="item in filteredData" :key="item" class="flex-table-item">
                 <VFlexTableCell>
@@ -282,12 +256,7 @@ const columns = {
                   <span class="">{{ item.activeCredit }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell>
-                  <VButton
-                    color="warning"
-                    icon="feather:edit"
-                    raised
-                    @click="showEditConsumeForm(item.id)"
-                  ></VButton>
+                  <VButton color="warning" icon="feather:edit" raised @click="showEditConsumeForm(item.id)"></VButton>
                 </VFlexTableCell>
               </div>
             </TransitionGroup>
@@ -296,39 +265,21 @@ const columns = {
 
         <VFlex class="mt-5">
           <VCard class="p-1">
-            <VSnack
-              :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
-              size="small"
-              solid
-              class="mt-2 ml-2"
-              color="info"
-              icon="feather:info"
-            >
+            <VSnack :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')" size="small" solid
+              class="mt-2 ml-2" color="info" icon="feather:info">
             </VSnack>
 
             <VSnack
-              :title="'Toplam Tüketim: ' + filteredData.map((m: any) => m.totalConsumed).reduce((a,b) => a + b) + ' ADET'"
-              size="small"
-              solid
-              class="mt-2 ml-2 mr-2"
-              style="float: right"
-              color="info"
-              icon="feather:wind"
-            >
+              :title="'Toplam Tüketim: ' + filteredData.map((m: any) => m.totalConsumed).reduce((a, b) => a + b) + ' ADET'"
+              size="small" solid class="mt-2 ml-2 mr-2" style="float: right" color="info" icon="feather:wind">
             </VSnack>
           </VCard>
         </VFlex>
       </div>
     </div>
 
-    <VModal
-      :open="isConsumeDialogOpen"
-      :title="'Tüketim Bilgisi'"
-      size="big"
-      actions="right"
-      :cancel-label="'Vazgeç'"
-      @close="isConsumeDialogOpen = false"
-    >
+    <VModal :open="isConsumeDialogOpen" :title="'Tüketim Bilgisi'" size="big" actions="right" :cancel-label="'Vazgeç'"
+      @close="isConsumeDialogOpen = false">
       <template #content>
         <EditConsume :params="consumeModel" @submit="onConsumeDialogSubmit" />
       </template>
@@ -341,6 +292,7 @@ const columns = {
 
 <style lang="scss">
 .has-top-nav {
+
   .flex-list-wrapper,
   .list-flex-toolbar {
     max-width: 880px;
