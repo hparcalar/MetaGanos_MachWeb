@@ -7,6 +7,10 @@ import { useApi } from '/@src/composable/useApi'
 import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
 import { useUserSession } from '/@src/stores/userSession'
 import EditConsume from '../../partials/employee/EditConsume.vue'
+import pdfMake from 'pdfmake/build/pdfmake'
+//import pdfFonts from 'pdfmake/build/vfs_fonts'
+import { pdfVfs as pdfFonst } from '/@src/composable/pdfMakeFont'
+pdfMake.addVirtualFileSystem(pdfFonst)
 
 const { getExpression } = useUserSession()
 const api = useApi()
@@ -111,6 +115,63 @@ const exportToExcel = async () => {
   downloadFile(bs64Str)
 }
 
+const exportToPdf = async () => {
+  var data = []
+  data.push([
+    'Tarih',
+    'Saat',
+    'Personel Kodu',
+    'Sicil Kodu',
+    'Personel',
+    'Dpt. Kodu',
+    'Dpt. Adı',
+    'Makine/Depo',
+    'Kategori',
+    'Stok',
+    'Spiral',
+    'Miktar',
+    'Bakiye',
+  ])
+
+  filteredData.value.forEach((item: any) => {
+    data.push([
+      dateToStr(item.consumedDate) ?? '',
+      timeToStr(item.consumedDate) ?? '',
+      item.employeeCode ?? '',
+      item.employeeCardCode ?? '',
+      item.employeeName ?? '',
+      item.departmentCode ?? '',
+      item.departmentName ?? '',
+      item.machineName.length > 0 ? item.machineName : item.warehouseName ?? '',
+      item.itemCategoryName ?? '',
+      item.itemName ?? '',
+      item.spiralNo ?? '',
+      item.totalConsumed ?? '',
+      item.activeCredit ?? '',
+    ])
+  })
+  let docDefinition = {
+    pageOrientation: 'landscape',
+    pageSize: 'A4',
+    defaultStyle: {
+      fontSize: 10,
+      bold: false,
+    },
+    pageMargins: [15, 25, 15, 25],
+    content: [
+      {
+        layout: 'lightHorizontalLines', // optional
+        table: {
+          headerRows: 1,
+          body: filteredData.value.length > 0 ? data : [['Veri Bulunamadı']],
+        },
+      },
+    ],
+  }
+  const pdf = pdfMake.createPdf(docDefinition)
+  pdf.download('Tuketim Raporu.pdf')
+}
+
 const showEditConsumeForm = async (id: any) => {
   consumeModel.value.id = id
   isConsumeDialogOpen.value = true
@@ -177,20 +238,20 @@ const columns = {
       <VButton color="success" icon="feather:download" raised @click="exportToExcel">
         {{ getExpression('Export') }}
         <!-- <vue3-json-excel
-                    :json-data="reportData"
-                    :fields="{
-                      Tarih: 'consumedDate',
-                      Saat: 'consumedDate',
-                      Personel: 'employeeName',
-                      Otomat: 'machineName',
-                      Kategori: 'itemCategoryName',
-                      Stok: 'itemName',
-                      Miktar: 'totalConsumed',
-                    }"
-                    type="xls"
-                    name="tuketim-raporu.xls"
-                    header="Tüketim Raporu"
-                    >Dışarı Aktar</vue3-json-excel -->
+                                                                                                                                                                                                                                                                                                                                                                                                                          :json-data="reportData"
+                                                                                                                                                                                                                                                                                                                                                                                                                          :fields="{
+                                                                                                                                                                                                                                                                                                                                                                                                                            Tarih: 'consumedDate',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Saat: 'consumedDate',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Personel: 'employeeName',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Otomat: 'machineName',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Kategori: 'itemCategoryName',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Stok: 'itemName',
+                                                                                                                                                                                                                                                                                                                                                                                                                            Miktar: 'totalConsumed',
+                                                                                                                                                                                                                                                                                                                                                                                                                          }"
+                                                                                                                                                                                                                                                                                                                                                                                                                          type="xls"
+                                                                                                                                                                                                                                                                                                                                                                                                                          name="tuketim-raporu.xls"
+                                                                                                                                                                                                                                                                                                                                                                                                                          header="Tüketim Raporu"
+                                                                                                                                                                                                                                                                                                                                                                                                                          >Dışarı Aktar</vue3-json-excel -->
         <!-- > -->
       </VButton>
       <VButton color="danger" icon="feather:download" raised :style="{ 'margin-right': '5px' }" @click="exportToPdf">

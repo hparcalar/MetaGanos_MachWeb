@@ -6,16 +6,11 @@ const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer, getExpression } = useUserSession()
 </script>
     
-    <template>
+<template>
   <div class="sidebar-panel is-generic">
     <div class="subpanel-header">
       <h3 class="no-mb">Raporlar</h3>
-      <div
-        class="panel-close"
-        tabindex="0"
-        @keydown.space.prevent="emit('close')"
-        @click="emit('close')"
-      >
+      <div class="panel-close" tabindex="0" @keydown.space.prevent="emit('close')" @click="emit('close')">
         <i aria-hidden="true" class="iconify" data-icon="feather:x"></i>
       </div>
     </div>
@@ -26,7 +21,7 @@ const { hasAuth, isDealer, getExpression } = useUserSession()
             {{ getExpression('ConsumptionReport') }}
           </RouterLink>
         </li>
-        <li v-if="hasAuth('Item', 'Read')">
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
           <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Durum Raporu </RouterLink>
         </li>
       </ul>
@@ -34,7 +29,7 @@ const { hasAuth, isDealer, getExpression } = useUserSession()
   </div>
 </template>
     
-    <style lang="scss">
+<style lang="scss">
 @import '../../scss/layout/sidebar-panel';
 </style>
     

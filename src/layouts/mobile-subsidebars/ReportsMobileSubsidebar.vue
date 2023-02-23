@@ -6,7 +6,7 @@ const userSession = useUserSession()
 const openSubsidebarLinks = ref('')
 const { hasAuth, isDealer } = userSession
 </script>
-    <template>
+<template>
   <div class="mobile-subsidebar">
     <div class="inner">
       <div class="sidebar-title">
@@ -19,7 +19,7 @@ const { hasAuth, isDealer } = userSession
             {{ userSession.getExpression('ConsumptionReport') }}
           </RouterLink>
         </li>
-        <li v-if="hasAuth('Item', 'Read')">
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
           <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Durum Raporu </RouterLink>
         </li>
       </ul>
