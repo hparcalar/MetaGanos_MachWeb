@@ -8,9 +8,8 @@ import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
 import { useUserSession } from '/@src/stores/userSession'
 import EditConsume from '../../partials/employee/EditConsume.vue'
 import pdfMake from 'pdfmake/build/pdfmake'
-//import pdfFonts from 'pdfmake/build/vfs_fonts'
-import { pdfVfs as pdfFonst } from '/@src/composable/pdfMakeFont'
-pdfMake.addVirtualFileSystem(pdfFonst)
+// import pdfFonts from 'pdfmake/build/vfs_fonts'
+import { pdfVfs as pdfCustomFonts } from '/@src/composable/pdfMakeFont'
 
 const { getExpression } = useUserSession()
 const api = useApi()
@@ -47,6 +46,15 @@ const filteredData = computed(() => {
 const lastFilterModel: Ref<any> = ref(null)
 
 onMounted(async () => {
+  pdfMake.fonts = {
+    RobotoItalic: {
+      normal: 'Roboto-Italic.ttf',
+      bold: 'Roboto-Italic.ttf',
+      italics: 'Roboto-Italic.ttf',
+      bolditalics: 'Roboto-Italic.ttf',
+    },
+  }
+  pdfMake.vfs = pdfCustomFonts
   await getReportData()
 })
 
@@ -156,6 +164,7 @@ const exportToPdf = async () => {
     defaultStyle: {
       fontSize: 10,
       bold: false,
+      font: 'RobotoItalic',
     },
     pageMargins: [15, 25, 15, 25],
     content: [
@@ -238,20 +247,20 @@ const columns = {
       <VButton color="success" icon="feather:download" raised @click="exportToExcel">
         {{ getExpression('Export') }}
         <!-- <vue3-json-excel
-                                                                                                                                                                                                                                                                                                                                                                                                                          :json-data="reportData"
-                                                                                                                                                                                                                                                                                                                                                                                                                          :fields="{
-                                                                                                                                                                                                                                                                                                                                                                                                                            Tarih: 'consumedDate',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Saat: 'consumedDate',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Personel: 'employeeName',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Otomat: 'machineName',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Kategori: 'itemCategoryName',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Stok: 'itemName',
-                                                                                                                                                                                                                                                                                                                                                                                                                            Miktar: 'totalConsumed',
-                                                                                                                                                                                                                                                                                                                                                                                                                          }"
-                                                                                                                                                                                                                                                                                                                                                                                                                          type="xls"
-                                                                                                                                                                                                                                                                                                                                                                                                                          name="tuketim-raporu.xls"
-                                                                                                                                                                                                                                                                                                                                                                                                                          header="Tüketim Raporu"
-                                                                                                                                                                                                                                                                                                                                                                                                                          >Dışarı Aktar</vue3-json-excel -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                              :json-data="reportData"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              :fields="{
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Tarih: 'consumedDate',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Saat: 'consumedDate',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Personel: 'employeeName',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Otomat: 'machineName',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Kategori: 'itemCategoryName',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Stok: 'itemName',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Miktar: 'totalConsumed',
+                                                                                                                                                                                                                                                                                                                                                                                                                                              }"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              type="xls"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              name="tuketim-raporu.xls"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              header="Tüketim Raporu"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              >Dışarı Aktar</vue3-json-excel -->
         <!-- > -->
       </VButton>
       <VButton color="danger" icon="feather:download" raised :style="{ 'margin-right': '5px' }" @click="exportToPdf">
