@@ -21,7 +21,8 @@ const filteredData = computed(() => {
         item.itemCode?.match(filterRe) ||
         item.itemName?.match(filterRe) ||
         item.itemGroupName?.match(filterRe) ||
-        item.itemCategoryName?.match(filterRe)
+        item.itemCategoryName?.match(filterRe) ||
+        item.warehouseName?.match(filterRe)
       )
     })
   }
@@ -36,7 +37,7 @@ const bindModel = async () => {
   try {
     await getReportData(null)
     await getMoveData()
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const getReportData = async (filterModel: any) => {
@@ -57,7 +58,7 @@ const getReportData = async (filterModel: any) => {
     }
 
     reportData.value = (await api.post('Warehouse/ItemStatusReport', filterPrm)).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const exportToExcel = async () => {
@@ -105,6 +106,7 @@ const base64ToByteArray = function (base64: any) {
 const columns = {
   itemCode: 'Stok Kodu',
   itemName: 'Stok Adı',
+  warehouseName: 'Depo',
   itemCategoryName: 'Kategori',
   itemGroupName: 'Grup',
   inQuantity: 'Giriş',
@@ -140,11 +142,7 @@ const isStuck = computed(() => {
         </div>
         <div class="list-flex-toolbar is-reversed">
           <VControl icon="feather:search">
-            <input
-              v-model="filters"
-              class="input custom-text-filter"
-              :placeholder="getExpression('Search')"
-            />
+            <input v-model="filters" class="input custom-text-filter" :placeholder="getExpression('Search')" />
           </VControl>
 
           <VButton color="success" icon="feather:download" raised @click="exportToExcel">
@@ -154,24 +152,12 @@ const isStuck = computed(() => {
 
         <div class="flex-list-wrapper flex-list-v3">
           <!--List Empty Search Placeholder -->
-          <VPlaceholderPage
-            v-if="!filteredData.length"
-            :title="getExpression('AnyDataDoesntExists')"
-            subtitle=""
-            larger
-          >
+          <VPlaceholderPage v-if="!filteredData.length" :title="getExpression('AnyDataDoesntExists')" subtitle="" larger>
           </VPlaceholderPage>
 
           <!--Active Tab-->
           <div v-else-if="filteredData.length" class="tab-content is-active">
-            <VFlexTable
-              id="reportTable"
-              :data="filteredData"
-              :columns="columns"
-              clickable
-              compact
-              separators
-            >
+            <VFlexTable id="reportTable" :data="filteredData" :columns="columns" clickable compact separators>
               <template #body>
                 <TransitionGroup name="list" tag="div" class="flex-list-inner">
                   <!--Table item-->
@@ -181,6 +167,9 @@ const isStuck = computed(() => {
                     </VFlexTableCell>
                     <VFlexTableCell>
                       <span class="">{{ item.itemName }}</span>
+                    </VFlexTableCell>
+                    <VFlexTableCell>
+                      <span class="">{{ item.warehouseName }}</span>
                     </VFlexTableCell>
                     <VFlexTableCell>
                       <span class="">{{ item.itemCategoryName }}</span>
@@ -204,14 +193,8 @@ const isStuck = computed(() => {
 
             <VFlex class="mt-5">
               <VCard class="p-1">
-                <VSnack
-                  :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')"
-                  size="small"
-                  solid
-                  class="mt-2 ml-2"
-                  color="info"
-                  icon="feather:info"
-                >
+                <VSnack :title="filteredData.length + ' ' + getExpression('RecordsDisplayed')" size="small" solid
+                  class="mt-2 ml-2" color="info" icon="feather:info">
                 </VSnack>
               </VCard>
             </VFlex>
@@ -305,6 +288,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

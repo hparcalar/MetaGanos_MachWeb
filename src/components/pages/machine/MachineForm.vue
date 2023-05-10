@@ -44,6 +44,8 @@ const modelObject = ref({
   startVideoData: null,
   isActive: true,
   createDate: null,
+  isAutoConsumption: false,
+  autoConsumptionWarehouseId: null,
   spirals: [],
 })
 const spiralModel = ref({
@@ -60,6 +62,7 @@ const spiralModel = ref({
 const liveVideoStream = ref(null)
 
 const plants = ref([])
+const warehouses = ref([])
 const itemCategories = ref([])
 const items = ref([])
 const machineTemplates = ref([])
@@ -88,7 +91,7 @@ const bindModel = async () => {
         machineName: '',
         specialCustomer: '',
         inventoryCode: '',
-        plantId: 0,
+        plantId: null,
         barcode: '',
         productionDate: null,
         inventoryEntryDate: null,
@@ -105,6 +108,8 @@ const bindModel = async () => {
         startVideoData: null,
         isActive: true,
         createDate: null,
+        isAutoConsumption: false,
+        autoConsumptionWarehouseId: null,
         spirals: [],
       }
 
@@ -117,6 +122,7 @@ const bindModel = async () => {
 
     await bindCategories()
     await bindMachineTemplates()
+    await bindWarehouses()
 
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
       bindVideo()
@@ -135,6 +141,14 @@ const bindCategories = async () => {
     ).data
 
     items.value = (await api.get('Item')).data
+  } catch (error) {}
+}
+
+const bindWarehouses = async () => {
+  try {
+    warehouses.value = (
+      await api.get('Plant/' + modelObject.value.plantId + '/Warehouses')
+    ).data
   } catch (error) {}
 }
 
@@ -801,6 +815,35 @@ const isStuck = computed(() => {
                 </div>
               </div>
 
+              <div class="column is-12">
+                <div class="columns is-multiline">
+                  <div class="column is-6">
+                    <VSwitchBlock
+                      v-show="hasAuth('Machines', 'Write')"
+                      v-model="modelObject.isAutoConsumption"
+                      class="ml-2"
+                      :label="'Otomatik Depo Sarfı'"
+                      color="success"
+                    />
+                  </div>
+                  <div v-if="modelObject.isAutoConsumption" class="column is-6">
+                    <VField>
+                      <label>Depo</label>
+                      <VControl>
+                        <Multiselect
+                          v-model="modelObject.autoConsumptionWarehouseId"
+                          :value-prop="'id'"
+                          :label="'warehouseName'"
+                          placeholder=""
+                          :searchable="true"
+                          :options="warehouses"
+                        />
+                      </VControl>
+                    </VField>
+                  </div>
+                </div>
+              </div>
+
               <div
                 class="column is-12"
                 style="
@@ -1011,13 +1054,13 @@ const isStuck = computed(() => {
                                 {{ getExpression('Empty') }}
                               </VButton>
                               <!-- <VButton
-                                  color="dark"
-                                  icon="feather:list"
-                                  raised
-                                  @click="showSpiralConsumeDialog()"
-                                >
-                                  {{ getExpression('Consumptions') }}
-                                </VButton> -->
+                                        color="dark"
+                                        icon="feather:list"
+                                        raised
+                                        @click="showSpiralConsumeDialog()"
+                                      >
+                                        {{ getExpression('Consumptions') }}
+                                      </VButton> -->
                               <VSwitchBlock
                                 v-show="hasAuth('Machines', 'Write')"
                                 v-model="spiralModel.isEnabled"

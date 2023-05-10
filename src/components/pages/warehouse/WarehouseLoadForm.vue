@@ -6,6 +6,7 @@ import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useHelpers } from '/@src/utils/helpers'
 import { useUserSession } from '/@src/stores/userSession'
+import { useRouter } from 'vue-router'
 import moment from 'moment'
 import { dateToStr, timeToStr, removeTime } from '/@src/composable/useHelpers'
 
@@ -16,6 +17,7 @@ const props = defineProps({
   },
 })
 
+const router = useRouter()
 const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
@@ -31,6 +33,7 @@ const modelObject = ref({
   loadOfficerId: null,
   explanation: '',
   warehouseId: null,
+  outWarehouseId: null,
   firmId: null,
   plantId: 0,
   details: [],
@@ -44,6 +47,9 @@ const warehouses = ref([])
 const loadTypes = ref([
   { id: 1, text: 'Depo Giriş Fişi' },
   { id: 2, text: 'Depo Çıkış Fişi' },
+  { id: 3, text: 'Depo Transfer Fişi' },
+  { id: 4, text: 'Depo Transfer Giriş Fişi' },
+  { id: 5, text: 'Depo Transfer Çıkış Fişi' },
 ])
 
 onMounted(async () => {
@@ -73,6 +79,7 @@ const bindModel = async () => {
         loadOfficerId: null,
         explanation: '',
         warehouseId: null,
+        outWarehouseId: null,
         firmId: null,
         plantId: 0,
         details: [],
@@ -81,6 +88,8 @@ const bindModel = async () => {
     if (modelObject.value.id <= 0) {
       modelObject.value.loadType = 1
       modelObject.value.loadDate = removeTime(moment().toDate())
+
+      loadTypes.value.splice(3, 2)
     }
 
     if (
@@ -92,11 +101,23 @@ const bindModel = async () => {
       modelObject.value.plantId = userSession.user.FactoryId
 
     await updateSelectables()
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
   try {
+    if (!modelObject.value.warehouseId) {
+      notif.warning('Depo seçilmelidir.')
+      return
+    }
+
+    if (modelObject.value.loadType == 3) {
+      if (modelObject.value.warehouseId == modelObject.value.outWarehouseId) {
+        notif.warning('Giriş ve Çıkış depoları farklı seçilmelidir.')
+        return
+      }
+    }
+
     const postResult = await api.post('WarehouseLoad', modelObject.value)
     if (postResult.data.result) {
       notif.success(getExpression('SaveSuccess'))
@@ -125,7 +146,7 @@ const updateSelectables = async () => {
       firms.value = (await api.get('Firm')).data
       warehouses.value = (await api.get('Warehouse')).data
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const addDetail = () => {
@@ -142,7 +163,22 @@ const removeDetail = (item: any) => {
     if (rowIndex > -1) {
       modelObject.value.details.splice(rowIndex, 1)
     }
-  } catch (error) {}
+  } catch (error) { }
+}
+
+const deleteModel = async () => {
+  try {
+    if (!confirm('Bu fişi silmek istediğinizden emin misiniz?')) return
+
+    const delResult = await api.delete('WarehouseLoad/' + modelObject.value.id)
+    if (delResult.data.result) {
+      modelObject.value.id = 0
+      notif.success('Silme işlemi tamamlandı')
+      router.push({ name: 'wrmove' })
+    } else notif.error(delResult.data.errorMessage)
+  } catch (error) {
+    notif.error(error)
+  }
 }
 
 const columns = {
@@ -172,13 +208,11 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'wrmove' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'wrmove' }" light dark-outlined>
                 {{ getExpression('List') }}
+              </VButton>
+              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+                {{ getExpression('Delete') }}
               </VButton>
               <VButton color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
@@ -190,142 +224,101 @@ const isStuck = computed(() => {
       <div class="form-body">
         <!-- HEADER REGION -->
         <div class="columns is-multiline">
-          <div class="column is-6">
+          <div class="column is-8">
             <!--Fieldset-->
-            <div class="form-fieldset">
+            <div class="form-fieldset" style="max-width: none">
               <div class="columns is-multiline">
                 <div class="column is-6">
                   <VField>
                     <label>Hareket Türü</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.loadType"
-                        :disabled="modelObject.id > 0"
-                        :value-prop="'id'"
-                        :label="'text'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="loadTypes"
-                      />
+                      <Multiselect v-model="modelObject.loadType" :disabled="modelObject.id > 0" :value-prop="'id'"
+                        :label="'text'" placeholder="" :searchable="true" :options="loadTypes" />
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
+                <div class="column is-3">
                   <VField>
                     <label>Fiş No</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.receiptNo"
-                        readonly
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.receiptNo" readonly type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
-                <div class="column is-6">
-                  <VField>
-                    <label>Depo</label>
-                    <VControl>
-                      <Multiselect
-                        v-model="modelObject.warehouseId"
-                        :value-prop="'id'"
-                        :label="'warehouseName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="warehouses"
-                      />
-                    </VControl>
-                  </VField>
-                </div>
-                <div class="column is-6">
+                <div class="column is-3">
                   <VField>
                     <label>Belge No</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.documentNo"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.documentNo" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
-                <div :class="{ 'is-4': isDealer, 'is-6': !isDealer }" class="column">
+                <div v-if="isDealer" class="column is-6">
                   <VField>
-                    <VDatePicker
-                      v-model="modelObject.loadDate"
-                      :masks="{ input: 'DD.MM.YYYY' }"
-                      trim-weeks
-                    >
+                    <label>{{ getExpression('Factory') }}</label>
+                    <VControl>
+                      <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'" placeholder=""
+                        :searchable="true" :options="plants" @change="onChangePlant" />
+                    </VControl>
+                  </VField>
+                </div>
+                <div class="column is-6">
+                  <VField>
+                    <label>{{ modelObject.loadType == 3 ? 'Giriş Depo' : 'Depo' }}</label>
+                    <VControl>
+                      <Multiselect v-model="modelObject.warehouseId" :value-prop="'id'" :label="'warehouseName'"
+                        placeholder="" :searchable="true" :options="warehouses" />
+                    </VControl>
+                  </VField>
+                </div>
+
+                <div :class="{ 'is-3': isDealer, 'is-3': !isDealer }" class="column">
+                  <VField>
+                    <VDatePicker v-model="modelObject.loadDate" :masks="{ input: 'DD.MM.YYYY' }" trim-weeks>
                       <template #default="{ inputValue, inputEvents }">
                         <VField>
                           <label>{{ getExpression('ProductionDate') }}</label>
                           <VControl icon="feather:calendar">
-                            <input
-                              class="input"
-                              type="text"
-                              placeholder="Bir tarih seçin"
-                              :value="inputValue"
-                              v-on="inputEvents"
-                            />
+                            <input class="input" type="text" placeholder="Bir tarih seçin" :value="inputValue"
+                              v-on="inputEvents" />
                           </VControl>
                         </VField>
                       </template>
                     </VDatePicker>
                   </VField>
                 </div>
-                <div :class="{ 'is-4': isDealer, 'is-6': !isDealer }" class="column">
+                <div :class="{ 'is-3': isDealer, 'is-3': !isDealer }" class="column">
                   <VField>
                     <label>Firma</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.firmId"
-                        :value-prop="'id'"
-                        :label="'firmName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="firms"
-                      />
+                      <Multiselect v-model="modelObject.firmId" :value-prop="'id'" :label="'firmName'" placeholder=""
+                        :searchable="true" :options="firms" />
                     </VControl>
                   </VField>
                 </div>
-                <div v-if="isDealer" class="column is-4">
+
+                <div v-if="modelObject.loadType == 3" class="column is-6">
                   <VField>
-                    <label>{{ getExpression('Factory') }}</label>
+                    <label>Çıkış Depo</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="plants"
-                        @change="onChangePlant"
-                      />
+                      <Multiselect v-model="modelObject.outWarehouseId" :value-prop="'id'" :label="'warehouseName'"
+                        placeholder="" :searchable="true" :options="warehouses" />
                     </VControl>
                   </VField>
                 </div>
               </div>
             </div>
           </div>
-          <div class="column is-6">
-            <div class="form-fieldset">
+          <div class="column is-4">
+            <div class="form-fieldset" style="max-width: none">
               <div class="columns is-multiline">
                 <div class="column is-12">
                   <VField>
                     <label>Açıklama</label>
                     <VControl icon="feather:terminal">
-                      <textarea
-                        v-model="modelObject.explanation"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                        style="height: 110px"
-                      ></textarea>
+                      <textarea v-model="modelObject.explanation" class="input" placeholder="" autocomplete=""
+                        style="height: 110px"></textarea>
                     </VControl>
                   </VField>
                 </div>
@@ -338,72 +331,34 @@ const isStuck = computed(() => {
         <div class="columns is-multiline">
           <div class="column is-12">
             <div>
-              <VButton
-                class="ml-2"
-                color="info"
-                icon="feather:plus"
-                raised
-                @click="addDetail"
-              >
+              <VButton class="ml-2" color="info" icon="feather:plus" raised @click="addDetail">
                 Yeni Satır
               </VButton>
             </div>
             <div class="flex-list-wrapper flex-list-v3 mt-4">
               <div class="tab-content is-active">
-                <VFlexTable
-                  :data="modelObject.details"
-                  :columns="columns"
-                  clickable
-                  compact
-                  separators
-                >
+                <VFlexTable :data="modelObject.details" :columns="columns" clickable compact separators>
                   <template #body>
-                    <TransitionGroup
-                      name="list"
-                      tag="div"
-                      class="flex-list-inner"
-                      style="overflow-y: visible"
-                    >
+                    <TransitionGroup name="list" tag="div" class="flex-list-inner" style="overflow-y: visible">
                       <!--Table item-->
-                      <div
-                        v-for="(item, itemIndex) in modelObject.details"
-                        :key="item"
-                        class="flex-table-item"
-                      >
+                      <div v-for="(item, itemIndex) in modelObject.details" :key="item" class="flex-table-item">
                         <VFlexTableCell>
-                          <span class=""
-                            ><b>{{ itemIndex + 1 }}</b></span
-                          >
+                          <span class=""><b>{{ itemIndex + 1 }}</b></span>
                         </VFlexTableCell>
                         <VFlexTableCell>
                           <VControl>
-                            <Multiselect
-                              v-model="item.itemId"
-                              style="flex: 1 !important"
-                              :value-prop="'id'"
-                              :label="'itemName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="items"
-                            />
+                            <Multiselect v-model="item.itemId" style="flex: 1 !important" :value-prop="'id'"
+                              :label="'itemName'" placeholder="" :searchable="true" :options="items" />
                           </VControl>
                         </VFlexTableCell>
                         <VFlexTableCell>
                           <VControl icon="feather:terminal">
-                            <input
-                              v-model="item.quantity"
-                              type="number"
-                              class="input"
-                              placeholder=""
-                              autocomplete=""
-                            />
+                            <input v-model="item.quantity" type="number" class="input" placeholder="" autocomplete="" />
                           </VControl>
                         </VFlexTableCell>
                         <VFlexTableCell :columns="{ align: 'end' }">
-                          <button
-                            class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                            @click="removeDetail(item)"
-                          >
+                          <button class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
+                            @click="removeDetail(item)">
                             <i aria-hidden="true" class="fas fa-trash dot"></i>
                           </button>
                         </VFlexTableCell>
@@ -420,7 +375,7 @@ const isStuck = computed(() => {
   </form>
 </template>
     
-    <style lang="scss">
+<style lang="scss">
 @import '../../../scss/abstracts/mixins';
 
 .selected-row,
@@ -503,6 +458,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {
