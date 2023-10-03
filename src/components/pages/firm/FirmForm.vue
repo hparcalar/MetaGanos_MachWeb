@@ -7,6 +7,7 @@ import { useUserSession } from '/@src/stores/userSession'
 import { useRouter } from 'vue-router'
 
 const userSession = useUserSession()
+const { hasAuth } = useUserSession()
 
 const props = defineProps({
   id: {
@@ -49,7 +50,7 @@ const bindModel = async () => {
       modelObject.value.plantId = plants.value[0].id
     else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
       modelObject.value.plantId = userSession.user.FactoryId
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
@@ -97,18 +98,13 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'firm' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'firm' }" light dark-outlined>
                 Liste
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('Firms', 'Write')" color="primary" icon="feather:save" raised @click="saveModel">
                 Kaydet
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton v-if="hasAuth('Firms', 'Delete')" color="danger" icon="feather:trash" raised @click="deleteModel">
                 Sil
               </VButton>
             </div>
@@ -128,13 +124,7 @@ const isStuck = computed(() => {
               <VField>
                 <label>Firma Kodu</label>
                 <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.firmCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
+                  <input v-model="modelObject.firmCode" type="text" class="input" placeholder="" autocomplete="" />
                 </VControl>
               </VField>
             </div>
@@ -142,13 +132,7 @@ const isStuck = computed(() => {
               <VField>
                 <label>Firma Adı</label>
                 <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.firmName"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
+                  <input v-model="modelObject.firmName" type="text" class="input" placeholder="" autocomplete="" />
                 </VControl>
               </VField>
             </div>
@@ -156,14 +140,8 @@ const isStuck = computed(() => {
               <VField>
                 <label>Fabrika</label>
                 <VControl>
-                  <Multiselect
-                    v-model="modelObject.plantId"
-                    :value-prop="'id'"
-                    :label="'plantName'"
-                    placeholder="Bir fabrika seçiniz"
-                    :searchable="true"
-                    :options="plants"
-                  />
+                  <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'"
+                    placeholder="Bir fabrika seçiniz" :searchable="true" :options="plants" />
                 </VControl>
               </VField>
             </div>
@@ -174,7 +152,7 @@ const isStuck = computed(() => {
   </form>
 </template>
     
-    <style lang="scss">
+<style lang="scss">
 @import '../../../scss/abstracts/mixins';
 
 .is-navbar {
@@ -252,6 +230,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

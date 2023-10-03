@@ -96,7 +96,7 @@ const bindModel = async () => {
 
     await updateDepartmentList(modelObject.value.plantId)
     await updateCardList(modelObject.value.plantId)
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const onChangePlant = async (plantId: any) => {
@@ -110,7 +110,7 @@ const updateDepartmentList = async (plantId: any) => {
     try {
       const relatedDepartments = await api.get('Plant/' + plantId + '/Departments')
       departments.value = relatedDepartments.data
-    } catch (error) {}
+    } catch (error) { }
   } else departments.value = []
 }
 
@@ -127,7 +127,7 @@ const updateCardList = async (plantId: any) => {
           id: modelObject.value.employeeCardId,
           cardCode: modelObject.value.employeeCardCode,
         })
-    } catch (error) {}
+    } catch (error) { }
   } else cards.value = []
 }
 
@@ -208,7 +208,7 @@ const deleteCredit = async (creditId: number) => {
         notif.success('Kredi başarıyla silindi.')
         await bindModel()
       } else notif.error(postResult.errorMessage)
-    } catch (error) {}
+    } catch (error) { }
   }
 }
 // #endregion
@@ -277,7 +277,7 @@ const getRangeStr = (item: any) => {
         return item.rangeLength + ' ' + rgType.value
       return rgType.value
     }
-  } catch (error) {}
+  } catch (error) { }
 
   return item.rangeType
 }
@@ -375,24 +375,14 @@ const bindPageCredits = () => {
               >
                 Zimmet Bilgileri
               </VButton> -->
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'employee' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'employee' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('Employees', 'Write')" color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton
-                v-if="hasAuth('Employees', 'Delete')"
-                color="danger"
-                icon="feather:trash"
-                raised
-                @click="deleteModel"
-              >
+              <VButton v-if="hasAuth('Employees', 'Delete')" color="danger" icon="feather:trash" raised
+                @click="deleteModel">
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -414,13 +404,8 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('EmployeeCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.employeeCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.employeeCode" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -428,13 +413,8 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('EmployeeName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.employeeName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.employeeName" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -442,15 +422,8 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="plants"
-                        @change="onChangePlant"
-                      />
+                      <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'" placeholder=""
+                        :searchable="true" :options="plants" @change="onChangePlant" />
                     </VControl>
                   </VField>
                 </div>
@@ -458,37 +431,19 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Department') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.departmentId"
-                        :value-prop="'id'"
-                        :label="'departmentName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="departments"
-                      />
+                      <Multiselect v-model="modelObject.departmentId" :value-prop="'id'" :label="'departmentName'"
+                        placeholder="" :searchable="true" :options="departments" />
                     </VControl>
                   </VField>
                 </div>
                 <div v-if="hasAuth('EmployeeCards', 'Read')" class="column is-12">
                   <label class="expanded-label">{{ getExpression('Card') }}</label>
                   <VField addons>
-                    <Multiselect
-                      v-model="modelObject.employeeCardId"
-                      expanded
-                      :value-prop="'id'"
-                      :label="'cardCode'"
-                      placeholder=""
-                      :searchable="true"
-                      :options="cards"
-                    />
+                    <Multiselect v-model="modelObject.employeeCardId" expanded :value-prop="'id'" :label="'cardCode'"
+                      placeholder="" :searchable="true" :options="cards" />
                     <VControl>
-                      <VButton
-                        :color="'info'"
-                        :raised="true"
-                        icon="feather:plus"
-                        @click="showQuickCardForm"
-                        >{{ getExpression('NewCard') }}</VButton
-                      >
+                      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="showQuickCardForm">{{
+                        getExpression('NewCard') }}</VButton>
                     </VControl>
                   </VField>
                 </div>
@@ -496,13 +451,7 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Gsm') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.gsm"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.gsm" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -510,13 +459,7 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Email') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.email"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.email" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -524,14 +467,8 @@ const bindPageCredits = () => {
                   <VField>
                     <label>Durumu</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.employeeStatus"
-                        :value-prop="'id'"
-                        :label="'text'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="statusTypes"
-                      />
+                      <Multiselect v-model="modelObject.employeeStatus" :value-prop="'id'" :label="'text'" placeholder=""
+                        :searchable="true" :options="statusTypes" />
                     </VControl>
                   </VField>
                 </div>
@@ -539,10 +476,7 @@ const bindPageCredits = () => {
             </div>
           </div>
 
-          <div
-            class="column is-6"
-            style="display: flex; align-items: stretch; min-height: 400px"
-          >
+          <div class="column is-6" style="display: flex; align-items: stretch; min-height: 400px">
             <!--Fieldset-->
             <div v-if="!isLoadDialogOpen" class="form-fieldset hk-slide-content">
               <div class="fieldset-heading">
@@ -553,94 +487,56 @@ const bindPageCredits = () => {
                 <div class="column is-12">
                   <div class="list-flex-toolbar is-reversed">
                     <VControl icon="feather:search">
-                      <input
-                        v-model="filters"
-                        class="input custom-text-filter"
-                        :placeholder="getExpression('Search')"
-                      />
+                      <input v-model="filters" class="input custom-text-filter" :placeholder="getExpression('Search')" />
                     </VControl>
 
-                    <VButton
-                      v-if="modelObject && modelObject.id > 0"
-                      :color="'info'"
-                      :raised="true"
-                      icon="feather:plus"
-                      @click="openLoadDialog(null)"
-                      >{{ getExpression('LoadMachine') }}</VButton
-                    >
+                    <VButton v-if="modelObject && modelObject.id > 0" :color="'info'" :raised="true" icon="feather:plus"
+                      @click="openLoadDialog(null)">{{ getExpression('LoadMachine') }}</VButton>
                   </div>
                   <div class="flex-list-wrapper flex-list-v3">
                     <!--List Empty Search Placeholder -->
-                    <VPlaceholderPage
-                      v-if="!filteredData || !filteredData.length"
-                      :title="getExpression('AnyDataDoesntExists')"
-                      subtitle=""
-                      larger
-                    >
+                    <VPlaceholderPage v-if="!filteredData || !filteredData.length"
+                      :title="getExpression('AnyDataDoesntExists')" subtitle="" larger>
                     </VPlaceholderPage>
 
                     <!--Active Tab-->
                     <div v-else-if="filteredData.length" class="tab-content is-active">
-                      <VFlexTable
-                        :data="pageCredits"
-                        :columns="columns"
-                        clickable
-                        compact
-                        separators
-                      >
+                      <VFlexTable :data="pageCredits" :columns="columns" clickable compact separators>
                         <template #body>
                           <!--Table item-->
-                          <div
-                            v-for="item in pageCredits"
-                            :key="item.id"
-                            class="flex-table-item"
-                            :class="{
-                              'past-credit':
-                                item.creditEndDate && dateIsLtFromNow(item.creditEndDate),
-                            }"
-                          >
+                          <div v-for="item in pageCredits" :key="item.id" class="flex-table-item" :class="{
+                            'past-credit':
+                              item.creditEndDate && dateIsLtFromNow(item.creditEndDate),
+                          }">
                             <VFlexTableCell>
-                              <span class=""
-                                ><small>{{
-                                  item.itemName.length > 0
-                                    ? item.itemName
-                                    : item.itemGroupName.length > 0
-                                    ? item.itemGroupName
-                                    : item.itemCategoryName
-                                }}</small></span
-                              >
+                              <span class=""><small>{{
+                                item.itemName.length > 0
+                                ? item.itemName
+                                : item.itemGroupName.length > 0
+                                  ? item.itemGroupName
+                                  : item.itemCategoryName
+                              }}</small></span>
                             </VFlexTableCell>
                             <VFlexTableCell>
-                              <span class=""
-                                ><small>{{ dateToStr(item.creditLoadDate) }}</small></span
-                              >
+                              <span class=""><small>{{ dateToStr(item.creditLoadDate) }}</small></span>
                             </VFlexTableCell>
                             <VFlexTableCell>
-                              <span class=""
-                                ><small>{{ getRangeStr(item) }}</small></span
-                              >
+                              <span class=""><small>{{ getRangeStr(item) }}</small></span>
                             </VFlexTableCell>
                             <VFlexTableCell>
-                              <span class=""
-                                ><small>{{ item.creditByRange }}</small></span
-                              >
+                              <span class=""><small>{{ item.creditByRange }}</small></span>
                             </VFlexTableCell>
                             <VFlexTableCell>
-                              <span class=""
-                                ><small>{{ item.rangeCredit }}</small></span
-                              >
+                              <span class=""><small>{{ item.rangeCredit }}</small></span>
                             </VFlexTableCell>
                             <VFlexTableCell :columns="{ align: 'end' }">
-                              <button
-                                class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
-                                @click="openLoadDialog(item)"
-                              >
+                              <button class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
+                                @click="openLoadDialog(item)">
                                 <i aria-hidden="true" class="fas fa-edit dot"></i>
                               </button>
                               <button
                                 class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                @click="deleteCredit(item.id)"
-                              >
+                                @click="deleteCredit(item.id)">
                                 <i aria-hidden="true" class="fas fa-trash dot"></i>
                               </button>
                             </VFlexTableCell>
@@ -649,15 +545,9 @@ const bindPageCredits = () => {
                       </VFlexTable>
 
                       <!--Table Pagination-->
-                      <VFlexPagination
-                        v-if="filteredData.length > 5"
-                        :item-per-page="5"
-                        :total-items="filteredData.length"
-                        :current-page="currentCreditPage"
-                        :max-links-displayed="5"
-                        :no-router="true"
-                        @update:current-page="onPageChanged"
-                      />
+                      <VFlexPagination v-if="filteredData.length > 5" :item-per-page="5"
+                        :total-items="filteredData.length" :current-page="currentCreditPage" :max-links-displayed="5"
+                        :no-router="true" @update:current-page="onPageChanged" />
                     </div>
                   </div>
                 </div>
@@ -674,14 +564,8 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Category') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="creditLoadModel.itemCategoryId"
-                        :value-prop="'id'"
-                        :label="'itemCategoryName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="itemCategories"
-                      />
+                      <Multiselect v-model="creditLoadModel.itemCategoryId" :value-prop="'id'" :label="'itemCategoryName'"
+                        placeholder="" :searchable="true" :options="itemCategories" />
                     </VControl>
                   </VField>
                 </div>
@@ -689,33 +573,18 @@ const bindPageCredits = () => {
                   <VField>
                     <label>{{ getExpression('Credit') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="creditLoadModel.activeCredit"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="creditLoadModel.activeCredit" type="number" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-12">
                   <div class="right">
                     <div class="buttons">
-                      <VButton
-                        icon="lnir lnir-arrow-left rem-100"
-                        light
-                        dark-outlined
-                        @click="isLoadDialogOpen = false"
-                      >
+                      <VButton icon="lnir lnir-arrow-left rem-100" light dark-outlined @click="isLoadDialogOpen = false">
                         {{ getExpression('Cancel') }}
                       </VButton>
-                      <VButton
-                        color="primary"
-                        icon="feather:save"
-                        raised
-                        @click="loadCredit()"
-                      >
+                      <VButton color="primary" icon="feather:save" raised @click="loadCredit()">
                         {{ getExpression('Save') }}
                       </VButton>
                     </div>
@@ -729,24 +598,13 @@ const bindPageCredits = () => {
     </div>
   </form>
 
-  <EditEmployeeCredit
-    :credit-params="{
-      itemCategoryName: selectedItemCategoryObject?.itemCategoryName,
-      quantity: selectedItemCategoryQuantity,
-    }"
-    :visible="isEditCreditDialogVisible"
-    @laod-credit="onEditCredit"
-    @close="onCloseLoadCredit"
-  />
+  <EditEmployeeCredit :credit-params="{
+    itemCategoryName: selectedItemCategoryObject?.itemCategoryName,
+    quantity: selectedItemCategoryQuantity,
+  }" :visible="isEditCreditDialogVisible" @laod-credit="onEditCredit" @close="onCloseLoadCredit" />
 
-  <VModal
-    :open="isLoadDialogOpen"
-    :title="getExpression('EmployeeLoadCredit')"
-    size="big"
-    actions="right"
-    :cancel-label="'Vazgeç'"
-    @close="isLoadDialogOpen = false"
-  >
+  <VModal :open="isLoadDialogOpen" :title="getExpression('EmployeeLoadCredit')" size="big" actions="right"
+    :cancel-label="'Vazgeç'" @close="isLoadDialogOpen = false">
     <template #content>
       <LoadCredit :params="creditLoadModel" @submit="onLoadSubmit" />
     </template>
@@ -755,14 +613,8 @@ const bindPageCredits = () => {
     </template>
   </VModal>
 
-  <VModal
-    :open="isQuickCardDialogOpen"
-    :title="getExpression('NewCard')"
-    size="big"
-    actions="right"
-    :cancel-label="'Vazgeç'"
-    @close="isQuickCardDialogOpen = false"
-  >
+  <VModal :open="isQuickCardDialogOpen" :title="getExpression('NewCard')" size="big" actions="right"
+    :cancel-label="'Vazgeç'" @close="isQuickCardDialogOpen = false">
     <template #content>
       <QuickNewCard :plant-id="modelObject.plantId ?? 0" @card-saved="onQuickCardSaved" />
     </template>
@@ -771,14 +623,9 @@ const bindPageCredits = () => {
     </template>
   </VModal>
 
-  <PlantFileProcess
-    :params="{
-      employeeId: modelObject?.id,
-    }"
-    :visible="isFileProcessDialogOpen"
-    @close="onCloseFileProcessDialog"
-    @processed="onApproveFileProcess"
-  />
+  <PlantFileProcess :params="{
+    employeeId: modelObject?.id,
+  }" :visible="isFileProcessDialogOpen" @close="onCloseFileProcessDialog" @processed="onApproveFileProcess" />
 </template>
 
 <style lang="scss">
@@ -863,6 +710,7 @@ const bindPageCredits = () => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

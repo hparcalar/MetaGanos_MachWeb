@@ -22,7 +22,7 @@ const helpers = useHelpers()
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
-const { getExpression } = useUserSession()
+const { getExpression, hasAuth } = useUserSession()
 const { isDealer } = userSession
 
 const modelObject = ref({
@@ -87,7 +87,7 @@ const bindModel = async () => {
       modelObject.value.plantId = plants.value[0].id
     else if (!modelObject.value.plantId || modelObject.value.plantId == 0)
       modelObject.value.plantId = userSession.user.FactoryId
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
@@ -144,18 +144,15 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'item-category' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'item-category' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('ItemCategories', 'Write')" color="primary" icon="feather:save" raised
+                @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton v-if="hasAuth('ItemCategories', 'Delete')" color="danger" icon="feather:trash" raised
+                @click="deleteModel">
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -177,13 +174,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('CategoryCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.itemCategoryCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.itemCategoryCode" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -191,13 +183,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('CategoryName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.itemCategoryName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.itemCategoryName" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -205,14 +192,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="plants"
-                      />
+                      <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'" placeholder=""
+                        :searchable="true" :options="plants" />
                     </VControl>
                   </VField>
                 </div>
@@ -220,13 +201,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('VisualOrder') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.viewOrder"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.viewOrder" type="number" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -277,20 +252,11 @@ const isStuck = computed(() => {
                   <VField>
                     <label>Logo</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        type="file"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                        accept="image/*"
-                        @change="onIconSelected"
-                      />
-                      <p
-                        v-if="
-                          modelObject.categoryImage &&
-                          modelObject.categoryImage.length > 0
-                        "
-                      >
+                      <input type="file" class="input" placeholder="" autocomplete="" accept="image/*"
+                        @change="onIconSelected" />
+                      <p v-if="modelObject.categoryImage &&
+                        modelObject.categoryImage.length > 0
+                        ">
                         <img alt="" :src="modelObject.categoryImage" width="150" />
                       </p>
                     </VControl>
@@ -423,6 +389,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

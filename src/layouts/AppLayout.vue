@@ -63,18 +63,11 @@ watch(
     <div class="app-overlay"></div>
 
     <!-- Mobile navigation -->
-    <MobileNavbar
-      :is-open="isMobileSidebarOpen"
-      @toggle="isMobileSidebarOpen = !isMobileSidebarOpen"
-    >
+    <MobileNavbar :is-open="isMobileSidebarOpen" @toggle="isMobileSidebarOpen = !isMobileSidebarOpen">
       <template #brand>
         <RouterLink :to="{ name: 'app' }" class="navbar-item is-brand">
           <!-- <AnimatedLogo width="38px" height="38px" /> -->
-          <img
-            class="light-image"
-            src="/@src/assets/illustrations/apps/appicon.png?format=webp"
-            alt=""
-          />
+          <img class="light-image" src="/@src/assets/illustrations/apps/appicon.png?format=webp" alt="" />
         </RouterLink>
 
         <div class="brand-end">
@@ -85,10 +78,7 @@ watch(
     </MobileNavbar>
 
     <!-- Mobile sidebar links -->
-    <MobileSidebar
-      :is-open="isMobileSidebarOpen"
-      @toggle="isMobileSidebarOpen = !isMobileSidebarOpen"
-    >
+    <MobileSidebar :is-open="isMobileSidebarOpen" @toggle="isMobileSidebarOpen = !isMobileSidebarOpen">
       <template #links>
         <li>
           <RouterLink :to="{ name: 'app' }">
@@ -96,18 +86,9 @@ watch(
           </RouterLink>
         </li>
         <li>
-          <a
-            :class="[activeMobileSubsidebar === 'movements' && 'is-active']"
-            data-content="Hareketler"
-            tabindex="0"
-            @keydown.space.prevent="switchSidebar('movements')"
-            @click="switchSidebar('movements')"
-          >
-            <i
-              aria-hidden="true"
-              class="iconify sidebar-svg"
-              data-icon="feather:sliders"
-            ></i>
+          <a :class="[activeMobileSubsidebar === 'movements' && 'is-active']" data-content="Hareketler" tabindex="0"
+            @keydown.space.prevent="switchSidebar('movements')" @click="switchSidebar('movements')">
+            <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:sliders"></i>
           </a>
         </li>
       </template>
@@ -123,67 +104,38 @@ watch(
 
     <!-- Mobile subsidebar links -->
     <Transition name="slide-x">
-      <DefinitionsMobileSubsidebar
-        v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'dashboard'"
-      />
+      <DefinitionsMobileSubsidebar v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'dashboard'" />
     </Transition>
 
     <Transition name="slide-x">
-      <MovementsMobileSubsidebar
-        v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'movements'"
-      />
+      <MovementsMobileSubsidebar v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'movements'" />
     </Transition>
 
     <Transition name="slide-x">
-      <ReportsMobileSubsidebar
-        v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'reports'"
-      />
+      <ReportsMobileSubsidebar v-if="isMobileSidebarOpen && activeMobileSubsidebar === 'reports'" />
     </Transition>
 
     <Sidebar :theme="props.theme" :is-open="isDesktopSidebarOpen" class="no-print">
       <template #links>
         <!-- Dashboards -->
         <li>
-          <a
-            :class="[activeMobileSubsidebar === 'dashboard' && 'is-active']"
-            data-content="Tanımlar"
-            tabindex="0"
-            @keydown.space.prevent="switchSidebar('dashboard')"
-            @click="switchSidebar('dashboard')"
-          >
+          <a :class="[activeMobileSubsidebar === 'dashboard' && 'is-active']" data-content="Tanımlar" tabindex="0"
+            @keydown.space.prevent="switchSidebar('dashboard')" @click="switchSidebar('dashboard')">
             <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:box"></i>
             <p>{{ getExpression('Definitions') }}</p>
           </a>
         </li>
         <li>
-          <a
-            :class="[activeMobileSubsidebar === 'movements' && 'is-active']"
-            data-content="Hareketler"
-            tabindex="0"
-            @keydown.space.prevent="switchSidebar('movements')"
-            @click="switchSidebar('movements')"
-          >
-            <i
-              aria-hidden="true"
-              class="iconify sidebar-svg"
-              data-icon="feather:sliders"
-            ></i>
+          <a :class="[activeMobileSubsidebar === 'movements' && 'is-active']" data-content="Hareketler" tabindex="0"
+            @keydown.space.prevent="switchSidebar('movements')" @click="switchSidebar('movements')">
+            <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:sliders"></i>
             <p>{{ getExpression('Actions') }}</p>
           </a>
         </li>
         <li>
-          <a
-            :class="[activeMobileSubsidebar === 'reports' && 'is-active']"
-            data-content="Raporlar"
-            tabindex="0"
-            @keydown.space.prevent="switchSidebar('reports')"
-            @click="switchSidebar('reports')"
-          >
-            <i
-              aria-hidden="true"
-              class="iconify sidebar-svg"
-              data-icon="feather:pie-chart"
-            ></i>
+          <a :class="[activeMobileSubsidebar === 'reports' && 'is-active']" data-content="Raporlar" tabindex="0"
+            @keydown.space.prevent="switchSidebar('reports')" @click="switchSidebar('reports')">
+            <i aria-hidden="true" class="iconify sidebar-svg" data-icon="feather:pie-chart"></i>
             <p>Raporlar</p>
           </a>
         </li>
@@ -207,24 +159,18 @@ watch(
     </Sidebar>
 
     <Transition name="slide-x">
-      <DefinitionsSubsidebar
-        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'dashboard'"
-        @close="isDesktopSidebarOpen = false"
-      />
+      <DefinitionsSubsidebar v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'dashboard'"
+        @close="isDesktopSidebarOpen = false" />
     </Transition>
 
     <Transition name="slide-x">
-      <MovementsSubsidebar
-        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'movements'"
-        @close="isDesktopSidebarOpen = false"
-      />
+      <MovementsSubsidebar v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'movements'"
+        @close="isDesktopSidebarOpen = false" />
     </Transition>
 
     <Transition name="slide-x">
-      <ReportsSubsidebar
-        v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'reports'"
-        @close="isDesktopSidebarOpen = false"
-      />
+      <ReportsSubsidebar v-if="isDesktopSidebarOpen && activeMobileSubsidebar === 'reports'"
+        @close="isDesktopSidebarOpen = false" />
     </Transition>
 
     <!-- <Transition name="slide-x">
@@ -235,6 +181,7 @@ watch(
     </Transition> -->
 
     <LanguagesPanel />
+    <NotificationsPanel />
 
     <VViewWrapper>
       <VPageContentWrapper>
@@ -244,12 +191,9 @@ watch(
         <VPageContent v-else class="is-relative">
           <div class="page-title has-text-centered">
             <!-- Sidebar Trigger -->
-            <div
-              class="vuero-hamburger nav-trigger push-resize"
-              tabindex="0"
+            <div class="vuero-hamburger nav-trigger push-resize" tabindex="0"
               @keydown.space.prevent="isDesktopSidebarOpen = !isDesktopSidebarOpen"
-              @click="isDesktopSidebarOpen = !isDesktopSidebarOpen"
-            >
+              @click="isDesktopSidebarOpen = !isDesktopSidebarOpen">
               <span class="menu-toggle has-chevron">
                 <span :class="[isDesktopSidebarOpen && 'active']" class="icon-box-toggle">
                   <span class="rotate">

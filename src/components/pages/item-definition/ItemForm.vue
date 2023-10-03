@@ -14,7 +14,7 @@ const props = defineProps({
   },
 })
 
-const { getExpression } = useUserSession()
+const { getExpression, hasAuth } = useUserSession()
 const router = useRouter()
 const helpers = useHelpers()
 const api = useApi()
@@ -83,7 +83,7 @@ const bindModel = async () => {
     categories.value = (await api.get('ItemCategory')).data
     unitTypes.value = (await api.get('UnitType')).data
     await updateGroupList(modelObject.value.itemCategoryId)
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const updateCategoryList = async () => {
@@ -117,7 +117,7 @@ const updateGroupList = async (categoryId: any) => {
     try {
       const relatedGroups = await api.get('ItemCategory/' + categoryId + '/Groups')
       groups.value = relatedGroups.data
-    } catch (error) {}
+    } catch (error) { }
   } else groups.value = []
 }
 
@@ -188,18 +188,13 @@ const dlgItemGroupSaved = async (itemGroupId) => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'item-definition' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'item-definition' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('Items', 'Write')" color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton v-if="hasAuth('Items', 'Delete')" color="danger" icon="feather:trash" raised @click="deleteModel">
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -221,13 +216,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('ItemCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.itemCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.itemCode" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -235,56 +224,27 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('ItemName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.itemName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.itemName" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-6">
                   <label class="expanded-label">{{ getExpression('Category') }}</label>
                   <VField addons>
-                    <Multiselect
-                      v-model="modelObject.itemCategoryId"
-                      :value-prop="'id'"
-                      :label="'itemCategoryName'"
-                      placeholder=""
-                      :searchable="true"
-                      :options="categories"
-                      @change="onChangeCategory"
-                    />
+                    <Multiselect v-model="modelObject.itemCategoryId" :value-prop="'id'" :label="'itemCategoryName'"
+                      placeholder="" :searchable="true" :options="categories" @change="onChangeCategory" />
                     <VControl>
-                      <VButton
-                        :color="'info'"
-                        :raised="true"
-                        icon="feather:plus"
-                        @click="newItemCategory"
-                      ></VButton>
+                      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="newItemCategory"></VButton>
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-6">
                   <label class="expanded-label">{{ getExpression('Group') }}</label>
                   <VField addons>
-                    <Multiselect
-                      v-model="modelObject.itemGroupId"
-                      :value-prop="'id'"
-                      :label="'itemGroupName'"
-                      placeholder=""
-                      :searchable="true"
-                      :options="groups"
-                    />
+                    <Multiselect v-model="modelObject.itemGroupId" :value-prop="'id'" :label="'itemGroupName'"
+                      placeholder="" :searchable="true" :options="groups" />
                     <VControl>
-                      <VButton
-                        :color="'info'"
-                        :raised="true"
-                        icon="feather:plus"
-                        @click="newItemGroup"
-                      ></VButton>
+                      <VButton :color="'info'" :raised="true" icon="feather:plus" @click="newItemGroup"></VButton>
                     </VControl>
                   </VField>
                 </div>
@@ -307,13 +267,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('Explanation') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.explanation"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.explanation" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -321,14 +275,8 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>Logo</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        type="file"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                        accept="image/*"
-                        @change="onIconSelected"
-                      />
+                      <input type="file" class="input" placeholder="" autocomplete="" accept="image/*"
+                        @change="onIconSelected" />
                       <p v-if="modelObject.itemImage && modelObject.itemImage.length > 0">
                         <img alt="" :src="modelObject.itemImage" width="150" />
                       </p>
@@ -351,13 +299,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('Price') }}-1</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.price1"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.price1" type="number" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -365,13 +307,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('Price') }}-2</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.price2"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.price2" type="number" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -379,13 +315,8 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('MinimumStock') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.criticalMin"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.criticalMin" type="number" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -393,13 +324,8 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('MaximumStock') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.criticalMax"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.criticalMax" type="number" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -407,13 +333,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('VisualOrder') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.viewOrder"
-                        type="number"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.viewOrder" type="number" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -421,13 +341,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('Barcode') }}-1</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.barcode1"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.barcode1" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -435,13 +349,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
                   <VField>
                     <label>{{ getExpression('Barcode') }}-2</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.barcode2"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.barcode2" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -453,21 +361,10 @@ const dlgItemGroupSaved = async (itemGroupId) => {
     </div>
   </form>
 
-  <ItemCategoryDialog
-    v-if="dialogItemCategory"
-    :id="0"
-    :visible="dialogItemCategory"
-    @close="dlgItemCategoryClosed"
-    @on-saved="dlgItemCategorySaved"
-  />
-  <ItemGroupDialog
-    v-if="dialogItemGroup"
-    :id="0"
-    :category-id="modelObject.itemCategoryId ?? 0"
-    :visible="dialogItemGroup"
-    @close="dlgItemGroupClosed"
-    @on-saved="dlgItemGroupSaved"
-  />
+  <ItemCategoryDialog v-if="dialogItemCategory" :id="0" :visible="dialogItemCategory" @close="dlgItemCategoryClosed"
+    @on-saved="dlgItemCategorySaved" />
+  <ItemGroupDialog v-if="dialogItemGroup" :id="0" :category-id="modelObject.itemCategoryId ?? 0"
+    :visible="dialogItemGroup" @close="dlgItemGroupClosed" @on-saved="dlgItemGroupSaved" />
 </template>
 
 <style lang="scss">
@@ -548,6 +445,7 @@ const dlgItemGroupSaved = async (itemGroupId) => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

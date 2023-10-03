@@ -19,7 +19,7 @@ const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
 const { getExpression } = useUserSession()
-const { isDealer } = userSession
+const { isDealer, hasAuth } = userSession
 
 const modelObject = ref({
   id: 0,
@@ -76,7 +76,7 @@ const bindModel = async () => {
       modelObject.value.plantId = userSession.user.FactoryId
 
     await updateCategoryList()
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
@@ -103,7 +103,7 @@ const updateGroupList = async (categoryId: any) => {
     try {
       const relatedGroups = await api.get('ItemCategory/' + categoryId + '/Groups')
       itemGroups.value = relatedGroups.data
-    } catch (error) {}
+    } catch (error) { }
   } else itemGroups.value = []
 }
 
@@ -134,7 +134,7 @@ const deleteHotCategory = (item: any) => {
 
       newHotCategory()
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveHotCategory = () => {
@@ -154,7 +154,7 @@ const saveHotCategory = () => {
       )
       hotSalesModel.value.itemText = fItem?.itemCategoryName
     }
-  } catch (error) {}
+  } catch (error) { }
 
   if (modelObject.value.hotSalesCategories.indexOf(hotSalesModel.value) <= -1) {
     if (
@@ -207,15 +207,11 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'warehouse' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'warehouse' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('Warehouses', 'Write')" color="primary" icon="feather:save" raised
+                @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
             </div>
@@ -237,13 +233,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('WarehouseCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.warehouseCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.warehouseCode" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -251,13 +242,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('WarehouseName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.warehouseName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.warehouseName" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -265,14 +251,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="plants"
-                      />
+                      <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'" placeholder=""
+                        :searchable="true" :options="plants" />
                     </VControl>
                   </VField>
                 </div>
@@ -294,15 +274,9 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Category') }}</label>
                           <VControl>
-                            <Multiselect
-                              v-model="hotSalesModel.itemCategoryId"
-                              :value-prop="'id'"
-                              :label="'itemCategoryName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="itemCategories"
-                              @change="onChangeItemCategory"
-                            />
+                            <Multiselect v-model="hotSalesModel.itemCategoryId" :value-prop="'id'"
+                              :label="'itemCategoryName'" placeholder="" :searchable="true" :options="itemCategories"
+                              @change="onChangeItemCategory" />
                           </VControl>
                         </VField>
                       </div>
@@ -310,15 +284,8 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Group') }}</label>
                           <VControl>
-                            <Multiselect
-                              v-model="hotSalesModel.itemGroupId"
-                              :value-prop="'id'"
-                              :label="'itemGroupName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="itemGroups"
-                              @change="onChangeItemGroup"
-                            />
+                            <Multiselect v-model="hotSalesModel.itemGroupId" :value-prop="'id'" :label="'itemGroupName'"
+                              placeholder="" :searchable="true" :options="itemGroups" @change="onChangeItemGroup" />
                           </VControl>
                         </VField>
                       </div>
@@ -326,34 +293,17 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Item') }}</label>
                           <VControl>
-                            <Multiselect
-                              v-model="hotSalesModel.itemId"
-                              :value-prop="'id'"
-                              :label="'itemName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="items"
-                            />
+                            <Multiselect v-model="hotSalesModel.itemId" :value-prop="'id'" :label="'itemName'"
+                              placeholder="" :searchable="true" :options="items" />
                           </VControl>
                         </VField>
                       </div>
                       <div class="column is-6">
                         <div class="flex mt-5">
-                          <VButton
-                            color="primary"
-                            icon="feather:save"
-                            raised
-                            @click="saveHotCategory"
-                          >
+                          <VButton color="primary" icon="feather:save" raised @click="saveHotCategory">
                             {{ getExpression('Save') }}
                           </VButton>
-                          <VButton
-                            class="ml-2"
-                            color="info"
-                            icon="feather:plus"
-                            raised
-                            @click="newHotCategory"
-                          >
+                          <VButton class="ml-2" color="info" icon="feather:plus" raised @click="newHotCategory">
                             {{ getExpression('New') }}
                           </VButton>
                         </div>
@@ -361,46 +311,26 @@ const isStuck = computed(() => {
                       <div class="column is-12">
                         <div class="flex-list-wrapper flex-list-v3">
                           <div class="tab-content is-active">
-                            <VFlexTable
-                              :data="modelObject.hotSalesCategories"
-                              :columns="columns"
-                              clickable
-                              compact
-                              separators
-                            >
+                            <VFlexTable :data="modelObject.hotSalesCategories" :columns="columns" clickable compact
+                              separators>
                               <template #body>
-                                <TransitionGroup
-                                  name="list"
-                                  tag="div"
-                                  class="flex-list-inner"
-                                >
+                                <TransitionGroup name="list" tag="div" class="flex-list-inner">
                                   <!--Table item-->
-                                  <div
-                                    v-for="item in modelObject.hotSalesCategories"
-                                    :key="item"
-                                    class="flex-table-item"
-                                    :class="{ 'selected-row': item == hotSalesModel }"
-                                  >
+                                  <div v-for="item in modelObject.hotSalesCategories" :key="item" class="flex-table-item"
+                                    :class="{ 'selected-row': item == hotSalesModel }">
                                     <VFlexTableCell>
-                                      <span class=""
-                                        ><b>{{ item.itemText }}</b></span
-                                      >
+                                      <span class=""><b>{{ item.itemText }}</b></span>
                                     </VFlexTableCell>
                                     <VFlexTableCell :columns="{ align: 'end' }">
                                       <button
                                         class="button v-button has-dot dark-outlined is-info mx-1 is-pushed-mobile py-0 px-2"
-                                        @click="hotSalesModel = item"
-                                      >
+                                        @click="hotSalesModel = item">
                                         <i aria-hidden="true" class="fas fa-edit dot"></i>
                                       </button>
                                       <button
                                         class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                        @click="deleteHotCategory(item)"
-                                      >
-                                        <i
-                                          aria-hidden="true"
-                                          class="fas fa-trash dot"
-                                        ></i>
+                                        @click="deleteHotCategory(item)">
+                                        <i aria-hidden="true" class="fas fa-trash dot"></i>
                                       </button>
                                     </VFlexTableCell>
                                   </div>
@@ -505,6 +435,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

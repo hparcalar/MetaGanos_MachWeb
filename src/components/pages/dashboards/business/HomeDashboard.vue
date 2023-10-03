@@ -122,7 +122,7 @@ const getStats = async () => {
           }
         })
       }
-    } catch (error) {}
+    } catch (error) { }
   }
 
   isStatsLoading.value = false
@@ -143,7 +143,7 @@ onMounted(async () => {
       selectedPlants.value = [userData.value.FactoryId]
 
     await getStats()
-  } catch (error) {}
+  } catch (error) { }
 })
 </script>
 
@@ -154,17 +154,8 @@ onMounted(async () => {
         <VField>
           <label>{{ getExpression('Factory') }}</label>
           <VControl>
-            <Multiselect
-              v-model="selectedPlants"
-              mode="tags"
-              class="is-stacked"
-              :value-prop="'id'"
-              :label="'plantName'"
-              placeholder=""
-              :searchable="true"
-              :options="plants"
-              @change="onChangePlant"
-            />
+            <Multiselect v-model="selectedPlants" mode="tags" class="is-stacked" :value-prop="'id'" :label="'plantName'"
+              placeholder="" :searchable="true" :options="plants" @change="onChangePlant" />
           </VControl>
         </VField>
       </div>
@@ -183,10 +174,7 @@ onMounted(async () => {
               </div>
               <div class="tile-body">
                 <VLoader :active="isStatsLoading">
-                  <span
-                    v-show="overallStats && overallStats.mostConsumedItemCount"
-                    class="dark-inverted"
-                  >
+                  <span v-show="overallStats && overallStats.mostConsumedItemCount" class="dark-inverted">
                     {{ overallStats?.mostConsumedItemCount }}
                   </span>
                 </VLoader>
@@ -265,15 +253,9 @@ onMounted(async () => {
           <!-- User Card -->
           <div class="column is-3">
             <!--Widget-->
-            <ContactWidget
-              picture="/images/avatars/placeholder.jpg"
-              :username="userData.name"
+            <ContactWidget picture="/images/avatars/placeholder.jpg" :username="userData.name"
               :company="userData?.AuthType == 'Dealer' ? 'Bayi' : userData?.PlantName"
-              :position="userData?.AuthType == 'Dealer' ? '' : 'Fabrika Yetkilisi'"
-              squared
-              reversed
-              straight
-            />
+              :position="userData?.AuthType == 'Dealer' ? '' : 'Fabrika Yetkilisi'" squared reversed straight />
           </div>
 
           <!--Category Stats-->
@@ -284,13 +266,8 @@ onMounted(async () => {
                   {{ getExpression('ConsumptionsBasedCategory') }}
                 </h3>
               </div>
-              <ApexChart
-                id="profit-chart"
-                :height="250"
-                :type="barOptions.chart.type"
-                :series="series"
-                :options="barOptions"
-              >
+              <ApexChart id="profit-chart" :height="250" :type="barOptions.chart.type" :series="series"
+                :options="barOptions">
               </ApexChart>
             </div>
           </div>
@@ -299,38 +276,24 @@ onMounted(async () => {
     </div>
     <div class="card-grid card-grid-v3">
       <!--Card Grid v3-->
-      <div
-        name="list"
-        tag="div"
-        class="columns is-multiline is-flex-tablet-p is-half-tablet-p"
-      >
+      <div name="list" tag="div" class="columns is-multiline is-flex-tablet-p is-half-tablet-p">
         <!-- Factories Card -->
         <div v-if="isDealer" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/factory.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/factory.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Factories') }}</h3>
             <p>{{ totals.plantCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('FactoryDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('plant')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('plant')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('plant-slug', { slug: '0' })"
-              >
+              <button class="button v-button is-raised is-primary" @click="goToRoute('plant-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -343,31 +306,21 @@ onMounted(async () => {
         <!--Machines Card-->
         <div v-if="hasAuth('Machines', 'Read')" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/automat.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/automat.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Machines') }}</h3>
             <p>{{ totals.machineCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('MachineDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('machine')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('machine')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                v-if="hasAuth('Machines', 'Write')"
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('machine-slug', { slug: '0' })"
-              >
+              <button v-if="hasAuth('Machines', 'Write')" class="button v-button is-raised is-primary"
+                @click="goToRoute('machine-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -380,31 +333,21 @@ onMounted(async () => {
         <!-- Departments Card -->
         <div v-if="hasAuth('Departments', 'Read')" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/department.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/department.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Departments') }}</h3>
             <p>{{ totals.departmentCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('DepartmentDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('department')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('department')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                v-if="hasAuth('Departments', 'Write')"
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('department-slug', { slug: '0' })"
-              >
+              <button v-if="hasAuth('Departments', 'Write')" class="button v-button is-raised is-primary"
+                @click="goToRoute('department-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -417,31 +360,21 @@ onMounted(async () => {
         <!-- Employees Card -->
         <div v-if="hasAuth('Employees', 'Read')" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/employee.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/employee.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Employees') }}</h3>
             <p>{{ totals.employeeCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('EmployeeDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('employee')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('employee')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                v-if="hasAuth('Employees', 'Write')"
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('employee-slug', { slug: '0' })"
-              >
+              <button v-if="hasAuth('Employees', 'Write')" class="button v-button is-raised is-primary"
+                @click="goToRoute('employee-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -454,30 +387,20 @@ onMounted(async () => {
         <!-- Officers Card -->
         <div v-if="isDealer" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/officer.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/officer.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Officers') }}</h3>
             <p>{{ totals.officerCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('OfficerDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('officer')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('officer')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('officer-slug', { slug: '0' })"
-              >
+              <button class="button v-button is-raised is-primary" @click="goToRoute('officer-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -490,31 +413,21 @@ onMounted(async () => {
         <!-- Items Card -->
         <div v-if="hasAuth('Items', 'Read')" class="column is-4">
           <div class="card-grid-item">
-            <VAvatar
-              size="large"
-              :picture="'/assets/item.png?format=webp'"
-              squared
-            ></VAvatar>
+            <VAvatar size="large" :picture="'/assets/item.png?format=webp'" squared></VAvatar>
             <h3 class="dark-inverted">{{ userSession.getExpression('Items') }}</h3>
             <p>{{ totals.itemCount }} {{ userSession.getExpression('Count') }}</p>
             <div class="description">
               <p>{{ userSession.getExpression('ItemDefinitions') }}</p>
             </div>
             <div class="buttons">
-              <button
-                class="button v-button is-outlined is-primary"
-                @click="goToRoute('item-definition')"
-              >
+              <button class="button v-button is-outlined is-primary" @click="goToRoute('item-definition')">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:list"></i>
                 </span>
                 <span>{{ userSession.getExpression('List') }}</span>
               </button>
-              <button
-                v-if="hasAuth('Items', 'Write')"
-                class="button v-button is-raised is-primary"
-                @click="goToRoute('item-definition-slug', { slug: '0' })"
-              >
+              <button v-if="hasAuth('Items', 'Write')" class="button v-button is-raised is-primary"
+                @click="goToRoute('item-definition-slug', { slug: '0' })">
                 <span class="icon">
                   <i aria-hidden="true" class="iconify" data-icon="feather:plus"></i>
                 </span>
@@ -558,7 +471,7 @@ onMounted(async () => {
       transform: scale(0.85);
     }
 
-    > .v-avatar {
+    >.v-avatar {
       display: block;
       margin: 0 auto 10px;
       border-radius: 16px;
@@ -575,14 +488,14 @@ onMounted(async () => {
       }
     }
 
-    > h3 {
+    >h3 {
       font-size: 1.1rem;
       font-weight: 600;
       font-family: var(--font-alt);
       color: var(--dark-text);
     }
 
-    > p {
+    >p {
       font-size: 0.9rem;
     }
 
@@ -625,7 +538,7 @@ onMounted(async () => {
 }
 
 @media only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
-  .card-grid-v3 .card-grid-item > h3 {
+  .card-grid-v3 .card-grid-item>h3 {
     font-size: 1rem;
   }
 }
@@ -824,6 +737,7 @@ onMounted(async () => {
 
 .is-dark {
   .analytics-dashboard {
+
     .dashboard-tile,
     .dashboard-card {
       @include vuero-card--dark;

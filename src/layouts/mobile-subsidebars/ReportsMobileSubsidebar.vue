@@ -22,6 +22,9 @@ const { hasAuth, isDealer } = userSession
         <li v-if="hasAuth('ConsumptionReport', 'Read')">
           <RouterLink :to="{ name: 'warehouse-manager' }"> Depo Durum Raporu </RouterLink>
         </li>
+        <li v-if="hasAuth('ConsumptionReport', 'Read')">
+          <RouterLink :to="{ name: 'report-return' }"> İade Raporu </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

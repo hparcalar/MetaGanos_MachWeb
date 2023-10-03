@@ -118,7 +118,7 @@ const bindModel = async () => {
     try {
       if (!modelObject.value.plantId || modelObject.value.plantId == 0)
         modelObject.value.plantId = user.FactoryId
-    } catch (error) {}
+    } catch (error) { }
 
     await bindCategories()
     await bindMachineTemplates()
@@ -127,7 +127,7 @@ const bindModel = async () => {
     if (modelObject.value.id > 0 && modelObject.value.startVideoPath != null) {
       bindVideo()
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindVideo = async () => {
@@ -141,7 +141,7 @@ const bindCategories = async () => {
     ).data
 
     items.value = (await api.get('Item')).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindWarehouses = async () => {
@@ -149,13 +149,13 @@ const bindWarehouses = async () => {
     warehouses.value = (
       await api.get('Plant/' + modelObject.value.plantId + '/Warehouses')
     ).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const bindMachineTemplates = async () => {
   try {
     machineTemplates.value = (await api.get('MachineTemplate')).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
@@ -343,9 +343,9 @@ const emptySpiral = async () => {
       const postResult = (
         await api.get(
           'Machine/' +
-            modelObject.value.id +
-            '/EmptySpiral/' +
-            spiralModel.value.posOrders,
+          modelObject.value.id +
+          '/EmptySpiral/' +
+          spiralModel.value.posOrders,
           {}
         )
       ).data
@@ -423,7 +423,7 @@ const fullAllSpirals = async () => {
 // #endregion
 
 // #region SPIRAL CONSUMING REPORT FUNCTIONS
-const showSpiralConsumeDialog = () => {}
+const showSpiralConsumeDialog = () => { }
 // #endregion
 
 const onVideoSelected = async (event: any) => {
@@ -543,30 +543,14 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                v-if="hasAuth('LoadMachine', 'Write')"
-                color="info"
-                icon="feather:upload"
-                raised
-                @click="fullAllSpirals"
-              >
+              <VButton v-if="hasAuth('LoadMachine', 'Write')" color="info" icon="feather:upload" raised
+                @click="fullAllSpirals">
                 {{ getExpression('FillMachine') }}
               </VButton>
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'machine' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'machine' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton
-                v-if="hasAuth('Machines', 'Write')"
-                color="primary"
-                icon="feather:save"
-                raised
-                @click="saveModel"
-              >
+              <VButton v-if="hasAuth('Machines', 'Write')" color="primary" icon="feather:save" raised @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
             </div>
@@ -587,13 +571,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('MachineCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.machineCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.machineCode" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -601,13 +579,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('MachineName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.machineName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.machineName" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -615,13 +587,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('InventoryCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.inventoryCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.inventoryCode" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -629,13 +596,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Barcode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.barcode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.barcode" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -643,34 +604,20 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('SpecialCustomer') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.specialCustomer"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.specialCustomer" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <VDatePicker
-                      v-model="modelObject.productionDate"
-                      :masks="{ input: 'DD.MM.YYYY' }"
-                      trim-weeks
-                    >
+                    <VDatePicker v-model="modelObject.productionDate" :masks="{ input: 'DD.MM.YYYY' }" trim-weeks>
                       <template #default="{ inputValue, inputEvents }">
                         <VField>
                           <label>{{ getExpression('ProductionDate') }}</label>
                           <VControl icon="feather:calendar">
-                            <input
-                              class="input"
-                              type="text"
-                              placeholder="Bir tarih seçin"
-                              :value="inputValue"
-                              v-on="inputEvents"
-                            />
+                            <input class="input" type="text" placeholder="Bir tarih seçin" :value="inputValue"
+                              v-on="inputEvents" />
                           </VControl>
                         </VField>
                       </template>
@@ -679,22 +626,12 @@ const isStuck = computed(() => {
                 </div>
                 <div class="column is-6">
                   <VField>
-                    <VDatePicker
-                      v-model="modelObject.inventoryEntryDate"
-                      :masks="{ input: 'DD.MM.YYYY' }"
-                      trim-weeks
-                    >
+                    <VDatePicker v-model="modelObject.inventoryEntryDate" :masks="{ input: 'DD.MM.YYYY' }" trim-weeks>
                       <template #default="{ inputValue, inputEvents }">
                         <VField>
                           <label>{{ getExpression('InventoryDate') }}</label>
                           <VControl icon="feather:calendar">
-                            <input
-                              class="input"
-                              type="text"
-                              placeholder=""
-                              :value="inputValue"
-                              v-on="inputEvents"
-                            />
+                            <input class="input" type="text" placeholder="" :value="inputValue" v-on="inputEvents" />
                           </VControl>
                         </VField>
                       </template>
@@ -705,13 +642,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Brand') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.brand"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.brand" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -719,13 +650,7 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Model') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.brandModel"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.brandModel" type="text" class="input" placeholder="" autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -733,21 +658,12 @@ const isStuck = computed(() => {
                   <VField>
                     <label>Video</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        type="file"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                        accept="video/*"
-                        @change="onVideoSelected"
-                      />
+                      <input type="file" class="input" placeholder="" autocomplete="" accept="video/*"
+                        @change="onVideoSelected" />
                       <p v-if="liveVideoStream != null">
                         <video controls>
-                          <source
-                            :src="
-                              getApiBaseUrl() + '/Machine/' + modelObject.id + '/Video'
-                            "
-                          />
+                          <source :src="getApiBaseUrl() + '/Machine/' + modelObject.id + '/Video'
+                            " />
                         </video>
                       </p>
                     </VControl>
@@ -771,13 +687,8 @@ const isStuck = computed(() => {
                       <VField>
                         <label>{{ getExpression('Region') }}</label>
                         <VControl icon="feather:terminal">
-                          <input
-                            v-model="modelObject.district"
-                            type="text"
-                            class="input"
-                            placeholder=""
-                            autocomplete=""
-                          />
+                          <input v-model="modelObject.district" type="text" class="input" placeholder=""
+                            autocomplete="" />
                         </VControl>
                       </VField>
                     </div>
@@ -785,13 +696,7 @@ const isStuck = computed(() => {
                       <VField>
                         <label>{{ getExpression('City') }}</label>
                         <VControl icon="feather:terminal">
-                          <input
-                            v-model="modelObject.city"
-                            type="text"
-                            class="input"
-                            placeholder=""
-                            autocomplete=""
-                          />
+                          <input v-model="modelObject.city" type="text" class="input" placeholder="" autocomplete="" />
                         </VControl>
                       </VField>
                     </div>
@@ -799,15 +704,8 @@ const isStuck = computed(() => {
                       <VField>
                         <label>{{ getExpression('Factory') }}</label>
                         <VControl>
-                          <Multiselect
-                            v-model="modelObject.plantId"
-                            :value-prop="'id'"
-                            :label="'plantName'"
-                            placeholder=""
-                            :searchable="true"
-                            :options="plants"
-                            @change="onChangePlant"
-                          />
+                          <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'"
+                            placeholder="" :searchable="true" :options="plants" @change="onChangePlant" />
                         </VControl>
                       </VField>
                     </div>
@@ -818,41 +716,27 @@ const isStuck = computed(() => {
               <div class="column is-12">
                 <div class="columns is-multiline">
                   <div class="column is-6">
-                    <VSwitchBlock
-                      v-show="hasAuth('Machines', 'Write')"
-                      v-model="modelObject.isAutoConsumption"
-                      class="ml-2"
-                      :label="'Otomatik Depo Sarfı'"
-                      color="success"
-                    />
+                    <VSwitchBlock v-show="hasAuth('Machines', 'Write')" v-model="modelObject.isAutoConsumption"
+                      class="ml-2" :label="'Otomatik Depo Sarfı'" color="success" />
                   </div>
                   <div v-if="modelObject.isAutoConsumption" class="column is-6">
                     <VField>
                       <label>Depo</label>
                       <VControl>
-                        <Multiselect
-                          v-model="modelObject.autoConsumptionWarehouseId"
-                          :value-prop="'id'"
-                          :label="'warehouseName'"
-                          placeholder=""
-                          :searchable="true"
-                          :options="warehouses"
-                        />
+                        <Multiselect v-model="modelObject.autoConsumptionWarehouseId" :value-prop="'id'"
+                          :label="'warehouseName'" placeholder="" :searchable="true" :options="warehouses" />
                       </VControl>
                     </VField>
                   </div>
                 </div>
               </div>
 
-              <div
-                class="column is-12"
-                style="
+              <div class="column is-12" style="
                   display: flex;
                   align-items: stretch;
                   min-height: 200px;
                   margin-left: 15px;
-                "
-              >
+                ">
                 <Transition name="slide-up" mode="out-in">
                   <div class="form-fieldset hk-slide-content">
                     <div class="fieldset-heading">
@@ -865,26 +749,14 @@ const isStuck = computed(() => {
                         <VField>
                           <label>Otomat Şablonu</label>
                           <VControl>
-                            <Multiselect
-                              v-model="selectedTemplateId"
-                              :value-prop="'id'"
-                              :label="'templateName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="machineTemplates"
-                            />
+                            <Multiselect v-model="selectedTemplateId" :value-prop="'id'" :label="'templateName'"
+                              placeholder="" :searchable="true" :options="machineTemplates" />
                           </VControl>
                         </VField>
                       </div>
                       <div class="column is-6">
-                        <VButton
-                          v-if="hasAuth('Machines', 'Write')"
-                          style="margin-top: 20px"
-                          color="info"
-                          icon="feather:check"
-                          raised
-                          @click="applyTemplateForMachine"
-                        >
+                        <VButton v-if="hasAuth('Machines', 'Write')" style="margin-top: 20px" color="info"
+                          icon="feather:check" raised @click="applyTemplateForMachine">
                           Şablon Uygula
                         </VButton>
                       </div>
@@ -892,14 +764,8 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Row') }}</label>
                           <VControl icon="feather:terminal">
-                            <input
-                              v-model="modelObject.rows"
-                              type="number"
-                              class="input"
-                              placeholder=""
-                              autocomplete=""
-                              :readonly="!hasAuth('Machines', 'Write')"
-                            />
+                            <input v-model="modelObject.rows" type="number" class="input" placeholder="" autocomplete=""
+                              :readonly="!hasAuth('Machines', 'Write')" />
                           </VControl>
                         </VField>
                       </div>
@@ -907,14 +773,8 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Column') }}</label>
                           <VControl icon="feather:terminal">
-                            <input
-                              v-model="modelObject.cols"
-                              type="number"
-                              class="input"
-                              placeholder=""
-                              autocomplete=""
-                              :readonly="!hasAuth('Machines', 'Write')"
-                            />
+                            <input v-model="modelObject.cols" type="number" class="input" placeholder="" autocomplete=""
+                              :readonly="!hasAuth('Machines', 'Write')" />
                           </VControl>
                         </VField>
                       </div>
@@ -925,70 +785,42 @@ const isStuck = computed(() => {
             </div>
           </div>
         </div>
-        <VTabs
-          :selected="selectedTabPage"
-          :tabs="[
-            { label: 'Otomat Görünümü', value: 'spirals' },
-            { label: 'Liste Görünümü', value: 'listOfSpiral' },
-          ]"
-          @active-value-changed="onTabPageChanged"
-        >
+        <VTabs :selected="selectedTabPage" :tabs="[
+          { label: 'Otomat Görünümü', value: 'spirals' },
+          { label: 'Liste Görünümü', value: 'listOfSpiral' },
+        ]" @active-value-changed="onTabPageChanged">
           <template #tab="{ activeValue }">
             <div v-if="activeValue === 'spirals'">
               <div v-if="modelObject.rows > 0 && modelObject.cols > 0">
                 <div v-for="r in reversedRows" :key="r" class="columns is-multiline">
-                  <div
-                    v-for="c in modelObject.cols"
-                    :key="c"
-                    class="column"
-                    :style="{
-                      width: 100 / modelObject.cols + '%',
-                      'text-align': 'center',
-                    }"
-                  >
-                    <VButton
-                      :color="
-                        isSpiralEnabled(getSpiralNo(r, c))
+                  <div v-for="c in modelObject.cols" :key="c" class="column" :style="{
+                    width: 100 / modelObject.cols + '%',
+                    'text-align': 'center',
+                  }">
+                    <VButton :color="parseInt(getSpiralQuantityInfo(getSpiralNo(r, c))) > 0
+                        ? isSpiralEnabled(getSpiralNo(r, c))
                           ? isSpiralInFault(getSpiralNo(r, c))
                             ? 'warning'
                             : 'info'
                           : 'danger'
-                      "
-                      :rounded="true"
-                      :outlined="
-                        isSpiralEnabled(getSpiralNo(r, c)) &&
-                        !isSpiralInFault(getSpiralNo(r, c))
-                      "
-                      :bold="true"
-                      :fullwidth="true"
-                      raised
-                      @click="showSpiralDetail($event, getSpiralNo(r, c))"
-                    >
+                        : 'danger'
+                      " :rounded="true" :outlined="isSpiralEnabled(getSpiralNo(r, c)) &&
+    !isSpiralInFault(getSpiralNo(r, c))
+    " :bold="true" :fullwidth="true" raised @click="showSpiralDetail($event, getSpiralNo(r, c))">
                       {{ getSpiralNo(r, c) }}
                       <p class="spiral-quantity-info">
                         {{ getSpiralQuantityInfo(getSpiralNo(r, c)) }}
                       </p>
-                      <div
-                        v-if="
-                          isSpiralDetailVisible && getSpiralNo(r, c) == selectedSpiralNo
-                        "
-                        id="spiralDialogForm"
-                        ref="spiralDialog"
-                        class="form-fieldset spiral-dialog-container"
-                        :style="{ left: spiralDialogX + 'px', top: spiralDialogY + 'px' }"
-                      >
+                      <div v-if="isSpiralDetailVisible && getSpiralNo(r, c) == selectedSpiralNo
+                        " id="spiralDialogForm" ref="spiralDialog" class="form-fieldset spiral-dialog-container"
+                        :style="{ left: spiralDialogX + 'px', top: spiralDialogY + 'px' }">
                         <div class="fieldset-heading">
                           <h4 class="spiral-header">Spiral: {{ selectedSpiralNo }}</h4>
-                          <h4
-                            v-show="
-                              spiralModel.activeQuantity && spiralModel.activeQuantity > 0
-                            "
-                            class="spiral-header mt-2 mb-2"
-                            style="
+                          <h4 v-show="spiralModel.activeQuantity && spiralModel.activeQuantity > 0
+                            " class="spiral-header mt-2 mb-2" style="
                               background-color: var(--placeholder);
                               color: var(--dark);
-                            "
-                          >
+                            ">
                             {{ spiralModel.itemName }}:
                             {{ spiralModel.activeQuantity }} adet
                           </h4>
@@ -1000,14 +832,8 @@ const isStuck = computed(() => {
                             <VField>
                               <label>Stok</label>
                               <VControl>
-                                <Multiselect
-                                  v-model="spiralModel.itemId"
-                                  :value-prop="'id'"
-                                  :label="'itemName'"
-                                  placeholder=""
-                                  :searchable="true"
-                                  :options="items"
-                                />
+                                <Multiselect v-model="spiralModel.itemId" :value-prop="'id'" :label="'itemName'"
+                                  placeholder="" :searchable="true" :options="items" />
                               </VControl>
                             </VField>
                           </div>
@@ -1015,42 +841,23 @@ const isStuck = computed(() => {
                             <VField>
                               <label>{{ getExpression('Capacity') }}</label>
                               <VControl icon="feather:terminal">
-                                <input
-                                  v-model="spiralModel.capacity"
-                                  type="number"
-                                  class="input"
-                                  placeholder=""
-                                  autocomplete=""
-                                />
+                                <input v-model="spiralModel.capacity" type="number" class="input" placeholder=""
+                                  autocomplete="" />
                               </VControl>
                             </VField>
                           </div>
                           <div class="column is-12">
                             <div class="buttons">
-                              <VButton
-                                icon="lnir lnir-arrow-left rem-100"
-                                light
-                                dark-outlined
-                                @click="isSpiralDetailVisible = false"
-                              >
+                              <VButton icon="lnir lnir-arrow-left rem-100" light dark-outlined
+                                @click="isSpiralDetailVisible = false">
                                 {{ getExpression('Back') }}
                               </VButton>
-                              <VButton
-                                v-show="hasAuth('LoadMachine', 'Write')"
-                                color="primary"
-                                icon="feather:upload"
-                                raised
-                                @click="showSpiralLoadDialog()"
-                              >
+                              <VButton v-show="hasAuth('LoadMachine', 'Write')" color="primary" icon="feather:upload"
+                                raised @click="showSpiralLoadDialog()">
                                 {{ getExpression('LoadMachine') }}
                               </VButton>
-                              <VButton
-                                v-show="hasAuth('LoadMachine', 'Write')"
-                                color="danger"
-                                icon="feather:trash"
-                                raised
-                                @click="emptySpiral()"
-                              >
+                              <VButton v-show="hasAuth('LoadMachine', 'Write')" color="danger" icon="feather:trash" raised
+                                @click="emptySpiral()">
                                 {{ getExpression('Empty') }}
                               </VButton>
                               <!-- <VButton
@@ -1061,20 +868,10 @@ const isStuck = computed(() => {
                                       >
                                         {{ getExpression('Consumptions') }}
                                       </VButton> -->
-                              <VSwitchBlock
-                                v-show="hasAuth('Machines', 'Write')"
-                                v-model="spiralModel.isEnabled"
-                                class="ml-2"
-                                :label="getExpression('Active')"
-                                color="success"
-                              />
-                              <VSwitchBlock
-                                v-show="hasAuth('Machines', 'Write')"
-                                v-model="spiralModel.isInFault"
-                                class="ml-2"
-                                :label="getExpression('Faulty')"
-                                color="warning"
-                              />
+                              <VSwitchBlock v-show="hasAuth('Machines', 'Write')" v-model="spiralModel.isEnabled"
+                                class="ml-2" :label="getExpression('Active')" color="success" />
+                              <VSwitchBlock v-show="hasAuth('Machines', 'Write')" v-model="spiralModel.isInFault"
+                                class="ml-2" :label="getExpression('Faulty')" color="warning" />
                             </div>
                           </div>
                         </div>
@@ -1086,47 +883,25 @@ const isStuck = computed(() => {
             </div>
             <div v-else-if="activeValue === 'listOfSpiral'">
               <div v-if="modelObject.rows > 0 && modelObject.cols > 0">
-                <VButton
-                  color="info"
-                  icon="feather:printer"
-                  raised
-                  style="margin-bottom: 15px"
-                  @click="printSpirals"
-                >
+                <VButton color="info" icon="feather:printer" raised style="margin-bottom: 15px" @click="printSpirals">
                   Yazdır
                 </VButton>
-                <div
-                  v-for="r in reversedRows"
-                  :key="r"
-                  class="columns is-multiline spiral-info-container"
-                >
-                  <div
-                    v-for="c in modelObject.cols"
-                    :key="c"
-                    class="column"
-                    :style="{
-                      width: 100 / modelObject.cols + '%',
-                      'text-align': 'center',
-                      padding: '2px',
-                    }"
-                  >
-                    <VButton
-                      :color="
-                        isSpiralEnabled(getSpiralNo(r, c))
+                <div v-for="r in reversedRows" :key="r" class="columns is-multiline spiral-info-container">
+                  <div v-for="c in modelObject.cols" :key="c" class="column" :style="{
+                    width: 100 / modelObject.cols + '%',
+                    'text-align': 'center',
+                    padding: '2px',
+                  }">
+                    <VButton :color="parseInt(getSpiralQuantityInfo(getSpiralNo(r, c))) > 0
+                        ? isSpiralEnabled(getSpiralNo(r, c))
                           ? isSpiralInFault(getSpiralNo(r, c))
                             ? 'warning'
                             : 'info'
                           : 'danger'
-                      "
-                      :outlined="
-                        isSpiralEnabled(getSpiralNo(r, c)) &&
-                        !isSpiralInFault(getSpiralNo(r, c))
-                      "
-                      :bold="true"
-                      :fullwidth="true"
-                      class="spiral-info-content"
-                      raised
-                    >
+                        : 'danger'
+                      " :outlined="isSpiralEnabled(getSpiralNo(r, c)) &&
+    !isSpiralInFault(getSpiralNo(r, c))
+    " :bold="true" :fullwidth="true" class="spiral-info-content" raised>
                       {{ getSpiralNo(r, c) }}
                       <div>{{ getSpiralItemInfo(getSpiralNo(r, c)) }}</div>
                     </VButton>
@@ -1140,18 +915,13 @@ const isStuck = computed(() => {
     </div>
   </form>
 
-  <LoadMachineSpiral
-    :item-category="{
-      itemCategoryId: spiralModel.itemCategoryId,
-      itemId: spiralModel.itemId,
-      itemName: spiralModel.itemName,
-      spiralNo: selectedSpiralNo,
-      activeQuantity: spiralModel.activeQuantity,
-    }"
-    :visible="isSpiralLoadVisible"
-    @load-spiral="onLoadSpiral"
-    @close="onCloseLoadSpiral"
-  />
+  <LoadMachineSpiral :item-category="{
+    itemCategoryId: spiralModel.itemCategoryId,
+    itemId: spiralModel.itemId,
+    itemName: spiralModel.itemName,
+    spiralNo: selectedSpiralNo,
+    activeQuantity: spiralModel.activeQuantity,
+  }" :visible="isSpiralLoadVisible" @load-spiral="onLoadSpiral" @close="onCloseLoadSpiral" />
 </template>
 
 <style lang="scss">
@@ -1260,6 +1030,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {
@@ -1327,6 +1098,7 @@ const isStuck = computed(() => {
 }
 
 @media print {
+
   .no-print,
   .no-print * {
     display: none !important;

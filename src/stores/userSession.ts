@@ -62,7 +62,10 @@ export const useUserSession = defineStore('userSession', () => {
       try {
         const api = useApi()
         const plantInfo = (await api.get('Plant/' + user.value.FactoryId)).data
-        if (plantInfo) user.value.PlantName = plantInfo.plantName
+        if (plantInfo) {
+          user.value.PlantName = plantInfo.plantName
+          user.value.PlantId = plantInfo.id
+        }
 
         const officerData = (await api.get('Officer/' + user.value.UserId)).data
         if (officerData && officerData.authUnits)

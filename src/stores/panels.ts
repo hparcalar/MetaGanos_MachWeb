@@ -10,9 +10,26 @@
  */
 
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useUserSession } from '/@src/stores/userSession'
+import { useApi } from '/@src/composable/useApi'
 
-export type ActivePanelId = 'none' | 'search' | 'languages' | 'activity' | 'task'
+const api = useApi()
+const userSession = useUserSession()
+
+const modelObject = ref({
+  id: 0,
+  plantId: 0,
+})
+
+export type ActivePanelId =
+  | 'none'
+  | 'search'
+  | 'languages'
+  | 'activity'
+  | 'task'
+  | 'notifications'
 
 export const usePanels = defineStore('panels', () => {
   const active = useStorage<ActivePanelId>('active-panel', 'none')
@@ -21,7 +38,17 @@ export const usePanels = defineStore('panels', () => {
     active.value = panelId
   }
 
-  function close() {
+  async function close() {
+    if (active.value == 'notifications' && userSession.user.PlantId != null) {
+      modelObject.value.plantId = userSession.user.PlantId
+      const postResult = await api.post(
+        'MachineNotification/SetAsSeen',
+        modelObject.value
+      )
+      if (postResult.data.recordId == 1) {
+        window.location.reload()
+      }
+    }
     active.value = 'none'
   }
 

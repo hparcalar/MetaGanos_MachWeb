@@ -59,7 +59,7 @@ onMounted(async () => {
     if (!hasAuth('EmployeeCards', 'Read')) delete columns.employeeCardCode
 
     await bindList()
-  } catch (error) {}
+  } catch (error) { }
 })
 
 const onFilterChanged = async (event: any) => {
@@ -90,49 +90,23 @@ const columns = {
   <div>
     <div class="list-flex-toolbar is-reversed">
       <VControl icon="feather:search">
-        <input
-          v-model="filters"
-          class="input custom-text-filter"
-          :placeholder="getExpression('Search')"
-          @change="onFilterChanged"
-        />
+        <input v-model="filters" class="input custom-text-filter" :placeholder="getExpression('Search')"
+          @change="onFilterChanged" />
       </VControl>
 
-      <VButton
-        class="ml-5"
-        :color="'success'"
-        :raised="true"
-        icon="feather:upload"
-        @click="openFileDialog"
-        >{{ getExpression('ImportFromFile') }}</VButton
-      >
+      <VButton v-if="hasAuth('Employees', 'Write')" class="ml-5" :color="'success'" :raised="true" icon="feather:upload"
+        @click="openFileDialog">{{ getExpression('ImportFromFile') }}</VButton>
 
-      <VButton
-        class="ml-5"
-        :color="'info'"
-        :raised="true"
-        icon="feather:upload"
-        @click="openExportDialog"
-        >Dışarı Aktar</VButton
-      >
+      <VButton v-if="hasAuth('Employees', 'Write')" class="ml-5" :color="'info'" :raised="true" icon="feather:upload"
+        @click="openExportDialog">Dışarı Aktar</VButton>
 
-      <VButton
-        :color="'info'"
-        :raised="true"
-        icon="feather:plus"
-        @click="openDetail(0)"
-        >{{ getExpression('NewEmployee') }}</VButton
-      >
+      <VButton v-if="hasAuth('Employees', 'Write')" :color="'info'" :raised="true" icon="feather:plus"
+        @click="openDetail(0)">{{ getExpression('NewEmployee') }}</VButton>
     </div>
 
     <div class="flex-list-wrapper flex-list-v3">
       <!--List Empty Search Placeholder -->
-      <VPlaceholderPage
-        v-if="!employees"
-        :title="getExpression('AnyDataDoesntExists')"
-        subtitle=""
-        larger
-      >
+      <VPlaceholderPage v-if="!employees" :title="getExpression('AnyDataDoesntExists')" subtitle="" larger>
       </VPlaceholderPage>
 
       <!--Active Tab-->
@@ -158,10 +132,8 @@ const columns = {
                   <span class="">{{ item.employeeCardCode }}</span>
                 </VFlexTableCell>
                 <VFlexTableCell :columns="{ align: 'end' }">
-                  <button
-                    class="button v-button has-dot dark-outlined is-info is-pushed-mobile mx-auto"
-                    @click="openDetail(item.id)"
-                  >
+                  <button class="button v-button has-dot dark-outlined is-info is-pushed-mobile mx-auto"
+                    @click="openDetail(item.id)">
                     <i aria-hidden="true" class="fas fa-search dot mr-0"></i>
                   </button>
                 </VFlexTableCell>
@@ -171,26 +143,14 @@ const columns = {
         </VFlexTable>
 
         <!--Table Pagination-->
-        <VFlexPagination
-          v-if="pagedData.totalRecords > 10"
-          :item-per-page="10"
-          :total-items="pagedData.totalRecords"
-          :current-page="currentPage + 1"
-          :max-links-displayed="10"
-          :no-router="true"
-          @update:current-page="onPageChanged"
-        />
+        <VFlexPagination v-if="pagedData.totalRecords > 10" :item-per-page="10" :total-items="pagedData.totalRecords"
+          :current-page="currentPage + 1" :max-links-displayed="10" :no-router="true"
+          @update:current-page="onPageChanged" />
 
         <VFlex class="mt-5">
           <VCard class="p-1">
-            <VSnack
-              :title="'Toplam: ' + pagedData.totalRecords + ' kayıt'"
-              size="small"
-              solid
-              class="mt-2 ml-2"
-              color="info"
-              icon="feather:info"
-            >
+            <VSnack :title="'Toplam: ' + pagedData.totalRecords + ' kayıt'" size="small" solid class="mt-2 ml-2"
+              color="info" icon="feather:info">
             </VSnack>
           </VCard>
         </VFlex>
@@ -198,21 +158,15 @@ const columns = {
     </div>
   </div>
 
-  <UploadEmployeeData
-    :visible="isFileDialogVisible"
-    @file-saved="onUploadSucceed"
-    @close="isFileDialogVisible = false"
-  />
+  <UploadEmployeeData :visible="isFileDialogVisible" @file-saved="onUploadSucceed" @close="isFileDialogVisible = false" />
 
-  <ExportEmployeeData
-    :visible="isExportDialogVisible"
-    @file-saved="onExportSucceed"
-    @close="isExportDialogVisible = false"
-  />
+  <ExportEmployeeData :visible="isExportDialogVisible" @file-saved="onExportSucceed"
+    @close="isExportDialogVisible = false" />
 </template>
 
 <style lang="scss">
 .has-top-nav {
+
   .flex-list-wrapper,
   .list-flex-toolbar {
     max-width: 880px;

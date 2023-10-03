@@ -22,7 +22,7 @@ const router = useRouter()
 const api = useApi()
 const notif = useNotyf()
 const userSession = useUserSession()
-const { getExpression } = useUserSession()
+const { getExpression, hasAuth } = useUserSession()
 const { isDealer } = userSession
 
 const rangeTypes = ref(creditRangeOption)
@@ -95,7 +95,7 @@ const bindModel = async () => {
     ).data
     await updatePlantFiles(modelObject.value.plantId)
     await checkUsableMachines()
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const checkUsableMachines = async () => {
@@ -225,7 +225,7 @@ const updatePlantFiles = async (plantId: number | null) => {
     try {
       const relatedFiles = await api.get('Plant/' + plantId + '/PrintFiles')
       plantFiles.value = relatedFiles.data
-    } catch (error) {}
+    } catch (error) { }
   } else plantFiles.value = []
 }
 
@@ -259,7 +259,7 @@ const getRangeStr = (item: any) => {
         return item.rangeLength + ' ' + rgType.value
       return rgType.value
     }
-  } catch (error) {}
+  } catch (error) { }
 
   return item.rangeType
 }
@@ -280,7 +280,7 @@ const deleteDepCredit = async (creditId: number) => {
         notif.success('Kredi başarıyla silindi.')
         await bindModel()
       } else notif.error(postResult.errorMessage)
-    } catch (error) {}
+    } catch (error) { }
   }
 }
 
@@ -321,34 +321,23 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                color="primary"
-                icon="feather:users"
-                raised
-                @click="applyToEveryone"
-              >
+              <VButton v-if="hasAuth('Departments', 'Write')" color="primary" icon="feather:users" raised
+                @click="applyToEveryone">
                 Tüm Personele Uygula
               </VButton>
-              <VButton
-                icon="feather:upload"
-                color="info"
-                raised
-                @click="showLoadCreditForm"
-              >
+              <VButton v-if="hasAuth('Departments', 'Write')" icon="feather:upload" color="info" raised
+                @click="showLoadCreditForm">
                 {{ getExpression('LoadCreditByDepartment') }}
               </VButton>
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'department' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'department' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('Departments', 'Write')" color="primary" icon="feather:save" raised
+                @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton v-if="hasAuth('Departments', 'Delete')" color="danger" icon="feather:trash" raised
+                @click="deleteModel">
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -370,13 +359,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('DepartmentCode') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.departmentCode"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.departmentCode" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -384,13 +368,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('DepartmentName') }}</label>
                     <VControl icon="feather:terminal">
-                      <input
-                        v-model="modelObject.departmentName"
-                        type="text"
-                        class="input"
-                        placeholder=""
-                        autocomplete=""
-                      />
+                      <input v-model="modelObject.departmentName" type="text" class="input" placeholder=""
+                        autocomplete="" />
                     </VControl>
                   </VField>
                 </div>
@@ -398,15 +377,8 @@ const isStuck = computed(() => {
                   <VField>
                     <label>{{ getExpression('Factory') }}</label>
                     <VControl>
-                      <Multiselect
-                        v-model="modelObject.plantId"
-                        :value-prop="'id'"
-                        :label="'plantName'"
-                        placeholder=""
-                        :searchable="true"
-                        :options="plants"
-                        @change="onChangePlant"
-                      />
+                      <Multiselect v-model="modelObject.plantId" :value-prop="'id'" :label="'plantName'" placeholder=""
+                        :searchable="true" :options="plants" @change="onChangePlant" />
                     </VControl>
                   </VField>
                 </div>
@@ -435,82 +407,51 @@ const isStuck = computed(() => {
                     <div class="columns is-multiline">
                       <div class="column is-12">
                         <div class="list-flex-toolbar is-reversed">
-                          <VButton
-                            v-if="modelObject && modelObject.id > 0"
-                            :color="'info'"
-                            :raised="true"
-                            icon="feather:plus"
-                            @click="openDepCreditForm(null)"
-                            >Yeni Kredi</VButton
-                          >
+                          <VButton v-if="modelObject && modelObject.id > 0" :color="'info'" :raised="true"
+                            icon="feather:plus" @click="openDepCreditForm(null)">Yeni Kredi</VButton>
                         </div>
                         <div class="flex-list-wrapper flex-list-v3">
                           <!--List Empty Search Placeholder -->
-                          <VPlaceholderPage
-                            v-if="!modelObject.credits"
-                            :title="getExpression('AnyDataDoesntExists')"
-                            subtitle=""
-                            larger
-                          >
+                          <VPlaceholderPage v-if="!modelObject.credits" :title="getExpression('AnyDataDoesntExists')"
+                            subtitle="" larger>
                           </VPlaceholderPage>
 
                           <!--Active Tab-->
-                          <div
-                            v-else-if="modelObject.credits"
-                            class="tab-content is-active"
-                          >
-                            <VFlexTable
-                              :data="modelObject.credits"
-                              :columns="depCreditColumns"
-                              clickable
-                              compact
-                              separators
-                            >
+                          <div v-else-if="modelObject.credits" class="tab-content is-active">
+                            <VFlexTable :data="modelObject.credits" :columns="depCreditColumns" clickable compact
+                              separators>
                               <template #body>
                                 <!--Table item-->
-                                <div
-                                  v-for="item in modelObject.credits"
-                                  :key="item.id"
-                                  class="flex-table-item"
-                                  :class="{
-                                    'past-credit':
-                                      item.creditEndDate &&
-                                      dateIsLtFromNow(item.creditEndDate),
-                                  }"
-                                >
+                                <div v-for="item in modelObject.credits" :key="item.id" class="flex-table-item" :class="{
+                                  'past-credit':
+                                    item.creditEndDate &&
+                                    dateIsLtFromNow(item.creditEndDate),
+                                }">
                                   <VFlexTableCell>
-                                    <span class=""
-                                      ><small>{{
-                                        item.itemName && item.itemName.length > 0
-                                          ? item.itemName
-                                          : item.itemGroupName &&
-                                            item.itemGroupName.length > 0
-                                          ? item.itemGroupName
-                                          : item.itemCategoryName
-                                      }}</small></span
-                                    >
+                                    <span class=""><small>{{
+                                      item.itemName && item.itemName.length > 0
+                                      ? item.itemName
+                                      : item.itemGroupName &&
+                                        item.itemGroupName.length > 0
+                                        ? item.itemGroupName
+                                        : item.itemCategoryName
+                                    }}</small></span>
                                   </VFlexTableCell>
                                   <VFlexTableCell>
-                                    <span class=""
-                                      ><small>{{ getRangeStr(item) }}</small></span
-                                    >
+                                    <span class=""><small>{{ getRangeStr(item) }}</small></span>
                                   </VFlexTableCell>
                                   <VFlexTableCell>
-                                    <span class=""
-                                      ><small>{{ item.creditByRange }}</small></span
-                                    >
+                                    <span class=""><small>{{ item.creditByRange }}</small></span>
                                   </VFlexTableCell>
                                   <VFlexTableCell :columns="{ align: 'end' }">
                                     <button
                                       class="button v-button has-dot dark-outlined is-warning is-pushed-mobile py-0 px-2"
-                                      @click="openDepCreditForm(item.id)"
-                                    >
+                                      @click="openDepCreditForm(item.id)">
                                       <i aria-hidden="true" class="fas fa-edit dot"></i>
                                     </button>
                                     <button
                                       class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                      @click="deleteDepCredit(item.id)"
-                                    >
+                                      @click="deleteDepCredit(item.id)">
                                       <i aria-hidden="true" class="fas fa-trash dot"></i>
                                     </button>
                                   </VFlexTableCell>
@@ -545,34 +486,19 @@ const isStuck = computed(() => {
                         <VField>
                           <label>{{ getExpression('Machine') }}</label>
                           <VControl>
-                            <Multiselect
-                              v-model="machineModel.machineId"
-                              :value-prop="'id'"
-                              :label="'machineName'"
-                              placeholder=""
-                              :searchable="true"
-                              :options="machines"
-                            />
+                            <Multiselect v-model="machineModel.machineId" :value-prop="'id'" :label="'machineName'"
+                              placeholder="" :searchable="true" :options="machines" />
                           </VControl>
                         </VField>
                       </div>
                       <div class="column is-12">
                         <div class="right">
                           <div class="buttons">
-                            <VButton
-                              icon="lnir lnir-arrow-left rem-100"
-                              light
-                              dark-outlined
-                              @click="isMachineSelectionVisible = false"
-                            >
+                            <VButton icon="lnir lnir-arrow-left rem-100" light dark-outlined
+                              @click="isMachineSelectionVisible = false">
                               {{ getExpression('Cancel') }}
                             </VButton>
-                            <VButton
-                              color="primary"
-                              icon="feather:save"
-                              raised
-                              @click="addMachine()"
-                            >
+                            <VButton color="primary" icon="feather:save" raised @click="addMachine()">
                               {{ getExpression('Add') }}
                             </VButton>
                           </div>
@@ -583,57 +509,31 @@ const isStuck = computed(() => {
                   <div v-else class="form-fieldset">
                     <div class="list-flex-toolbar is-reversed">
                       <VControl icon="feather:search">
-                        <input
-                          v-model="filters"
-                          class="input custom-text-filter"
-                          placeholder="Arama..."
-                        />
+                        <input v-model="filters" class="input custom-text-filter" placeholder="Arama..." />
                       </VControl>
 
-                      <VButton
-                        v-if="modelObject && modelObject.id > 0"
-                        :color="'info'"
-                        :raised="true"
-                        icon="feather:plus"
-                        @click="showMachineSelection()"
-                        >{{ getExpression('AddMachine') }}</VButton
-                      >
+                      <VButton v-if="modelObject && modelObject.id > 0" :color="'info'" :raised="true" icon="feather:plus"
+                        @click="showMachineSelection()">{{ getExpression('AddMachine') }}</VButton>
                     </div>
                     <div class="flex-list-wrapper flex-list-v3">
                       <!--List Empty Search Placeholder -->
-                      <VPlaceholderPage
-                        v-if="!filteredData || !filteredData.length"
-                        title=""
-                        subtitle=""
-                        larger
-                      >
+                      <VPlaceholderPage v-if="!filteredData || !filteredData.length" title="" subtitle="" larger>
                       </VPlaceholderPage>
 
                       <!--Active Tab-->
                       <div v-else-if="filteredData.length" class="tab-content is-active">
                         <VFlexTable :data="filteredData" :columns="columns" rounded>
                           <template #body>
-                            <TransitionGroup
-                              name="list"
-                              tag="div"
-                              class="flex-list-inner"
-                            >
+                            <TransitionGroup name="list" tag="div" class="flex-list-inner">
                               <!--Table item-->
-                              <div
-                                v-for="item in filteredData"
-                                :key="item.id"
-                                class="flex-table-item"
-                              >
+                              <div v-for="item in filteredData" :key="item.id" class="flex-table-item">
                                 <VFlexTableCell>
-                                  <span class=""
-                                    ><b>{{ item.machineName }}</b></span
-                                  >
+                                  <span class=""><b>{{ item.machineName }}</b></span>
                                 </VFlexTableCell>
                                 <VFlexTableCell :columns="{ align: 'end' }">
                                   <button
                                     class="button v-button has-dot dark-outlined is-danger mx-1 is-pushed-mobile py-0 px-2"
-                                    @click="deleteMachine(item.machineId)"
-                                  >
+                                    @click="deleteMachine(item.machineId)">
                                     <i aria-hidden="true" class="fas fa-trash dot"></i>
                                   </button>
                                 </VFlexTableCell>
@@ -643,13 +543,8 @@ const isStuck = computed(() => {
                         </VFlexTable>
 
                         <!--Table Pagination-->
-                        <VFlexPagination
-                          v-if="filteredData.length > 5"
-                          :item-per-page="10"
-                          :total-items="filteredData.length"
-                          :current-page="1"
-                          :max-links-displayed="10"
-                        />
+                        <VFlexPagination v-if="filteredData.length > 5" :item-per-page="10"
+                          :total-items="filteredData.length" :current-page="1" :max-links-displayed="10" />
                       </div>
                     </div>
                   </div>
@@ -662,21 +557,11 @@ const isStuck = computed(() => {
     </div>
   </form>
 
-  <BulkCreditLoad
-    :visible="isLoadCreditFormVisible"
-    :department-id="modelObject.id"
-    @close="isLoadCreditFormVisible = false"
-    @saved="isLoadCreditFormVisible = false"
-  />
+  <BulkCreditLoad :visible="isLoadCreditFormVisible" :department-id="modelObject.id"
+    @close="isLoadCreditFormVisible = false" @saved="isLoadCreditFormVisible = false" />
 
-  <VModal
-    :open="isDepCreditFormVisible"
-    :title="'Departman Kredi Bilgileri'"
-    size="big"
-    actions="right"
-    :cancel-label="'Vazgeç'"
-    @close="isDepCreditFormVisible = false"
-  >
+  <VModal :open="isDepCreditFormVisible" :title="'Departman Kredi Bilgileri'" size="big" actions="right"
+    :cancel-label="'Vazgeç'" @close="isDepCreditFormVisible = false">
     <template #content>
       <DepartmentCredit :params="departmentCreditModel" @submit="onDepCreditSubmit" />
     </template>
@@ -764,6 +649,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {

@@ -26,27 +26,14 @@ watch(locale, () => {
 </script>
 
 <template>
-  <div
-    id="languages-panel"
-    :class="[panels.active === 'languages' && 'is-active']"
-    class="right-panel-wrapper is-languages"
-  >
-    <div
-      class="panel-overlay"
-      tabindex="0"
-      @keydown.space.prevent="panels.close()"
-      @click="panels.close()"
-    ></div>
+  <div id="languages-panel" :class="[panels.active === 'languages' && 'is-active']"
+    class="right-panel-wrapper is-languages">
+    <div class="panel-overlay" tabindex="0" @keydown.space.prevent="panels.close()" @click="panels.close()"></div>
 
     <div class="right-panel">
       <div class="right-panel-head">
         <h3>{{ t('select-language') }}</h3>
-        <a
-          class="close-panel"
-          tabindex="0"
-          @keydown.space.prevent="panels.close()"
-          @click="panels.close()"
-        >
+        <a class="close-panel" tabindex="0" @keydown.space.prevent="panels.close()" @click="panels.close()">
           <i aria-hidden="true" class="iconify" data-icon="feather:chevron-right"></i>
         </a>
       </div>
@@ -54,13 +41,7 @@ watch(locale, () => {
         <div class="languages-boxes">
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="tr"
-                :checked="locale == 'tr'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="tr" :checked="locale == 'tr'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/turkey.svg" alt="" />
                 <div class="indicator">
@@ -72,13 +53,7 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="en"
-                :checked="locale == 'en'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="en" :checked="locale == 'en'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/united-states-of-america.svg" alt="" />
                 <div class="indicator">
@@ -90,13 +65,7 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="fr"
-                :checked="locale == 'fr'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="fr" :checked="locale == 'fr'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/france.svg" alt="" />
                 <div class="indicator">
@@ -108,13 +77,7 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="es"
-                :checked="locale == 'es'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="es" :checked="locale == 'es'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/spain.svg" alt="" />
                 <div class="indicator">
@@ -126,13 +89,7 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="de"
-                :checked="locale == 'de'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="de" :checked="locale == 'de'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/germany.svg" alt="" />
                 <div class="indicator">
@@ -144,13 +101,7 @@ watch(locale, () => {
 
           <div class="language-box">
             <div class="language-option">
-              <input
-                v-model="locale"
-                type="radio"
-                name="language_selection"
-                value="zh-CN"
-                :checked="locale == 'zh-CN'"
-              />
+              <input v-model="locale" type="radio" name="language_selection" value="zh-CN" :checked="locale == 'zh-CN'" />
               <div class="language-option-inner">
                 <img src="/images/icons/flags/china.svg" alt="" />
                 <div class="indicator">
@@ -162,16 +113,8 @@ watch(locale, () => {
         </div>
 
         <div class="img-wrap has-text-centered">
-          <img
-            class="light-image"
-            src="/@src/assets/illustrations/right-panel/languages.svg"
-            alt=""
-          />
-          <img
-            class="dark-image"
-            src="/@src/assets/illustrations/right-panel/languages-dark.svg"
-            alt=""
-          />
+          <img class="light-image" src="/@src/assets/illustrations/right-panel/languages.svg" alt="" />
+          <img class="dark-image" src="/@src/assets/illustrations/right-panel/languages-dark.svg" alt="" />
         </div>
       </div>
     </div>
@@ -214,7 +157,7 @@ watch(locale, () => {
               z-index: 3;
 
               &:checked {
-                + .language-option-inner {
+                +.language-option-inner {
                   border-color: var(--primary);
 
                   .indicator {
@@ -271,7 +214,7 @@ watch(locale, () => {
         }
       }
 
-      .img-wrap > img {
+      .img-wrap>img {
         display: block;
         max-width: 280px;
         margin: 0 auto;
@@ -289,7 +232,7 @@ watch(locale, () => {
             .language-option {
               input {
                 &:checked {
-                  + .language-option-inner {
+                  +.language-option-inner {
                     border-color: var(--primary);
                   }
                 }

@@ -14,7 +14,7 @@ const props = defineProps({
   },
 })
 
-const { getExpression } = useUserSession()
+const { getExpression, hasAuth } = useUserSession()
 const router = useRouter()
 
 const helpers = useHelpers()
@@ -42,7 +42,7 @@ const bindModel = async () => {
     if (data.status === 200) modelObject.value = data.data
 
     categories.value = (await api.get('ItemCategory')).data
-  } catch (error) {}
+  } catch (error) { }
 }
 
 const saveModel = async () => {
@@ -97,18 +97,15 @@ const isStuck = computed(() => {
           </div>
           <div class="right">
             <div class="buttons">
-              <VButton
-                icon="lnir lnir-arrow-left rem-100"
-                :to="{ name: 'item-group' }"
-                light
-                dark-outlined
-              >
+              <VButton icon="lnir lnir-arrow-left rem-100" :to="{ name: 'item-group' }" light dark-outlined>
                 {{ getExpression('List') }}
               </VButton>
-              <VButton color="primary" icon="feather:save" raised @click="saveModel">
+              <VButton v-if="hasAuth('ItemGroups', 'Write')" color="primary" icon="feather:save" raised
+                @click="saveModel">
                 {{ getExpression('Save') }}
               </VButton>
-              <VButton color="danger" icon="feather:trash" raised @click="deleteModel">
+              <VButton v-if="hasAuth('ItemGroups', 'Delete')" color="danger" icon="feather:trash" raised
+                @click="deleteModel">
                 {{ getExpression('Delete') }}
               </VButton>
             </div>
@@ -128,13 +125,7 @@ const isStuck = computed(() => {
               <VField>
                 <label>{{ getExpression('GroupCode') }}</label>
                 <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemGroupCode"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
+                  <input v-model="modelObject.itemGroupCode" type="text" class="input" placeholder="" autocomplete="" />
                 </VControl>
               </VField>
             </div>
@@ -142,13 +133,7 @@ const isStuck = computed(() => {
               <VField>
                 <label>{{ getExpression('GroupName') }}</label>
                 <VControl icon="feather:terminal">
-                  <input
-                    v-model="modelObject.itemGroupName"
-                    type="text"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                  />
+                  <input v-model="modelObject.itemGroupName" type="text" class="input" placeholder="" autocomplete="" />
                 </VControl>
               </VField>
             </div>
@@ -156,14 +141,8 @@ const isStuck = computed(() => {
               <VField>
                 <label>{{ getExpression('Category') }}</label>
                 <VControl>
-                  <Multiselect
-                    v-model="modelObject.itemCategoryId"
-                    :value-prop="'id'"
-                    :label="'itemCategoryName'"
-                    placeholder=""
-                    :searchable="true"
-                    :options="categories"
-                  />
+                  <Multiselect v-model="modelObject.itemCategoryId" :value-prop="'id'" :label="'itemCategoryName'"
+                    placeholder="" :searchable="true" :options="categories" />
                 </VControl>
               </VField>
             </div>
@@ -171,14 +150,8 @@ const isStuck = computed(() => {
               <VField>
                 <label>Logo</label>
                 <VControl icon="feather:terminal">
-                  <input
-                    type="file"
-                    class="input"
-                    placeholder=""
-                    autocomplete=""
-                    accept="image/*"
-                    @change="onIconSelected"
-                  />
+                  <input type="file" class="input" placeholder="" autocomplete="" accept="image/*"
+                    @change="onIconSelected" />
                   <p v-if="modelObject.groupImage && modelObject.groupImage.length > 0">
                     <img alt="" :src="modelObject.groupImage" width="150" />
                   </p>
@@ -270,6 +243,7 @@ const isStuck = computed(() => {
       .form-body {
         .field {
           .control {
+
             .input,
             .textarea {
               &:focus {
